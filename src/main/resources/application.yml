@@ -16,7 +16,7 @@ spring:
 server:
   error:
     include-stacktrace: never
-  port: ${PORT:0}
+  port: 8080
 logging:
   level:
     org:
