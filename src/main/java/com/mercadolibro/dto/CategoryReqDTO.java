@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CategoryBookReqDTO {
+public class CategoryReqDTO {
     @NotBlank
     private Long id;
 }

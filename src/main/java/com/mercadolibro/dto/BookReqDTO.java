@@ -68,5 +68,5 @@ public class BookReqDTO {
 
     @NotBlank
     @Size(min = 1, max = 10)
-    private Set<CategoryBookReqDTO> categories;
+    private Set<CategoryReqDTO> categories;
 }
