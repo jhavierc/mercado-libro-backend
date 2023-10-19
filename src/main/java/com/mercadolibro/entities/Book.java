@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +53,7 @@ public class Book {
     private String language;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column(name = "currency_code", nullable = false)
     private String currencyCode;
