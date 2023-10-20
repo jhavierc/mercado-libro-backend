@@ -1,6 +1,5 @@
 package com.mercadolibro.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
@@ -26,6 +25,11 @@ public class BookController {
     @GetMapping
     public ResponseEntity<List<BookRespDTO>> findAll() {
         return ResponseEntity.ok(bookService.findAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BookRespDTO> findByID(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.findByID(id));
     }
 
     @GetMapping("/{category}")

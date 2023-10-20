@@ -12,4 +12,5 @@ public interface BookService {
     List<BookRespDTO> findAll();
     BookRespDTO save(BookReqDTO book);
     List<BookRespDTO> findAllByCategory(String category);
+    BookRespDTO findByID(Long id);
 }

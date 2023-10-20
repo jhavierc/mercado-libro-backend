@@ -1,8 +1,10 @@
 package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.*;
@@ -13,9 +15,8 @@ import java.util.Set;
 
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class BookReqDTO {
     @Size(min = 1, max = 70)
     @NotBlank
@@ -74,5 +75,5 @@ public class BookReqDTO {
     private Integer stock;
 
     @Size(min = 1, max = 10)
-    private Set<CategoryReqDTO> categories;
+    private Set<BookCategoryReqDTO> categories;
 }

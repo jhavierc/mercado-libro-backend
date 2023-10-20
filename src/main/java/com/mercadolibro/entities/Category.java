@@ -1,6 +1,8 @@
 package com.mercadolibro.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -18,17 +20,18 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String status;
 
-    @Column(nullable = false)
+    @Column
     private String description;
 
-    @Column(name = "image_links")
-    private String imageLinks;
+    @Column(name = "image_link")
+    @JsonProperty("image_link")
+    private String imageLink;
 
     @ManyToMany(mappedBy = "categories")
     @JsonIgnore
