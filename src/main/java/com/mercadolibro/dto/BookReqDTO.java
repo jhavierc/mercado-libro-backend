@@ -1,9 +1,8 @@
 package com.mercadolibro.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.*;
@@ -12,61 +11,68 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class BookReqDTO {
-    @NotBlank
     @Size(min = 1, max = 70)
+    @NotBlank
     private String title;
 
-    @NotBlank
     @Size(min = 1, max = 10)
+    @NotNull
     private List<String> authors;
 
-    @NotBlank
     @Size(min = 1, max = 70)
+    @NotBlank
     private String publisher;
 
-    @NotBlank
     @Past
+    @NotNull
+    @JsonProperty("published_date")
     private LocalDate publishedDate;
 
-    @NotBlank
     @Size(min = 1, max = 1000)
+    @NotBlank
     private String description;
 
     @NotBlank
+    //@ISBN
     private String isbn;
 
-    @NotBlank
     @Range(min = 0, max = 10000)
-    private short pageCount;
+    @NotNull
+    @JsonProperty("page_count")
+    private Short pageCount;
 
-    @NotBlank
-    private short ratingsCount;
+    @NotNull
+    @Range(min = 0, max = 5)
+    @JsonProperty("ratings_count")
+    private Short ratingsCount;
 
-    @NotBlank
     @Size(min = 1, max = 5)
+    @NotNull
+    @JsonProperty("image_links")
     private List<String> imageLinks;
 
     @NotBlank
     private String language;
 
-    @NotBlank
     @DecimalMin("1.0")
+    @NotNull
     private BigDecimal price;
 
-    @NotBlank
     @Size(min = 1, max = 10)
+    @NotBlank
+    @JsonProperty("currency_code")
     private String currencyCode;
 
-    @NotBlank
     @Min(0)
-    private int stock;
+    @NotNull
+    private Integer stock;
 
-    @NotBlank
     @Size(min = 1, max = 10)
     private Set<CategoryReqDTO> categories;
 }

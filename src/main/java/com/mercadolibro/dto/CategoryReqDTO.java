@@ -1,15 +1,15 @@
 package com.mercadolibro.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class CategoryReqDTO {
-    @NotBlank
+    @NotNull
     private Long id;
 }
