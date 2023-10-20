@@ -16,5 +16,7 @@ public interface BookService {
 
     BookRespDTO update(Long id, BookReqDTO bookReqDTO);
 
+    BookRespDTO patch(Long id, BookReqDTO bookReqDTO);
+
     void delete(Long id);
 }
