@@ -46,9 +46,9 @@ public class BookControllerTest {
     public void testDeleteNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        doNothing().when(bookService).delete(bookId);
         String expectedErrorMessage = BOOK_NOT_FOUND;
 
+        doNothing().when(bookService).delete(bookId);
         doThrow(new ResourceNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
 
         // Act and Assert
