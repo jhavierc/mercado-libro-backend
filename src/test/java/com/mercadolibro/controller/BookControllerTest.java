@@ -32,18 +32,20 @@ public class BookControllerTest {
 
     @Test
     public void testUpdateBook() {
+        // Arrange
         Long bookId = 1L;
         BookReqDTO bookReqDTO = new BookReqDTO();
         BookRespDTO bookRespDTO = new BookRespDTO();
 
-        doReturn(bookRespDTO).when(bookService).update(bookId, bookReqDTO);
+        when(bookService.update(bookId, bookReqDTO)).thenReturn(bookRespDTO);
 
+        // Act
         ResponseEntity<Object> response = bookController.update(bookId, bookReqDTO);
 
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(bookRespDTO, response.getBody());
-
-        Mockito.verify(bookService, Mockito.times(1)).update(bookId, bookReqDTO);
+        verify(bookService, Mockito.times(1)).update(bookId, bookReqDTO);
     }
 
     @Test
@@ -62,18 +64,20 @@ public class BookControllerTest {
 
     @Test
     public void testPatchBook() {
+        // Arrange
         Long bookId = 1L;
         BookReqDTO bookReqDTO = new BookReqDTO();
         BookRespDTO bookRespDTO = new BookRespDTO();
 
-        doReturn(bookRespDTO).when(bookService).patch(bookId, bookReqDTO);
+        when(bookService.patch(bookId, bookReqDTO)).thenReturn(bookRespDTO);
 
+        // Act
         ResponseEntity<Object> response = bookController.patch(bookId, bookReqDTO);
 
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(bookRespDTO, response.getBody());
-
-        Mockito.verify(bookService, Mockito.times(1)).patch(bookId, bookReqDTO);
+        verify(bookService, Mockito.times(1)).patch(bookId, bookReqDTO);
     }
 
     @Test

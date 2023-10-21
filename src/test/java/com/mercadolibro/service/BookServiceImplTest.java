@@ -15,8 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.Optional;
 
+import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -51,8 +51,8 @@ public class BookServiceImplTest {
         mockRepositoryResponse.setId(bookId);
         mockRepositoryResponse.setLanguage("english");
 
-        doReturn(true).when(bookRepository).existsById(bookId);
-        doReturn(mockRepositoryResponse).when(bookRepository).save(Mockito.any(Book.class));
+        when(bookRepository.existsById(bookId)).thenReturn(true);
+        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
         BookRespDTO result = bookService.update(bookId, bookReqDTO);
@@ -73,7 +73,8 @@ public class BookServiceImplTest {
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        assertThrows(ResourceNotFoundException.class, () -> bookService.update(bookId, bookReqDTO));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> bookService.update(bookId, bookReqDTO));
+        assertEquals(BOOK_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -92,7 +93,7 @@ public class BookServiceImplTest {
         mockRepositoryResponse.setTitle(title);
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
-        doReturn(mockRepositoryResponse).when(bookRepository).save(Mockito.any(Book.class));
+        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
         BookRespDTO result = bookService.patch(bookId, bookReqDTO);
@@ -113,6 +114,7 @@ public class BookServiceImplTest {
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        assertThrows(ResourceNotFoundException.class, () -> bookService.patch(bookId, bookReqDTO));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> bookService.patch(bookId, bookReqDTO));
+        assertEquals(BOOK_NOT_FOUND, exception.getMessage());
     }
 }
