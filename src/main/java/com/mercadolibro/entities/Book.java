@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class Book {
     private String title;
 
     @Column(nullable = false)
-    private List<String> authors;
+    private ArrayList<String> authors;
 
     @Column(nullable = false)
     private String publisher;
@@ -47,7 +48,7 @@ public class Book {
     private short ratingsCount;
 
     @Column(name = "image_links")
-    private List<String> imageLinks;
+    private ArrayList<String> imageLinks;
 
     @Column(nullable = false)
     private String language;
