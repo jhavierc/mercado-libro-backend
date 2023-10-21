@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entities.Book;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.exceptions.NoBooksToShowException;
+import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ public class BookServiceImpl implements BookService {
     @Autowired
     private ObjectMapper mapper;
 
-    private static final String NO_BOOKS_TO_SHOW_ERROR_FORMAT = "There is no books to show.";
     private static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
 
     @Override
@@ -32,7 +32,7 @@ public class BookServiceImpl implements BookService {
             return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
                     .collect(Collectors.toList());
         }
-        throw new ResourceNotFoundException(NO_BOOKS_TO_SHOW_ERROR_FORMAT);
+        throw new NoBooksToShowException();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class BookServiceImpl implements BookService {
             return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
                     .collect(Collectors.toList());
         }
-        throw new ResourceNotFoundException(NO_BOOKS_TO_SHOW_ERROR_FORMAT);
+        throw new NoBooksToShowException();
     }
 
     @Override
@@ -57,6 +57,6 @@ public class BookServiceImpl implements BookService {
         if (searched.isPresent()) {
             return mapper.convertValue(searched.get(), BookRespDTO.class);
         }
-        throw new ResourceNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 }

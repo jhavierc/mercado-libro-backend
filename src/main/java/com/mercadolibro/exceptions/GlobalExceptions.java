@@ -8,18 +8,19 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptions {
-   @ExceptionHandler(ResourceNotFoundException.class)
-   public ResponseEntity<String> processErrorResourceNotFound(ResourceNotFoundException resNotFoundEx){
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ERROR: "+ resNotFoundEx.getMessage());
+   @ExceptionHandler(NoBooksToShowException.class)
+   public ResponseEntity<List<?>> processErrorNoBooksToShow() {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
    }
-   @ExceptionHandler(BadRequestException.class)
-   public ResponseEntity<String> processErrorBadRequest(BadRequestException badReqEx){
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ERROR: "+ badReqEx.getMessage());
+   @ExceptionHandler(BookNotFoundException.class)
+   public ResponseEntity<String> processErrorBookNotFound(BookNotFoundException bookNotFoundEx){
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ERROR: " + bookNotFoundEx.getMessage());
    }
    @ExceptionHandler(MethodArgumentNotValidException.class) @ResponseBody
    public ResponseEntity<List> processUnmergeException(final MethodArgumentNotValidException ex) {

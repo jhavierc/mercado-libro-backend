@@ -3,6 +3,7 @@ package com.mercadolibro.service;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.BookCategoryReqDTO;
+import com.mercadolibro.dto.CategoryRespDTO;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ import java.util.*;
 public class BookServiceTest {
     @Autowired
     private BookService bookService;
+
+    private Long id = 1L;
 
     @Test
     @Order(1)
@@ -46,6 +49,7 @@ public class BookServiceTest {
                 .build();
         BookRespDTO saved = bookService.save(toSave);
         assertNotNull(saved.getId());
+        this.id = saved.getId();
     }
 
     @Test
@@ -54,6 +58,24 @@ public class BookServiceTest {
         String category = "Ficcion";
         List<BookRespDTO> searched = bookService.findAllByCategory(category);
         assertFalse(searched.isEmpty());
+        Optional<CategoryRespDTO> firstBookCategory = searched.get(0).getCategories().stream()
+                .filter(cat -> cat.getName().equalsIgnoreCase(category)).findFirst();
+        assertTrue(firstBookCategory.isPresent());
+    }
+
+    @Test
+    @Order(3)
+    public void findAll() {
+        List<BookRespDTO> searched = bookService.findAll();
+        assertFalse(searched.isEmpty());
+    }
+
+    @Test
+    @Order(4)
+    public void findByID() {
+        BookRespDTO searched = bookService.findByID(this.id);
+        assertNotNull(searched);
+        assertEquals("El Alquimista", searched.getTitle());
     }
 
     private String generateISBN() {

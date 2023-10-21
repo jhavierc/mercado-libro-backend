@@ -8,11 +8,8 @@ import com.mercadolibro.service.impl.TestServiceImpl;
 
 @Configuration
 public class AplicationConfig {
-	
 
 	public TestService initTestServiceImpl() {
 		return new TestServiceImpl();
 	}
-
-
 }

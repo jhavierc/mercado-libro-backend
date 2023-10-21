@@ -22,7 +22,7 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.save(book));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<BookRespDTO>> findAll() {
         return ResponseEntity.ok(bookService.findAll());
     }
@@ -32,7 +32,7 @@ public class BookController {
         return ResponseEntity.ok(bookService.findByID(id));
     }
 
-    @GetMapping("/{category}")
+    @GetMapping("/all/{category}")
     public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable String category) {
         return ResponseEntity.ok(bookService.findAllByCategory(category));
     }

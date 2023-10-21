@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.CategoryReqDTO;
 import com.mercadolibro.dto.CategoryRespDTO;
 import com.mercadolibro.entities.Category;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
             return searched.stream().map(category -> mapper.convertValue(category, CategoryRespDTO.class))
                     .collect(Collectors.toList());
         }
-        throw new ResourceNotFoundException(NO_CATEGORIES_TO_SHOW_ERROR_FORMAT);
+        throw new BookNotFoundException(NO_CATEGORIES_TO_SHOW_ERROR_FORMAT);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (searched.isPresent()) {
             return mapper.convertValue(searched.get(), CategoryRespDTO.class);
         }
-        throw new ResourceNotFoundException(String.format(CATEGORY_NOT_FOUND_ERROR_FORMAT, id));
+        throw new BookNotFoundException(String.format(CATEGORY_NOT_FOUND_ERROR_FORMAT, id));
     }
 
     @Override
