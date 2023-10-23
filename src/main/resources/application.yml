@@ -1,3 +1,7 @@
+app:
+  create-roles: ${CREATE_ROLES:true}
+  roles: ${ROLES:ADMIN,USER}
+
 spring:
   jpa:
     show-sql: true
