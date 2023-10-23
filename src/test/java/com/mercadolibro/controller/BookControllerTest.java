@@ -1,7 +1,7 @@
 package com.mercadolibro.controller;
 
 import com.mercadolibro.controllers.BookController;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND;
+import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -19,7 +19,6 @@ import static org.mockito.Mockito.*;
 public class BookControllerTest {
     @MockBean
     private BookService bookService;
-
     private BookController bookController;
 
     @BeforeEach
@@ -46,13 +45,13 @@ public class BookControllerTest {
     public void testDeleteNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        String expectedErrorMessage = BOOK_NOT_FOUND;
+        String expectedErrorMessage = BOOK_NOT_FOUND_ERROR_FORMAT;
 
         doNothing().when(bookService).delete(bookId);
-        doThrow(new ResourceNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
+        doThrow(new BookNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
 
         // Act and Assert
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> bookController.delete(bookId));
+        BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookController.delete(bookId));
         assertEquals(expectedErrorMessage, exception.getMessage());
     }
 }

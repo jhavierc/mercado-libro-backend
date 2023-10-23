@@ -17,13 +17,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
-    @Autowired
-    BookRepository bookRepository;
+    private final BookRepository bookRepository;
+    private final ObjectMapper mapper;
+
+    public static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
 
     @Autowired
-    private ObjectMapper mapper;
-
-    private static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
+    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper) {
+        this.bookRepository = bookRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public List<BookRespDTO> findAll() {
@@ -60,7 +63,7 @@ public class BookServiceImpl implements BookService {
         throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
   
-      public void delete(Long id) {
+    public void delete(Long id) {
         if (bookRepository.existsById(id)) {
             bookRepository.deleteById(id);
         } else {

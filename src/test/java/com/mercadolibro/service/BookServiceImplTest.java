@@ -1,6 +1,7 @@
 package com.mercadolibro.service;
 
-import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,7 @@ public class BookServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        bookService = new BookServiceImpl(bookRepository);
+        bookService = new BookServiceImpl(bookRepository, new ObjectMapper());
     }
 
     @Test
@@ -46,6 +47,6 @@ public class BookServiceImplTest {
         doReturn(false).when(bookRepository).existsById(bookId);
 
         // Act and Assert
-        assertThrows(ResourceNotFoundException.class, () -> bookService.delete(bookId));
+        assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
 }

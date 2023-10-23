@@ -3,7 +3,6 @@ package com.mercadolibro.controllers;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +13,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/book")
 public class BookController {
+    private final BookService bookService;
 
-    @Autowired
-    private BookService bookService;
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
+    }
 
     @PostMapping("/save")
     public ResponseEntity<BookRespDTO> save(@RequestBody @Valid BookReqDTO book) {
@@ -36,7 +37,8 @@ public class BookController {
     @GetMapping("/all/{category}")
     public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable String category) {
         return ResponseEntity.ok(bookService.findAllByCategory(category));
-      
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Long id) {
         bookService.delete(id);
