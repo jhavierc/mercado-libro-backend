@@ -12,6 +12,4 @@ public class AplicationConfig {
 	public TestService initTestServiceImpl() {
 		return new TestServiceImpl();
 	}
-
-
 }
