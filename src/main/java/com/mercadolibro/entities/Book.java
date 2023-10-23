@@ -1,6 +1,7 @@
 package com.mercadolibro.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -8,8 +9,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 
 @Getter
@@ -22,51 +22,55 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String title;
 
-    @Column(nullable = false)
-    private List<String> authors;
+    @Column
+    private ArrayList<String> authors;
 
-    @Column(nullable = false)
+    @Column
     private String publisher;
 
-    @Column(name = "published_date", nullable = false)
+    @JsonProperty("published_date")
+    @Column(name = "published_date")
     private LocalDate publishedDate;
 
-    @Column(nullable = false)
+    @Column
     private String description;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String isbn;
 
-    @Column(name = "page_count", nullable = false)
-    private short pageCount;
+    @JsonProperty("page_count")
+    @Column(name = "page_count")
+    private Short pageCount;
 
-    @Column(name = "ratings_count", nullable = false)
-    private short ratingsCount;
+    @JsonProperty("ratings_count")
+    @Column(name = "ratings_count")
+    private Short ratingsCount;
 
+    @JsonProperty("image_links")
     @Column(name = "image_links")
-    private List<String> imageLinks;
+    private ArrayList<String> imageLinks;
 
-    @Column(nullable = false)
+    @Column
     private String language;
 
-    @Column(nullable = false)
+    @Column
     private BigDecimal price;
 
-    @Column(name = "currency_code", nullable = false)
+    @JsonProperty("currency_code")
+    @Column(name = "currency_code")
     private String currencyCode;
 
-    @Column(nullable = false)
-    private int stock;
+    @Column
+    private Integer stock;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "book_categories",
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    @JsonIgnore
-    private Set<Category> categories = new HashSet<>();
+    private Set<Category> categories;
 }
