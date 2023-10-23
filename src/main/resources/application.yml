@@ -1,6 +1,8 @@
 app:
-  create-roles: ${CREATE_ROLES:true}
+  create-roles: ${CREATE_ROLES:false}
   roles: ${ROLES:ADMIN,USER}
+  user:
+    default-roles: USER
 
 spring:
   jpa:
