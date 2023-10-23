@@ -4,6 +4,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        hbm2ddl:
+          auto: update
   application:
     name: ${APP_NAME:mercadolibro-service}
   flyway:
