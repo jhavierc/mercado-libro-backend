@@ -59,4 +59,12 @@ public class BookServiceImpl implements BookService {
         }
         throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
+  
+      public void delete(Long id) {
+        if (bookRepository.existsById(id)) {
+            bookRepository.deleteById(id);
+        } else {
+            throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+        }
+    }
 }

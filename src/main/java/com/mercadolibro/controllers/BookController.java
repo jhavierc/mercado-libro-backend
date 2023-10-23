@@ -14,8 +14,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/book")
 public class BookController {
+
     @Autowired
-    BookService bookService;
+    private BookService bookService;
 
     @PostMapping("/save")
     public ResponseEntity<BookRespDTO> save(@RequestBody @Valid BookReqDTO book) {
@@ -35,5 +36,10 @@ public class BookController {
     @GetMapping("/all/{category}")
     public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable String category) {
         return ResponseEntity.ok(bookService.findAllByCategory(category));
+      
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable Long id) {
+        bookService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

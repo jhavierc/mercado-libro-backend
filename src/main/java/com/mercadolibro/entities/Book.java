@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,7 +24,6 @@ public class Book {
     @Column
     private String title;
 
-    @Column
     private ArrayList<String> authors;
 
     @Column
