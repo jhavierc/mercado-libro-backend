@@ -27,6 +27,7 @@ public class BookServiceImpl implements BookService {
     private final ModelMapper modelMapper;
 
     public static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
+    public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
 
     @Autowired
     public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper) {
@@ -51,7 +52,7 @@ public class BookServiceImpl implements BookService {
             Book saved = bookRepository.save(mapper.convertValue(book, Book.class));
             return mapper.convertValue(saved, BookRespDTO.class);
         }
-        throw new BookAlreadyExistsException("Book already exists");
+        throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, book.getIsbn()));
     }
 
     @Override
@@ -67,6 +68,10 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
         if (bookRepository.existsById(id)) {
+            if (bookRepository.existsByIsbnAndIdNot(bookReqDTO.getIsbn(), id)) {
+                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
+            }
+
             Book book = mapper.convertValue(bookReqDTO, Book.class);
             book.setId(id);
             Book updated = bookRepository.save(book);
@@ -82,6 +87,11 @@ public class BookServiceImpl implements BookService {
 
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
+            if (bookRepository.existsByIsbnAndIdNot(bookRespDTO.getIsbn(), id)) {
+                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookRespDTO.getIsbn()));
+            }
+
+            bookRespDTO.setId(id);
             modelMapper.map(bookRespDTO, optionalBook.get());
             Book book = bookRepository.save(optionalBook.get());
             return mapper.convertValue(book, BookRespDTO.class);

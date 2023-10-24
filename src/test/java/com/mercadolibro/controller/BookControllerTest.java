@@ -1,6 +1,7 @@
 package com.mercadolibro.controller;
 
 import com.mercadolibro.controllers.BookController;
+import com.mercadolibro.exceptions.BookAlreadyExistsException;
 import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,6 +66,23 @@ public class BookControllerTest {
     }
 
     @Test
+    public void testUpdateNonExistingBookISBN() {
+        // Arrange
+        Long bookId = 1L;
+        String bookIsbn = "978-0-261-10238-4";
+        BookReqDTO input = new BookReqDTO();
+        input.setIsbn(bookIsbn);
+        String expectedErrorMessage = String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookIsbn);
+
+        when(bookService.update(bookId, input)).thenThrow(new BookAlreadyExistsException(expectedErrorMessage));
+
+        // Act and Assert
+        BookAlreadyExistsException exception = assertThrows(BookAlreadyExistsException.class,
+                () -> bookController.update(bookId, input));
+        assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
     public void testPatchBook() {
         // Arrange
         Long bookId = 1L;
@@ -92,6 +111,23 @@ public class BookControllerTest {
 
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
+                () -> bookController.patch(bookId, input));
+        assertEquals(expectedErrorMessage, exception.getMessage());
+    }
+
+    @Test
+    public void testPatchExistingBookISBN() {
+        // Arrange
+        Long bookId = 1L;
+        String bookIsbn = "978-0-261-10238-4";
+        BookRespDTO input = new BookRespDTO();
+        input.setIsbn(bookIsbn);
+        String expectedErrorMessage = String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookIsbn);
+
+        when(bookService.patch(bookId, input)).thenThrow(new BookAlreadyExistsException(expectedErrorMessage));
+
+        // Act and Assert
+        BookAlreadyExistsException exception = assertThrows(BookAlreadyExistsException.class,
                 () -> bookController.patch(bookId, input));
         assertEquals(expectedErrorMessage, exception.getMessage());
     }

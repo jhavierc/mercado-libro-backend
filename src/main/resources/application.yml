@@ -8,18 +8,18 @@ spring:
         hbm2ddl:
           auto: update
   application:
-    name: ${APP_NAME}
+    name: ${APP_NAME:mercadolibro-service}
   flyway:
     baseline-on-migrate: 'false'
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: ${DB_PASSWORD}
-    username: ${DB_USERNAME}
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?autoReconnect=true&useSSL=false
+    password: ${DB_PASSWORD:root}
+    username: ${DB_USERNAME:root}
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:booksdb}?
 server:
   error:
     include-stacktrace: never
-  port: ${PORT:0}
+  port: ${SERVER_PORT:0}
 logging:
   level:
     org:
