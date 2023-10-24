@@ -1,11 +1,12 @@
 package com.mercadolibro.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -18,18 +19,20 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String status;
 
-    @Column(nullable = false)
+    @Column
     private String description;
 
     @Column(name = "image_link")
+    @JsonProperty("image_link")
     private String imageLink;
 
     @ManyToMany(mappedBy = "categories")
-    private Set<Book> books = new HashSet<>();
+    @JsonIgnore
+    private Set<Book> books;
 }

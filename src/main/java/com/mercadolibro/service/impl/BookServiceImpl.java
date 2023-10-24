@@ -9,6 +9,7 @@ import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,30 +23,11 @@ public class BookServiceImpl implements BookService {
     private final ObjectMapper mapper;
     private final ModelMapper modelMapper;
 
+    @Autowired
     public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
         this.mapper = mapper;
         this.modelMapper = modelMapper;
-    }
-
-    @Override
-    public List<BookRespDTO> getAll() {
-        return null;
-    }
-
-    @Override
-    public BookRespDTO getByID(Long id) {
-        return null;
-    }
-
-    @Override
-    public BookRespDTO getByISBN(String isbn) {
-        return null;
-    }
-
-    @Override
-    public BookRespDTO create(BookReqDTO bookReqDTO) {
-        return null;
     }
 
     public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
@@ -59,12 +41,12 @@ public class BookServiceImpl implements BookService {
         throw new ResourceNotFoundException(BOOK_NOT_FOUND);
     }
 
-    public BookRespDTO patch(Long id, BookReqDTO bookReqDTO){
+    public BookRespDTO patch(Long id, BookRespDTO bookRespDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
 
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
-            modelMapper.map(bookReqDTO, optionalBook.get());
+            modelMapper.map(bookRespDTO, optionalBook.get());
             Book book = bookRepository.save(optionalBook.get());
             return mapper.convertValue(book, BookRespDTO.class);
         }

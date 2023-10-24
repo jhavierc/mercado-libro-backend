@@ -1,12 +1,10 @@
 package com.mercadolibro.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
+@Builder
 @Getter
-@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class CategoryRespDTO {
@@ -14,5 +12,6 @@ public class CategoryRespDTO {
     private String name;
     private String status;
     private String description;
+    @JsonProperty("image_link")
     private String imageLink;
 }

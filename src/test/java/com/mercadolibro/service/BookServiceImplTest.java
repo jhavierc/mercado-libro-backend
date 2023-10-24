@@ -68,12 +68,13 @@ public class BookServiceImplTest {
     void testUpdateNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookReqDTO bookReqDTO = new BookReqDTO();
+        BookReqDTO input = new BookReqDTO();
 
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> bookService.update(bookId, bookReqDTO));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> bookService.update(bookId, input));
         assertEquals(BOOK_NOT_FOUND, exception.getMessage());
     }
 
@@ -82,7 +83,7 @@ public class BookServiceImplTest {
         // Arrange
         Long bookId = 1L;
         String title = "this title must not be overridden";
-        BookReqDTO bookReqDTO = new BookReqDTO();
+        BookRespDTO input = new BookRespDTO();
 
         Book existingBook = new Book();
         existingBook.setId(bookId);
@@ -96,7 +97,7 @@ public class BookServiceImplTest {
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
-        BookRespDTO result = bookService.patch(bookId, bookReqDTO);
+        BookRespDTO result = bookService.patch(bookId, input);
 
         // Assert
         assertNotNull(result);
@@ -104,17 +105,17 @@ public class BookServiceImplTest {
         assertEquals(title, result.getTitle());
     }
 
-
     @Test
     void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookReqDTO bookReqDTO = new BookReqDTO();
+        BookRespDTO input = new BookRespDTO();
 
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> bookService.patch(bookId, bookReqDTO));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> bookService.patch(bookId, input));
         assertEquals(BOOK_NOT_FOUND, exception.getMessage());
     }
 }

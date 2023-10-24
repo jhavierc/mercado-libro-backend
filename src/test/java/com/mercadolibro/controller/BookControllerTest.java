@@ -66,25 +66,25 @@ public class BookControllerTest {
     public void testPatchBook() {
         // Arrange
         Long bookId = 1L;
-        BookReqDTO bookReqDTO = new BookReqDTO();
-        BookRespDTO bookRespDTO = new BookRespDTO();
+        BookRespDTO input = new BookRespDTO();
+        BookRespDTO output = new BookRespDTO();
 
-        when(bookService.patch(bookId, bookReqDTO)).thenReturn(bookRespDTO);
+        when(bookService.patch(bookId, input)).thenReturn(output);
 
         // Act
-        ResponseEntity<Object> response = bookController.patch(bookId, bookReqDTO);
+        ResponseEntity<Object> response = bookController.patch(bookId, input);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(bookRespDTO, response.getBody());
-        verify(bookService, Mockito.times(1)).patch(bookId, bookReqDTO);
+        assertEquals(output, response.getBody());
+        verify(bookService, Mockito.times(1)).patch(bookId, input);
     }
 
     @Test
     public void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookReqDTO bookReqDTO = new BookReqDTO();
+        BookRespDTO bookReqDTO = new BookRespDTO();
         String expectedErrorMessage = BOOK_NOT_FOUND;
 
         when(bookService.patch(bookId, bookReqDTO)).thenThrow(new ResourceNotFoundException(expectedErrorMessage));

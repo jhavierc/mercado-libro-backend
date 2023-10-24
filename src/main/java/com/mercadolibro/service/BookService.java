@@ -6,17 +6,7 @@ import com.mercadolibro.dto.BookRespDTO;
 import java.util.List;
 
 public interface BookService {
-    List<BookRespDTO> getAll();
-
-    BookRespDTO getByID(Long id);
-
-    BookRespDTO getByISBN(String isbn);
-
-    BookRespDTO create(BookReqDTO bookReqDTO);
-
     BookRespDTO update(Long id, BookReqDTO bookReqDTO);
-
-    BookRespDTO patch(Long id, BookReqDTO bookReqDTO);
-
+    BookRespDTO patch(Long id, BookRespDTO bookRespDTO);
     void delete(Long id);
 }
