@@ -10,13 +10,15 @@ spring:
   flyway:
     baseline-on-migrate: 'false'
   datasource:
-    password: root
-    username: root
-    url: jdbc:mysql://localhost:3306/booksdb?autoReconnect=true&useSSL=false
+    password: baeMoo2l
+    username: pi21023c01_GRUPO5
+    url: jdbc:mysql://db.ctd.academy:3306/pi21023c01_GRUPO5?autoReconnect=true&useSSL=false
 server:
   error:
     include-stacktrace: never
   port: 8080
+  servlet:
+    context-path: /v1
 logging:
   level:
     org:
