@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class BookCategoryReqDTO {

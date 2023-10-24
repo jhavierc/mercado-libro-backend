@@ -9,6 +9,7 @@ import com.mercadolibro.service.impl.TestServiceImpl;
 
 @Configuration
 public class ApplicationConfig {
+	@Bean
 	public TestService initTestServiceImpl() {
 		return new TestServiceImpl();
 	}

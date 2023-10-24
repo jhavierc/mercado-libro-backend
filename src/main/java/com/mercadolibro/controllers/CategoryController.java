@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/category")
+@CrossOrigin(origins = "*")
 public class CategoryController {
     private final CategoryService categoryService;
 

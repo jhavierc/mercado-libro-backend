@@ -1,21 +1,21 @@
 spring:
   jpa:
     show-sql: true
-    hibernate:
-      dialect: org.hibernate.dialect.MySQL8Dialect
-      format_sql: true
-      ddl-auto: update
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        hbm2ddl:
+          auto: update
   application:
-    name: mercadolibro-service
+    name: ${APP_NAME}
   flyway:
     baseline-on-migrate: 'false'
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: root
-    username: root
-    url: jdbc:mysql://localhost:3306/booksdb?autoReconnect=true&useSSL=false
+    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?autoReconnect=true&useSSL=false
 server:
   error:
     include-stacktrace: never

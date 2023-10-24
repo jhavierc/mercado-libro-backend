@@ -1,19 +1,29 @@
 package com.mercadolibro.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookRespDTO;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entities.Book;
+import com.mercadolibro.entities.Category;
 import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
+import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
+import com.mercadolibro.service.impl.CategoryServiceImpl;
+import org.checkerframework.checker.units.qual.C;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import java.util.Optional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,20 +31,94 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-public class BookServicePutPatchDeleteTest {
-    @MockBean
+@ExtendWith(MockitoExtension.class)
+public class BookServiceTest {
+    @Mock
     private BookRepository bookRepository;
 
-    private ObjectMapper objectMapper;
-    private ModelMapper modelMapper;
-    private BookService bookService;
+    @Mock
+    private CategoryRepository categoryRepository;
 
-    @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper();
-        modelMapper = new ModelMapper();
-        bookService = new BookServiceImpl(bookRepository, objectMapper, modelMapper);
+    @Spy
+    private ObjectMapper objectMapper;
+
+    @Spy
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private BookServiceImpl bookService;
+
+    @InjectMocks
+    private CategoryServiceImpl categoryService;
+
+    @Test
+    public void testSaveBook() {
+        Long bookId = 1L;
+
+        Book mockRepositoryResponse = new Book();
+        mockRepositoryResponse.setId(bookId);
+        mockRepositoryResponse.setTitle("a title");
+
+        BookReqDTO input = new BookReqDTO();
+        input.setTitle("a title");
+
+        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
+
+        BookRespDTO res = bookService.save(input);
+        assertNotNull(res);
+        assertEquals(input.getTitle(), res.getTitle());
+        assertEquals(bookId, res.getId());
+    }
+
+    @Test
+    public void testFindAllByCategory() {
+        Long catID = 1L;
+        String catName = "rare category";
+
+        Category cat = new Category();
+        cat.setId(catID);
+        cat.setName(catName);
+
+        Book a = new Book();
+        a.setTitle("great title");
+        a.setCategories(Set.of(cat));
+
+        Book b = new Book();
+        b.setTitle("boring title");
+        b.setCategories(Set.of(cat));
+
+        List<Book> mockRepositoryResponse = List.of(a, b);
+
+        when(bookRepository.findAllByCategory(Mockito.any(String.class))).thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAllByCategory(catName);
+        assertFalse(res.isEmpty());
+
+        Optional<CategoryRespDTO> resCategory = res.get(0).getCategories().stream()
+                .filter(category -> Objects.equals(category.getId(), catID)).findFirst();
+
+        assertFalse(resCategory.isEmpty());
+        assertEquals(resCategory.get().getId(), catID);
+    }
+
+    @Test
+    public void testFindAll() {
+        Book a = new Book();
+        String aTitle = "great title";
+        a.setTitle(aTitle);
+
+        Book b = new Book();
+        String bTitle = "boring title";
+        b.setTitle(bTitle);
+
+        List<Book> mockRepositoryResponse = List.of(a, b);
+
+        when(bookRepository.findAll()).thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAll();
+        assertFalse(res.isEmpty());
+        assertEquals(res.get(0).getTitle(), aTitle);
+        assertEquals(res.get(1).getTitle(), bTitle);
     }
 
     @Test
@@ -43,11 +127,6 @@ public class BookServicePutPatchDeleteTest {
         Long bookId = 1L;
         BookReqDTO input = new BookReqDTO();
         input.setLanguage("english");
-
-        Book existingBook = new Book();
-        existingBook.setId(bookId);
-        existingBook.setTitle("old title");
-        existingBook.setLanguage("spanish");
 
         Book mockRepositoryResponse = new Book();
         mockRepositoryResponse.setId(bookId);
@@ -113,7 +192,7 @@ public class BookServicePutPatchDeleteTest {
         Long bookId = 1L;
         BookRespDTO input = new BookRespDTO();
 
-        when(bookRepository.existsById(bookId)).thenReturn(false);
+        when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
