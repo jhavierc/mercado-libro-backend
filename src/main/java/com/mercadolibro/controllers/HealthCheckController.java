@@ -15,16 +15,16 @@ import com.mercadolibro.dto.TestDTO;
 import com.mercadolibro.service.TestService;
 
 @RestController
-@RequestMapping("/api/healt")
+@RequestMapping("/api/health")
 @CrossOrigin(origins = "*", methods = { RequestMethod.GET })
-public class HealtChectkController {
+public class HealthCheckController {
 	
 	@Autowired
 	private TestService testService;
 
 
 	@GetMapping("/ping")
-	public ResponseEntity<String> healtCheck() {
+	public ResponseEntity<String> healthCheck() {
 		return ResponseEntity.status(HttpStatus.OK).body("pong");
 	}
 	

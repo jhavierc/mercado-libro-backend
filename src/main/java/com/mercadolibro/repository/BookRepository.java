@@ -12,4 +12,6 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("FROM Book b JOIN b.categories c WHERE c.name = :category")
     List<Book> findAllByCategory(@Param("category") String category);
+
+    boolean existsByIsbn(String isbn);
 }
