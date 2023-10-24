@@ -1,0 +1,40 @@
+name: Deploy application
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Verificar código
+      uses: actions/checkout@v2
+
+    - name: Generar archivo JAR
+      run: mvn clean package
+
+    - name: Copiar archivo JAR a instancia EC2 1
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
+        target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
+
+    - name: Ejecutar archivo JAR en instancia EC2 1
+      run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'java -jar /home/ec2-user/mercadolibro-backend-1.0.0.jar'
+
+    - name: Copiar archivo JAR a instancia EC2 2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST_2 }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
+        target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
+
+    - name: Ejecutar archivo JAR en instancia EC2 2
+      run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST_2 }} 'java -jar /home/ec2-user/mercadolibro-backend-1.0.0.jar'
