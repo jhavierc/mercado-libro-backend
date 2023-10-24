@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entities.Book;
+import com.mercadolibro.exceptions.BookAlreadyExistsException;
 import com.mercadolibro.exceptions.NoBooksToShowException;
 import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
@@ -46,8 +47,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookRespDTO save(BookReqDTO book) {
-        Book saved = bookRepository.save(mapper.convertValue(book, Book.class));
-        return mapper.convertValue(saved, BookRespDTO.class);
+        if (!bookRepository.existsByIsbn(book.getIsbn())) {
+            Book saved = bookRepository.save(mapper.convertValue(book, Book.class));
+            return mapper.convertValue(saved, BookRespDTO.class);
+        }
+        throw new BookAlreadyExistsException("Book already exists");
     }
 
     @Override

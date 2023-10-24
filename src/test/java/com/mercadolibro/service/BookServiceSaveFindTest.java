@@ -1,11 +1,13 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.*;
+import com.mercadolibro.exceptions.BookAlreadyExistsException;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -61,6 +63,39 @@ public class BookServiceSaveFindTest {
         BookRespDTO searched = bookService.findByID(1L);
         assertNotNull(searched);
         assertEquals("El Alquimista", searched.getTitle());
+    }
+
+    @Test
+    @Order(5)
+    @Tag("needsBook")
+    public void testBookAlreadyExistsByISBN() {
+        // Guardar un libro
+        BookRespDTO savedBook = saveBook();
+
+        // Intentar guardar el mismo libro nuevamente con el mismo ISBN
+        BookReqDTO toSave = BookReqDTO.builder()
+                .title("El Alquimista")
+                .authors(new ArrayList<>(Arrays.asList("[{'name': 'Paulo Coelho', 'email': 'paulo96@hotmail.com'}]")))
+                .publisher("Editorial Planeta")
+                .publishedDate(LocalDate.of(1991, 06, 14))
+                .description("El alquimista (O Alquimista, 1988) es una novela escrita por el escritor brasileño " +
+                        "Paulo Coelho. Fue traducida a 88 lenguas y publicada en más de 170 países con más de 85 " +
+                        "millones de copias en todo el mundo.")
+                .isbn(savedBook.getIsbn())
+                .pageCount((short) 500)
+                .ratingsCount((short) 4)
+                .imageLinks(new ArrayList<>(Arrays.asList("https://previews.123rf.com/images/will46/will462102/will46" +
+                        "210200019/164816028-un-perrito-marr%C3%B3n-joven-y-muy-lindo-sentado-y-sonriendo-para-ser" +
+                        "-usado-como-pegatina.jpg")))
+                .language("ES")
+                .price(BigDecimal.valueOf(25.5))
+                .currencyCode("EUR")
+                .stock(460)
+                .categories(Set.of(BookCategoryReqDTO.builder().id(savedBook.getCategories().stream().findFirst().get().getId()).build()))
+                .build();
+
+        Exception e = assertThrows(BookAlreadyExistsException.class, () -> bookService.save(toSave));
+        assertEquals("Book already exists", e.getMessage());
     }
 
     private String generateISBN() {
