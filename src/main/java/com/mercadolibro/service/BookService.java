@@ -9,6 +9,8 @@ import java.util.Optional;
 
 @Service
 public interface BookService {
+    BookRespDTO update(Long id, BookReqDTO bookReqDTO);
+    BookRespDTO patch(Long id, BookRespDTO bookRespDTO);
     List<BookRespDTO> findAll();
     BookRespDTO save(BookReqDTO book);
     List<BookRespDTO> findAllByCategory(String category);

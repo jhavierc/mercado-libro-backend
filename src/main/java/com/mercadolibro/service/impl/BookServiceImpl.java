@@ -9,23 +9,45 @@ import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.entities.Book;
+import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.repository.BookRepository;
+import com.mercadolibro.service.BookService;
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.entities.Book;
+import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.repository.BookRepository;
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
+
+import java.util.List;
+
 import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final ObjectMapper mapper;
+    private final ModelMapper modelMapper;
 
     public static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
 
     @Autowired
-    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper) {
+    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
         this.mapper = mapper;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -54,6 +76,30 @@ public class BookServiceImpl implements BookService {
         throw new NoBooksToShowException();
     }
 
+    public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
+        if (bookRepository.existsById(id)) {
+            Book book = mapper.convertValue(bookReqDTO, Book.class);
+            book.setId(id);
+            Book updated = bookRepository.save(book);
+            return mapper.convertValue(updated, BookRespDTO.class);
+        }
+
+        throw new ResourceNotFoundException(BOOK_NOT_FOUND);
+    }
+
+    public BookRespDTO patch(Long id, BookRespDTO bookRespDTO) {
+        modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        if (optionalBook.isPresent()) {
+            modelMapper.map(bookRespDTO, optionalBook.get());
+            Book book = bookRepository.save(optionalBook.get());
+            return mapper.convertValue(book, BookRespDTO.class);
+        }
+
+        throw new ResourceNotFoundException(BOOK_NOT_FOUND);
+    }
+
     @Override
     public BookRespDTO findByID(Long id) {
         Optional<Book> searched = bookRepository.findById(id);
@@ -62,7 +108,7 @@ public class BookServiceImpl implements BookService {
         }
         throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
-  
+
     public void delete(Long id) {
         if (bookRepository.existsById(id)) {
             bookRepository.deleteById(id);
