@@ -11,21 +11,20 @@ import javax.validation.ConstraintViolationException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
-
-    public ResponseEntity<String> handleValidationException(ConstraintViolationException e) {
-        StringBuilder errorMessage = new StringBuilder("validation-error: [\n");
-
+    public ResponseEntity<Map<String, List<Map<String, String>>>> handleValidationException(ConstraintViolationException e) {
+        Map<String, List<Map<String, String>>> errorResponse = new HashMap<>();
+        List<Map<String, String>> validationErrors = new ArrayList<>();
 
         for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
-            errorMessage.append("  {\n");
-            errorMessage.append("    field: \"").append(violation.getPropertyPath()).append("\",\n");
-            errorMessage.append("    message: \"").append(violation.getMessage()).append("\"\n");
-            errorMessage.append("  },\n");
+            Map<String, String> error = new HashMap<>();
+            error.put("field", violation.getPropertyPath().toString());
+            error.put("message", violation.getMessage());
+            validationErrors.add(error);
         }
 
-        errorMessage.append("]");
+        errorResponse.put("validation-error", validationErrors);
 
-        return ResponseEntity.badRequest().body(errorMessage.toString());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
