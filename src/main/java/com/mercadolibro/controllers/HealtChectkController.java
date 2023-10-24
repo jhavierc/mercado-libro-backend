@@ -2,6 +2,7 @@ package com.mercadolibro.controllers;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,13 @@ public class HealtChectkController {
 	@Autowired
 	private TestService testService;
 
-
+	@ApiOperation(value = "Health check", notes = "Health check")
 	@GetMapping("/ping")
 	public ResponseEntity<String> healtCheck() {
 		return ResponseEntity.status(HttpStatus.OK).body("pong");
 	}
-	
+
+	@ApiOperation(value = "Test list", notes = "This is a test service")
 	@GetMapping("/test")
 	public ResponseEntity<List<TestDTO>> listTest() {
 		return ResponseEntity.status(HttpStatus.OK).body(testService.getAll().get());
