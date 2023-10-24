@@ -28,6 +28,8 @@ server:
   error:
     include-stacktrace: never
   port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /v1
 logging:
   level:
     org:
