@@ -1,10 +1,7 @@
 package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.*;
@@ -15,6 +12,7 @@ import java.util.Set;
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class BookReqDTO {

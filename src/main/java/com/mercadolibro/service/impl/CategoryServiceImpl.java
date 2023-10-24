@@ -16,14 +16,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private ObjectMapper mapper;
+    private final CategoryRepository categoryRepository;
+    private final ObjectMapper mapper;
 
     private static final String CATEGORY_NOT_FOUND_ERROR_FORMAT = "Could not find category with ID #%d.";
     private static final String NO_CATEGORIES_TO_SHOW_ERROR_FORMAT = "There is no category to show.";
+
+    @Autowired
+    public CategoryServiceImpl(CategoryRepository categoryRepository, ObjectMapper mapper) {
+        this.categoryRepository = categoryRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public List<CategoryRespDTO> findAll() {

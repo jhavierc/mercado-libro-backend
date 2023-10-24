@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entities.Book;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
 import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
@@ -16,17 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.Optional;
 
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND;
+import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class BookServiceImplTest {
+public class BookServicePutPatchDeleteTest {
     @MockBean
     private BookRepository bookRepository;
 
@@ -45,8 +41,8 @@ public class BookServiceImplTest {
     void testUpdateExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookReqDTO bookReqDTO = new BookReqDTO();
-        bookReqDTO.setLanguage("english");
+        BookReqDTO input = new BookReqDTO();
+        input.setLanguage("english");
 
         Book existingBook = new Book();
         existingBook.setId(bookId);
@@ -61,13 +57,13 @@ public class BookServiceImplTest {
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
-        BookRespDTO result = bookService.update(bookId, bookReqDTO);
+        BookRespDTO result = bookService.update(bookId, input);
 
         // Assert
         assertNotNull(result);
         assertEquals(bookId, result.getId());
         assertNull(result.getTitle());
-        assertEquals(bookReqDTO.getLanguage(), result.getLanguage());
+        assertEquals(input.getLanguage(), result.getLanguage());
     }
 
     @Test
@@ -79,9 +75,9 @@ public class BookServiceImplTest {
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.update(bookId, input));
-        assertEquals(BOOK_NOT_FOUND, exception.getMessage());
+        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
     }
 
     @Test
@@ -120,10 +116,10 @@ public class BookServiceImplTest {
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
         // Act and Assert
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+        BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.patch(bookId, input));
-        assertEquals(BOOK_NOT_FOUND, exception.getMessage());
-        bookService = new BookServiceImpl(bookRepository, new ObjectMapper());
+        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
+        bookService = new BookServiceImpl(bookRepository, new ObjectMapper(), new ModelMapper());
     }
 
     @Test
@@ -151,4 +147,5 @@ public class BookServiceImplTest {
         // Act and Assert
         assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
+
 }

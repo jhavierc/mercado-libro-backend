@@ -9,22 +9,6 @@ import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.entities.Book;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
-import com.mercadolibro.repository.BookRepository;
-import com.mercadolibro.service.BookService;
-import org.modelmapper.Conditions;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.entities.Book;
-import com.mercadolibro.exceptions.ResourceNotFoundException;
-import com.mercadolibro.repository.BookRepository;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -76,6 +60,7 @@ public class BookServiceImpl implements BookService {
         throw new NoBooksToShowException();
     }
 
+    @Override
     public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
         if (bookRepository.existsById(id)) {
             Book book = mapper.convertValue(bookReqDTO, Book.class);
@@ -84,9 +69,10 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(updated, BookRespDTO.class);
         }
 
-        throw new ResourceNotFoundException(BOOK_NOT_FOUND);
+        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 
+    @Override
     public BookRespDTO patch(Long id, BookRespDTO bookRespDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
 
@@ -97,7 +83,7 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(book, BookRespDTO.class);
         }
 
-        throw new ResourceNotFoundException(BOOK_NOT_FOUND);
+        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 
     @Override
@@ -109,6 +95,7 @@ public class BookServiceImpl implements BookService {
         throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 
+    @Override
     public void delete(Long id) {
         if (bookRepository.existsById(id)) {
             bookRepository.deleteById(id);
