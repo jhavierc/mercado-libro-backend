@@ -5,6 +5,7 @@ import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entities.Book;
 import com.mercadolibro.exceptions.ResourceNotFoundException;
+import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,11 @@ import java.util.Optional;
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class BookServiceImplTest {
@@ -117,5 +123,32 @@ public class BookServiceImplTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> bookService.patch(bookId, input));
         assertEquals(BOOK_NOT_FOUND, exception.getMessage());
+        bookService = new BookServiceImpl(bookRepository, new ObjectMapper());
+    }
+
+    @Test
+    void testDeleteExistingBook() {
+        // Arrange
+        Long bookId = 1L;
+
+        doReturn(true).when(bookRepository).existsById(bookId);
+        doNothing().when(bookRepository).deleteById(1L);
+
+        // Act
+        bookService.delete(bookId);
+
+        // Assert
+        verify(bookRepository, Mockito.times(1)).deleteById(bookId);
+    }
+
+    @Test
+    void testDeleteNonExistingBook() {
+        // Arrange
+        Long bookId = 1L;
+
+        doReturn(false).when(bookRepository).existsById(bookId);
+
+        // Act and Assert
+        assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
 }

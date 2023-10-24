@@ -2,17 +2,13 @@ package com.mercadolibro.service;
 
 import com.mercadolibro.dto.CategoryReqDTO;
 import com.mercadolibro.dto.CategoryRespDTO;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface CategoryService {
-    List<CategoryRespDTO> getAll();
-
-    CategoryRespDTO getByID(Long id);
-
-    CategoryRespDTO create(CategoryReqDTO categoryReqDTO);
-
-    CategoryRespDTO update(Long id, CategoryReqDTO categoryReqDTO);
-
-    void delete(Long id);
+    List<CategoryRespDTO> findAll();
+    CategoryRespDTO findByID(Long id);
+    CategoryRespDTO save(CategoryReqDTO category);
 }
