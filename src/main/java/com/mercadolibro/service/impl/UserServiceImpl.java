@@ -21,7 +21,6 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
     /* Variables */
-    @Value("${app.user.default-roles}")
     private final List<String> defaultRoles;
 
     /* Dependencies */
