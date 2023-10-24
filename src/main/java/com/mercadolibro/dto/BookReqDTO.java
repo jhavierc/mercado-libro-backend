@@ -33,7 +33,7 @@ public class BookReqDTO {
     @JsonProperty("published_date")
     private LocalDate publishedDate;
 
-    @Size(min = 1, max = 1000)
+    @Size(min = 1, max = 255)
     @NotBlank
     private String description;
 
