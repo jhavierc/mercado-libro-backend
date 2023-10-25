@@ -1,8 +1,8 @@
 package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.InvoiceInfoDTO;
-import com.mercadolibro.entities.InvoiceInfo;
+import com.mercadolibro.dto.InvoiceDTO;
+import com.mercadolibro.entities.Invoice;
 import com.mercadolibro.repository.InvoiceInfoRepository;
 import com.mercadolibro.service.InvoiceInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,29 +21,29 @@ public class InvoiceInfoServiceImpl implements InvoiceInfoService {
     ObjectMapper mapper;
 
     @Override
-    public InvoiceInfoDTO findById(Long id) {
-        Optional<InvoiceInfo> optionalInvoice = invoiceInfoRepository.findById(id);
-        InvoiceInfoDTO invoiceInfoDTO = null;
+    public InvoiceDTO findById(Long id) {
+        Optional<Invoice> optionalInvoice = invoiceInfoRepository.findById(id);
+        InvoiceDTO invoiceDTO = null;
         if (optionalInvoice.isPresent()) {
-            invoiceInfoDTO = mapper.convertValue(optionalInvoice, InvoiceInfoDTO.class);
+            invoiceDTO = mapper.convertValue(optionalInvoice, InvoiceDTO.class);
         }
-        return invoiceInfoDTO;
+        return invoiceDTO;
     }
 
     @Override
-    public List<InvoiceInfoDTO> findAll() {
-        List<InvoiceInfo> invoiceInfoList = invoiceInfoRepository.findAll();
-        List<InvoiceInfoDTO> invoiceInfoDTOList = null;
-        for (InvoiceInfo invoiceInfo : invoiceInfoList) {
-            invoiceInfoDTOList.add(mapper.convertValue(invoiceInfo, InvoiceInfoDTO.class));
+    public List<InvoiceDTO> findAll() {
+        List<Invoice> invoiceList = invoiceInfoRepository.findAll();
+        List<InvoiceDTO> invoiceDTOList = null;
+        for (Invoice invoice : invoiceList) {
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
         }
-        return invoiceInfoDTOList;
+        return invoiceDTOList;
     }
 
     @Override
-    public InvoiceInfoDTO save(InvoiceInfo invoiceInfo) {
-        InvoiceInfo createdInvoiceInfo = invoiceInfoRepository.save(invoiceInfo);
-        InvoiceInfoDTO createdInvoiceInfoDTO = mapper.convertValue(createdInvoiceInfo, InvoiceInfoDTO.class);
-        return createdInvoiceInfoDTO;
+    public InvoiceDTO save(Invoice invoice) {
+        Invoice createdInvoice = invoiceInfoRepository.save(invoice);
+        InvoiceDTO createdInvoiceDTO = mapper.convertValue(createdInvoice, InvoiceDTO.class);
+        return createdInvoiceDTO;
     }
 }

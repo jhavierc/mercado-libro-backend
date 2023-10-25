@@ -2,18 +2,20 @@ package com.mercadolibro.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import java.util.List;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 public class InvoiceDTO {
 
-    public InvoiceDTO(InvoiceInfoDTO invoiceInfoDTO, List<InvoiceItemDTO> invoiceItemDTOList) {
-        this.invoiceInfoDTO = invoiceInfoDTO;
-        this.invoiceItemDTOList = invoiceItemDTOList;
-    }
+    private Long id;
+    private LocalDate dateCreated;
+    private double total;
+    private double tax;
+    private int userId;
+    private String bank;
+    private String accountNumber;
 
-    private InvoiceInfoDTO invoiceInfoDTO;
-    private List<InvoiceItemDTO> invoiceItemDTOList;
 
 }
