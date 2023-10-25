@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> {
 
-    @Query("FROM invoice_item WHERE invoice_id = :invoiceId")
-    List<InvoiceItem> findByInvoiceInfoId(@Param("invoiceId") Long invoiceId);
+    //@Query("FROM invoice_item WHERE invoice_id = :invoiceId")
+    List<InvoiceItem> findByInvoiceInfoId(/*@Param("invoiceId")*/ Long invoiceId);
 
 }
