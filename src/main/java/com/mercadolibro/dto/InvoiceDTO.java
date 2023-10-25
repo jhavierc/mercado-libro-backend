@@ -1,21 +1,23 @@
 package com.mercadolibro.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Entity;
-import java.sql.Timestamp;
+
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
 public class InvoiceDTO {
 
-    private Long id;
-    private Timestamp dateCreated;
-    private double total;
-    private double tax;
-    private int userId;
-    private String bank;
-    private String accountNumber;
+    public InvoiceDTO(InvoiceInfoDTO invoiceInfoDTO, List<InvoiceItemDTO> invoiceItemDTOList) {
+        this.invoiceInfoDTO = invoiceInfoDTO;
+        this.invoiceItemDTOList = invoiceItemDTOList;
+    }
+
+    private InvoiceInfoDTO invoiceInfoDTO;
+    private List<InvoiceItemDTO> invoiceItemDTOList;
 
 }

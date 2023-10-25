@@ -1,7 +1,6 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.InvoiceItemDTO;
-import com.mercadolibro.entities.Invoice;
 import com.mercadolibro.entities.InvoiceItem;
 import org.springframework.stereotype.Service;
 

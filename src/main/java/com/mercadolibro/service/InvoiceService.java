@@ -9,8 +9,8 @@ import java.util.List;
 @Service
 public interface InvoiceService {
 
-     InvoiceDTO findById(Long id);
-     List<InvoiceDTO> findAll();
-     InvoiceDTO save(Invoice invoice);
+    InvoiceDTO findById(Long id);
+    List<InvoiceDTO> findAll();
+    InvoiceDTO save(Invoice invoice);
 
 }

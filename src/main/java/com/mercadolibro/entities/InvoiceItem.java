@@ -16,12 +16,12 @@ public class InvoiceItem {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoice_item_sequence")
     private Long id;
     @Column(name = "book_id")
-    private int bookId;
+    private Long bookId;
     @Column(name = "unit_price")
     private double unitPrice;
     private int quantity;
     private double total;
     @Column(name = "invoice_id")
-    private int invoiceId;
+    private Long invoiceId;
 
 }
