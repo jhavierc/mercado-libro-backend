@@ -19,7 +19,9 @@ public class InvoiceItem {
     private Long bookId;
     @Column(name = "unit_price")
     private double unitPrice;
+    @Column(name = "quantity")
     private int quantity;
+    @Column(name = "total")
     private double total;
     @Column(name = "invoice_id")
     private Long invoiceId;

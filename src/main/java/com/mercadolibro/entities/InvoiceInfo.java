@@ -18,10 +18,13 @@ public class InvoiceInfo {
     private Long id;
     @Column(name = "date_created")
     private Timestamp dateCreated;
+    @Column(name = "total")
     private double total;
+    @Column(name = "tax")
     private double tax;
     @Column(name = "user_id")
     private Long userId;
+    @Column(name = "bank")
     private String bank;
     @Column(name = "account_number")
     private String accountNumber;

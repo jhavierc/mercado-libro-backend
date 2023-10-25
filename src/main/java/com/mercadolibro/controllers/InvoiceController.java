@@ -22,7 +22,7 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.save(invoice));
     }
 
-    @GetMapping
+    @GetMapping("/{id}")
     public ResponseEntity<InvoiceDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.findById(id));
     }
