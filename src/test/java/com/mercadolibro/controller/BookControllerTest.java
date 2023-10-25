@@ -7,9 +7,10 @@ import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -19,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class BookControllerTest {
-    @MockBean
+    @Mock
     private BookService bookService;
     private BookController bookController;
 
@@ -117,7 +118,6 @@ public class BookControllerTest {
         Long bookId = 1L;
         String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
 
-        doNothing().when(bookService).delete(bookId);
         doThrow(new BookNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
 
         // Act and Assert

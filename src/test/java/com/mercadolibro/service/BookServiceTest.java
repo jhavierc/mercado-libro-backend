@@ -1,7 +1,6 @@
 package com.mercadolibro.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entities.Book;
 import com.mercadolibro.entities.Category;
@@ -10,8 +9,6 @@ import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
-import org.checkerframework.checker.units.qual.C;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,8 +18,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;

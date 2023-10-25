@@ -23,7 +23,8 @@ public class Book {
     @Column
     private String title;
 
-    private ArrayList<String> authors;
+    @Column
+    private String authors;
 
     @Column
     private String publisher;

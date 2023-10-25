@@ -20,9 +20,9 @@ public class BookReqDTO {
     @NotBlank
     private String title;
 
-    @Size(min = 1, max = 10)
+    @Size(min = 1, max = 255)
     @NotNull
-    private List<String> authors;
+    private String authors;
 
     @Size(min = 1, max = 70)
     @NotBlank

@@ -16,7 +16,7 @@ import java.util.Set;
 public class BookRespDTO {
     private Long id;
     private String title;
-    private List<String> authors;
+    private String authors;
     private String publisher;
     @JsonProperty("published_date")
     private LocalDate publishedDate;
