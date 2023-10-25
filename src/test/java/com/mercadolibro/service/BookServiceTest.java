@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entities.Book;
 import com.mercadolibro.entities.Category;
+import com.mercadolibro.exceptions.BookAlreadyExistsException;
 import com.mercadolibro.exceptions.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
@@ -20,6 +21,7 @@ import org.modelmapper.ModelMapper;
 
 import java.util.*;
 
+import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -155,6 +157,24 @@ public class BookServiceTest {
     }
 
     @Test
+    void testUpdateExistingBookISBN() {
+        // Arrange
+        Long bookId = 1L;
+        String bookIsbn = "978-0-261-10238-4";
+
+        BookReqDTO input = new BookReqDTO();
+        input.setIsbn(bookIsbn);
+
+        when(bookRepository.existsById(bookId)).thenReturn(true);
+        when(bookRepository.existsByIsbnAndIdNot(bookIsbn, bookId)).thenReturn(true);
+
+        // Act and Assert
+        BookAlreadyExistsException exception = assertThrows(BookAlreadyExistsException.class,
+                () -> bookService.update(bookId, input));
+        assertEquals(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookIsbn), exception.getMessage());
+    }
+
+    @Test
     void testPatchExistingBook() {
         // Arrange
         Long bookId = 1L;
@@ -194,6 +214,29 @@ public class BookServiceTest {
                 () -> bookService.patch(bookId, input));
         assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
         bookService = new BookServiceImpl(bookRepository, new ObjectMapper(), new ModelMapper());
+    }
+
+    @Test
+    void testPatchExistingBookISBN() {
+        // Arrange
+        Long bookId = 1L;
+        String actualBookIsbn = "978-0-261-10238-4";
+        String alreadyExistingBookIsbn = "978-0-261-10238-4";
+
+        BookRespDTO input = new BookRespDTO();
+        input.setIsbn(alreadyExistingBookIsbn);
+
+        Book existingBook = new Book();
+        existingBook.setId(bookId);
+        existingBook.setIsbn(actualBookIsbn);
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.existsByIsbnAndIdNot(alreadyExistingBookIsbn, bookId)).thenReturn(true);
+
+        // Act and Assert
+        BookAlreadyExistsException exception = assertThrows(BookAlreadyExistsException.class,
+                () -> bookService.patch(bookId, input));
+        assertEquals(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, alreadyExistingBookIsbn), exception.getMessage());
     }
 
     @Test

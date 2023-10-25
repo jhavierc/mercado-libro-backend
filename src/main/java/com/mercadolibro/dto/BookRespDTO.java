@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class BookRespDTO {
