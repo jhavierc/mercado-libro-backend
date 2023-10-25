@@ -2,7 +2,7 @@ package com.mercadolibro.controllers;
 
 import com.mercadolibro.dto.InvoiceRequestDTO;
 import com.mercadolibro.entities.InvoiceRequest;
-import com.mercadolibro.service.InvoiceService;
+import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,21 +15,21 @@ import java.util.List;
 public class InvoiceController {
 
     @Autowired
-    InvoiceService invoiceService;
+    InvoiceRequestService invoiceRequestService;
 
     @PostMapping
     public ResponseEntity<InvoiceRequestDTO> save(@RequestBody InvoiceRequest invoiceRequest) {
-        return ResponseEntity.ok(invoiceService.save(invoiceRequest));
+        return ResponseEntity.ok(invoiceRequestService.save(invoiceRequest));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<InvoiceRequestDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(invoiceService.findById(id));
+        return ResponseEntity.ok(invoiceRequestService.findById(id));
     }
 
     @GetMapping
     public ResponseEntity<List<InvoiceRequestDTO>> findAll() {
-        return ResponseEntity.ok(invoiceService.findAll());
+        return ResponseEntity.ok(invoiceRequestService.findAll());
     }
 
 }

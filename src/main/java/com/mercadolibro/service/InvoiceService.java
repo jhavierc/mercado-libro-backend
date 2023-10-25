@@ -1,7 +1,7 @@
 package com.mercadolibro.service;
 
-import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.entities.InvoiceRequest;
+import com.mercadolibro.dto.InvoiceDTO;
+import com.mercadolibro.entities.Invoice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.List;
 @Service
 public interface InvoiceService {
 
-    InvoiceRequestDTO findById(Long id);
-    List<InvoiceRequestDTO> findAll();
-    InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
+     InvoiceDTO findById(Long id);
+     List<InvoiceDTO> findAll();
+     InvoiceDTO save(Invoice invoice);
 
 }
