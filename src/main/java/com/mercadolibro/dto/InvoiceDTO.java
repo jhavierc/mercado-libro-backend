@@ -3,7 +3,7 @@ package com.mercadolibro.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Entity;
+import javax.persistence.*;
 
 import java.util.List;
 

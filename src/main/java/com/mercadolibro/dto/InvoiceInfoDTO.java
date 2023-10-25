@@ -2,7 +2,7 @@ package com.mercadolibro.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Entity;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity

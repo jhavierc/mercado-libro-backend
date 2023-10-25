@@ -2,7 +2,7 @@ package com.mercadolibro.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Entity;
+import javax.persistence.*;
 import javax.persistence.*;
 
 @Entity
