@@ -34,7 +34,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "/home/runner/work/mercado-libro-backend/mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
+        source: "./target/mercadolibro-backend-1.0.0.jar"
         target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
 
     - name: Ejecutar archivo JAR en instancia EC2 1
@@ -46,7 +46,7 @@ jobs:
         host: ${{ secrets.SSH_HOST_2 }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "/home/runner/work/mercado-libro-backend/mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
+        source: "./target/mercadolibro-backend-1.0.0.jar"
         target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
 
     - name: Ejecutar archivo JAR en instancia EC2 2
