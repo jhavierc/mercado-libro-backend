@@ -12,6 +12,11 @@ jobs:
     - name: Verificar código
       uses: actions/checkout@v2
 
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu' # See 'Supported distributions' for available options
+        java-version: '17'
+
     - name: Generar archivo JAR
       run: mvn install package
       env:
