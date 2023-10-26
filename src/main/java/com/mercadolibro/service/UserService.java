@@ -4,10 +4,11 @@ import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.dto.UserRegisterDTO;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserService extends UserDetailsService {
 
     /**
      * Creates a new user based on the provided UserRegistrationDTO and assigns the specified roles to the user.

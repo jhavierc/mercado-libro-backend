@@ -12,6 +12,9 @@ import com.mercadolibro.repository.AppUserRoleRepository;
 import com.mercadolibro.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -61,5 +64,14 @@ public class UserServiceImpl implements UserService {
         }
 
         return appUserRoles;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        AppUser appUser = appUserRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
+
+        return User.withUsername(appUser.getEmail())
+                .password(appUser.getPassword())
+                .roles(appUser.getRoles().stream().map(AppUserRole::getDescription).toArray(String[]::new)).build();
     }
 }
