@@ -18,7 +18,7 @@ spring:
   datasource:
     password: ${DB_PASSWORD:root}
     username: ${DB_USERNAME:root}
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:booksdb}?
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:booksdb}?autoReconnect=true&useSSL=false
     driver-class-name: com.mysql.cj.jdbc.Driver
   mvc:
     pathmatch:
