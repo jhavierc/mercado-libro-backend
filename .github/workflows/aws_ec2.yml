@@ -14,6 +14,14 @@ jobs:
 
     - name: Generar archivo JAR
       run: mvn install package
+      env:
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        SERVER_PORT: ${{ secrets.SERVER_PORT }}
+        
 
     - name: Copiar archivo JAR a instancia EC2 1
       uses: appleboy/scp-action@master
