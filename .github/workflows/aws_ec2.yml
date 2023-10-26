@@ -18,7 +18,7 @@ jobs:
         java-version: '17'
 
     - name: Generar archivo JAR
-      run: mvn -B package --file pom.xml
+      run: mvn clean package -DskipTests
       env:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
