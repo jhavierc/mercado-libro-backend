@@ -8,10 +8,9 @@ spring:
   jpa:
     show-sql: true
     properties:
+      dialect: org.hibernate.dialect.MySQLDialect
       hibernate:
-        format_sql: true
-        hbm2ddl:
-          auto: update
+        ddl-auto: create
   application:
     name: ${APP_NAME:mercadolibro-service}
   flyway:
