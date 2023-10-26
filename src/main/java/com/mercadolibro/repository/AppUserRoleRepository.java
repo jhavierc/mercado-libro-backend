@@ -1,6 +1,6 @@
-package com.mercadolibro.repositories;
+package com.mercadolibro.repository;
 
-import com.mercadolibro.entities.AppUserRole;
+import com.mercadolibro.entity.AppUserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

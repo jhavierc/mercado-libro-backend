@@ -1,14 +1,14 @@
 package com.mercadolibro.service.impl;
 
-import com.mercadolibro.Exception.ResourceAlreadyExistsException;
-import com.mercadolibro.Exception.ResourceNotFoundException;
+import com.mercadolibro.exception.ResourceAlreadyExistsException;
+import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.dto.UserRegisterDTO;
 import com.mercadolibro.dto.mapper.UserMapper;
-import com.mercadolibro.entities.AppUser;
-import com.mercadolibro.entities.AppUserRole;
-import com.mercadolibro.repositories.AppUserRepository;
-import com.mercadolibro.repositories.AppUserRoleRepository;
+import com.mercadolibro.entity.AppUser;
+import com.mercadolibro.entity.AppUserRole;
+import com.mercadolibro.repository.AppUserRepository;
+import com.mercadolibro.repository.AppUserRoleRepository;
 import com.mercadolibro.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

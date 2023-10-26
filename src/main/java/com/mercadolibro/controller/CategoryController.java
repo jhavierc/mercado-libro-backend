@@ -1,4 +1,4 @@
-package com.mercadolibro.controllers;
+package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.CategoryReqDTO;
 import com.mercadolibro.dto.CategoryRespDTO;

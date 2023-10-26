@@ -1,6 +1,6 @@
 package com.mercadolibro.repository;
 
-import com.mercadolibro.entities.Book;
+import com.mercadolibro.entity.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
