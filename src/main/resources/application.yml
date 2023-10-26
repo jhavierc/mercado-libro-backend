@@ -6,11 +6,8 @@ app:
 
 spring:
   jpa:
+    database-platform: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
-    properties:
-      dialect: org.hibernate.dialect.MySQLDialect
-      hibernate:
-        ddl-auto: create
   application:
     name: ${APP_NAME:mercadolibro-service}
   flyway:
