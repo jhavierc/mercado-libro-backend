@@ -1,4 +1,4 @@
-package com.mercadolibro.Exception;
+package com.mercadolibro.exception;
 
 public class ResourceAlreadyExistsException extends Exception {
     public ResourceAlreadyExistsException(String message) {

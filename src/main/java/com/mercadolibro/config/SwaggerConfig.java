@@ -10,7 +10,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 @Configuration
 public class SwaggerConfig {
-    private final String controllersBasePackage = "com.mercadolibro.controllers";
+    private final String controllersBasePackage = "com.mercadolibro.controller";
 
     @Bean
     public Docket api() {

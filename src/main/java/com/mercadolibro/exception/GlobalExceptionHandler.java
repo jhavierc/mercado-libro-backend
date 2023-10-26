@@ -1,22 +1,18 @@
-package com.mercadolibro.exceptions;
+package com.mercadolibro.exception;
 
-import com.mercadolibro.Exception.ResourceAlreadyExistsException;
-import com.mercadolibro.Exception.ResourceNotFoundException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class GlobalExceptions {
+public class GlobalExceptionHandler {
     @ExceptionHandler(NoBooksToShowException.class)
     public ResponseEntity<List<?>> processErrorNoBooksToShow() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
@@ -29,15 +25,22 @@ public class GlobalExceptions {
     public ResponseEntity<String> processBookAlreadyExistsException(BookAlreadyExistsException bookAlreadyExistsException){
         return ResponseEntity.status(HttpStatus.CONFLICT).body("ERROR: " + bookAlreadyExistsException.getMessage());
     }
-    /*
-    @ExceptionHandler(MethodArgumentNotValidException.class) @ResponseBody
-    public ResponseEntity<List> processUnmergeException(final MethodArgumentNotValidException ex) {
-        List list = ex.getBindingResult().getAllErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(list, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, List<Map<String, String>>>> processUnmergeException(final MethodArgumentNotValidException ex) {
+        Map<String, List<Map<String, String>>> errorResponse = new HashMap<>();
+        List<Map<String, String>> validationErrors = new ArrayList<>();
+
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("field", ((FieldError) error).getField());
+            errorMap.put("message", error.getDefaultMessage());
+            validationErrors.add(errorMap);
+        });
+
+        errorResponse.put("validation-error", validationErrors);
+
+        return ResponseEntity.badRequest().body(errorResponse);
     }
-     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, List<Map<String, String>>>> handleValidationException(ConstraintViolationException e) {
         Map<String, List<Map<String, String>>> errorResponse = new HashMap<>();

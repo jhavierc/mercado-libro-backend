@@ -1,4 +1,4 @@
-package com.mercadolibro.controllers;
+package com.mercadolibro.controller;
 
 import java.util.List;
 
