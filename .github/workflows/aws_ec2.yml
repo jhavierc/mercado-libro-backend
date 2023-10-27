@@ -34,8 +34,8 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "/home/runner/work/mercado-libro-backend/mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
-        target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
+        source: "./target//mercadolibro-backend-1.0.0.jar"
+        target: "/home/ec2-user/deploy"
 
     - name: Ejecutar archivo JAR en instancia EC2 2
       run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'java -jar mercadolibro-backend-1.0.0.jar'
