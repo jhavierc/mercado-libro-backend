@@ -31,7 +31,6 @@ jobs:
       run: |
         echo "$SECRET_CONTENT" > secret.pem
         chmod 600 secret.pem
-        cp secret.pem $GITHUB_WORKSPACE
       env:
         SECRET_CONTENT: ${{ secrets.SSH_PRIVATE_KEY }}
         
