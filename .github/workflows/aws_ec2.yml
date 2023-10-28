@@ -26,6 +26,14 @@ jobs:
         DB_PORT: ${{ secrets.DB_PORT }}
         DB_NAME: ${{ secrets.DB_NAME }}
         SERVER_PORT: ${{ secrets.SERVER_PORT }}
+
+    - name: Crear archivo .pem
+      run: |
+        echo "$SECRET_CONTENT" > secret.pem
+        chmod 600 secret.pem
+        cp secret.pem $GITHUB_WORKSPACE
+      env:
+        SECRET_CONTENT: ${{ secrets.SSH_PRIVATE_KEY }}
         
 
     - name: Copiar archivo JAR a instancia EC2 2
@@ -38,7 +46,7 @@ jobs:
         target: "/home/ec2-user/deploy"
 
     - name: Conectar a la instancia EC2
-      run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST_2 }}
+      run: ssh -i ${{ github.workspace }}/secret.pem ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST_2 }}
 
     - name: Establecer variables de entorno
       run: |
