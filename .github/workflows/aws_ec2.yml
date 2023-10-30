@@ -56,6 +56,8 @@ jobs:
           echo "DB_NAME=$DB_NAME" >> ~/.bashrc
           echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc
           source ~/.bashrc
+          pid=$(pgrep -f mercadolibro-backend-1.0.0.jar)
+          kill $pid
           java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
           exit
       
