@@ -30,7 +30,7 @@ jobs:
     - name: Copiar archivo JAR a instancia EC2 2
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.SSH_HOST_2 }}
+        host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "./target//mercadolibro-backend-1.0.0.jar"
@@ -39,7 +39,7 @@ jobs:
     - name: Run Backend
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.SSH_HOST_2 }}
+        host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
