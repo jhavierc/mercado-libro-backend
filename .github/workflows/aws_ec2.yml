@@ -45,7 +45,6 @@ jobs:
         script: |
           pid=$(pgrep -f mercadolibro-backend-1.0.0.jar)
           kill $pid
-          exit
           
     - name: Run Backend
       uses: appleboy/ssh-action@v1.0.0
@@ -68,5 +67,4 @@ jobs:
           echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc
           source ~/.bashrc
           java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
-          exit
       
