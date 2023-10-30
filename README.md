@@ -2,3 +2,5 @@
 backend for mercado libro.
 
 # Integrantes
+
+# Arquitectura
