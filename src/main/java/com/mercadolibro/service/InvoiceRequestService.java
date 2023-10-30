@@ -1,7 +1,7 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.entities.InvoiceRequest;
+import com.mercadolibro.entity.InvoiceRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

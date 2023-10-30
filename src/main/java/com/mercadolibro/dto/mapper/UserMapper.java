@@ -2,7 +2,7 @@ package com.mercadolibro.dto.mapper;
 
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.dto.UserRegisterDTO;
-import com.mercadolibro.entities.AppUser;
+import com.mercadolibro.entity.AppUser;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -1,7 +1,7 @@
 package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.mercadolibro.entities.AppUserRole;
+import com.mercadolibro.entity.AppUserRole;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

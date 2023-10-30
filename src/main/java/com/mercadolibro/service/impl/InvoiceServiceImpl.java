@@ -2,7 +2,7 @@ package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.InvoiceDTO;
-import com.mercadolibro.entities.Invoice;
+import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.repository.InvoiceInfoRepository;
 import com.mercadolibro.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;

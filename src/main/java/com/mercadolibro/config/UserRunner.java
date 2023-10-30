@@ -1,7 +1,7 @@
 package com.mercadolibro.config;
 
-import com.mercadolibro.entities.AppUserRole;
-import com.mercadolibro.repositories.AppUserRoleRepository;
+import com.mercadolibro.entity.AppUserRole;
+import com.mercadolibro.repository.AppUserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;

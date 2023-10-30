@@ -1,0 +1,19 @@
+app:
+  create-roles: ${CREATE_ROLES:false}
+  roles: ${ROLES:ADMIN,USER}
+  user:
+    default-roles: USER
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  h2:
+    console:
+      enabled: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher

@@ -1,7 +1,7 @@
-package com.mercadolibro.controllers;
+package com.mercadolibro.controller;
 
-import com.mercadolibro.Exception.ResourceAlreadyExistsException;
-import com.mercadolibro.Exception.ResourceNotFoundException;
+import com.mercadolibro.exception.ResourceAlreadyExistsException;
+import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.dto.UserRegisterDTO;
 import com.mercadolibro.service.UserService;

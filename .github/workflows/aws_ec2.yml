@@ -12,20 +12,20 @@ jobs:
     - name: Verificar código
       uses: actions/checkout@v2
 
-    - name: Generar archivo JAR
-      run: mvn clean package
-
-    - name: Copiar archivo JAR a instancia EC2 1
-      uses: appleboy/scp-action@master
+    - uses: actions/setup-java@v3
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
-        target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
+        distribution: 'zulu' # See 'Supported distributions' for available options
+        java-version: '17'
 
-    - name: Ejecutar archivo JAR en instancia EC2 1
-      run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'java -jar /home/ec2-user/mercadolibro-backend-1.0.0.jar'
+    - name: Generar archivo JAR
+      run: mvn clean package -DskipTests
+      env:
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        SERVER_PORT: ${{ secrets.SERVER_PORT }}
 
     - name: Copiar archivo JAR a instancia EC2 2
       uses: appleboy/scp-action@master
@@ -33,8 +33,29 @@ jobs:
         host: ${{ secrets.SSH_HOST_2 }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "mercado-libro-backend/target/mercadolibro-backend-1.0.0.jar"
-        target: "/home/ec2-user/mercadolibro-backend-1.0.0.jar"
+        source: "./target//mercadolibro-backend-1.0.0.jar"
+        target: "/home/ec2-user/deploy"
 
-    - name: Ejecutar archivo JAR en instancia EC2 2
-      run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST_2 }} 'java -jar /home/ec2-user/mercadolibro-backend-1.0.0.jar'
+    - name: Run Backend
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST_2 }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export DB_USERNAME=${{ secrets.DB_USERNAME }}
+          export DB_HOST=${{ secrets.DB_HOST }}
+          export DB_PORT=${{ secrets.DB_PORT }}
+          export DB_NAME=${{ secrets.DB_NAME }}
+          export SERVER_PORT=${{ secrets.SERVER_PORT }}
+          echo "DB_PASSWORD=$DB_PASSWORD" >> ~/.bashrc
+          echo "DB_USERNAME=$DB_USERNAME" >> ~/.bashrc
+          echo "DB_HOST=$DB_HOST" >> ~/.bashrc
+          echo "DB_PORT=$DB_PORT" >> ~/.bashrc
+          echo "DB_NAME=$DB_NAME" >> ~/.bashrc
+          echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc
+          source ~/.bashrc
+          java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
+          exit
+      

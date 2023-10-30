@@ -1,7 +1,7 @@
-package com.mercadolibro.controllers;
+package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.entities.InvoiceRequest;
+import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
