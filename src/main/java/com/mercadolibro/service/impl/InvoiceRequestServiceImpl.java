@@ -39,7 +39,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
         // InvoiceItem
         List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(id);
-        List<InvoiceItemDTO> invoiceItemDTOList = null;
+        List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();;
         for (InvoiceItem invoiceItem: invoiceItemList) {
             invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
         }
@@ -56,11 +56,11 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
             invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
         }
         // InvoiceRequest
-        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();;
+        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
         for (InvoiceDTO invoiceDTO : invoiceDTOList) {
             // InvoiceItem
             List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
-            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();;
+            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
             for (InvoiceItem invoiceItem: invoiceItemList) {
                 invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
             }
@@ -72,21 +72,12 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
         // Invoice
-        //invoiceRequest.getInvoice().setId(invoiceRepository.findLastInsertedId()+1);
-        //Invoice invoice = invoiceRequest.getInvoice();
-        //invoice.setId(invoiceRepository.findLastInsertedId()+1);
-        //System.out.println("-------- findLastInsertedId: " + invoiceRepository.findLastInsertedId());
-        //System.out.println("-------- Invoice Id: " + invoice.getId());
-        //Invoice createdInvoice = invoiceRepository.save(invoice);
         Invoice createdInvoice = invoiceRepository.save(invoiceRequest.getInvoice());
         InvoiceDTO createdInvoiceDTO = mapper.convertValue(createdInvoice, InvoiceDTO.class);
         // InvoiceItem
-        List<InvoiceItemDTO> createdInvoiceItemDTOList = new ArrayList<>();;
+        List<InvoiceItemDTO> createdInvoiceItemDTOList = new ArrayList<>();
         for (InvoiceItem invoiceItem: invoiceRequest.getInvoiceItemList()) {
             invoiceItem.setInvoiceId(createdInvoiceDTO.getId());
-            //invoiceItem.setId(invoiceItemRepository.findLastInsertedId()+1);
-            //System.out.println("-------- findLastInsertedId: " + invoiceItemRepository.findLastInsertedId());
-            //System.out.println("-------- InvoiceItem Id: " + invoiceItem.getId());
             InvoiceItem createdInvoiceItem = invoiceItemRepository.save(invoiceItem);
             createdInvoiceItemDTOList.add(mapper.convertValue(createdInvoiceItem, InvoiceItemDTO.class));
         }

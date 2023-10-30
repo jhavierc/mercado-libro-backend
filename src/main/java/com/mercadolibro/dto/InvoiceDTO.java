@@ -1,11 +1,8 @@
 package com.mercadolibro.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Getter
