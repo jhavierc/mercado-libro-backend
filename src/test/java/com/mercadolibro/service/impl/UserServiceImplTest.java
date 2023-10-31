@@ -192,4 +192,39 @@ class UserServiceImplTest {
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(user.getEmail()));
         verify(userRepository, times(1)).findByEmail(user.getEmail());
     }
+
+    @Test
+    void findByIdShouldReturnUser() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        UserDTO userFound = userService.findById(user.getId());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getName(), userFound.getName());
+        assertEquals(user.getLastName(), userFound.getLastName());
+        assertEquals(user.getEmail(), userFound.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userFound.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userFound.getId());
+        assertEquals(user.getStatus(), userFound.getStatus());
+        assertEquals(user.getDateCreated(), userFound.getDateCreated());
+        verify(userRepository, times(1)).findById(user.getId());
+    }
+
+    @Test
+    void findByIdShouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.findById(user.getId()));
+        verify(userRepository, times(1)).findById(user.getId());
+    }
 }
