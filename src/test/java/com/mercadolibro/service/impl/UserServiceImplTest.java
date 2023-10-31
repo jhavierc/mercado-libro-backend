@@ -16,6 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -36,6 +40,9 @@ class UserServiceImplTest {
 
     @Spy
     private final UserMapper userMapper = UserMapper.INSTANCE;
+
+    @Mock
+    private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -119,5 +126,70 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, never()).save(any(AppUser.class));
         verify(userRoleRepository, atLeast(1)).findByDescription(users.get(0).getRoles().get(0).getDescription());
+    }
+
+    @Test
+    void shouldFindUserByEmail() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        UserDTO userFound = userService.findByEmail(user.getEmail());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getName(), userFound.getName());
+        assertEquals(user.getLastName(), userFound.getLastName());
+        assertEquals(user.getEmail(), userFound.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userFound.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userFound.getId());
+        assertEquals(user.getStatus(), userFound.getStatus());
+        assertEquals(user.getDateCreated(), userFound.getDateCreated());
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void findUserByEmailShouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.findByEmail(user.getEmail()));
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void loadUserByUsernameShouldReturnUserDetails() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        UserDetails userFound = userService.loadUserByUsername(user.getEmail());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getEmail(), userFound.getUsername());
+        assertEquals(user.getPassword(), userFound.getPassword());
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void loadUserByUsernameShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(user.getEmail()));
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
     }
 }
