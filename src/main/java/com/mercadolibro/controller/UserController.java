@@ -48,6 +48,12 @@ public class UserController {
 
     @GetMapping
     @ApiOperation(value = "Get user by token", notes = "Returns the user", authorizations = {@Authorization(value = "JWT Token")})
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = UserDTO.class),
+                    @ApiResponse(code = 401, message = "Unauthorized")
+            }
+    )
     public ResponseEntity<UserDTO> getUser(HttpServletRequest request) throws ResourceNotFoundException {
         String token = request.getHeader("Authorization");
         if (token == null ) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -55,5 +61,17 @@ public class UserController {
         String email = jwtUtil.extractUsername(jwt);
         UserDTO user = userService.findByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "Get user by id", notes = "Returns the user")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = UserDTO.class),
+                    @ApiResponse(code = 404, message = "User not found")
+            }
+    )
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.findById(id), HttpStatus.OK);
     }
 }
