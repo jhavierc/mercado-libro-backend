@@ -65,4 +65,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResourceAlreadyExistsException(ResourceAlreadyExistsException e) {
         return ResponseEntity.status(409).body(e.getMessage());
     }
+    @ExceptionHandler(IncorrectDateFormatException.class)
+    public ResponseEntity<String> handleIncorrectDateFormatException(IncorrectDateFormatException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
 }

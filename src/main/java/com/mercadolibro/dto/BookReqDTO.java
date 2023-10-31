@@ -1,6 +1,9 @@
 package com.mercadolibro.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.mercadolibro.dto.deserializer.DateDeserializer;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
 
@@ -21,7 +24,7 @@ public class BookReqDTO {
     private String title;
 
     @Size(min = 1, max = 255)
-    @NotNull
+    @NotBlank
     private String authors;
 
     @Size(min = 1, max = 70)
@@ -30,6 +33,7 @@ public class BookReqDTO {
 
     @Past
     @NotNull
+    @JsonDeserialize(using = DateDeserializer.class)
     @JsonProperty("published_date")
     private LocalDate publishedDate;
 
@@ -73,5 +77,6 @@ public class BookReqDTO {
     private Integer stock;
 
     @Size(min = 1, max = 10)
+    @NotNull
     private Set<BookCategoryReqDTO> categories;
 }
