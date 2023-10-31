@@ -3,6 +3,9 @@ app:
   roles: ${ROLES:ADMIN,USER}
   user:
     default-roles: USER
+  jwt:
+    secret: ${JWT_SECRET:secret}
+    expiration: ${JWT_EXPIRATION:86400}
 
 spring:
   datasource:

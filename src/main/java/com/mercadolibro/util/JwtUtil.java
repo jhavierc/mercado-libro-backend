@@ -16,9 +16,9 @@ public class JwtUtil {
     private final String secret;
     private final int expirationInSeconds;
 
-    public JwtUtil(/*@Value("${app.jwt.secret}") String secret, @Value("${app.jwt.expiration}") int expirationInSeconds/*/) {
-        this.secret = "secret";
-        this.expirationInSeconds = 10000;
+    public JwtUtil(@Value("${app.jwt.secret}") String secret, @Value("${app.jwt.expiration}") int expirationInSeconds) {
+        this.secret = secret;
+        this.expirationInSeconds = expirationInSeconds;
     }
 
     public String generateToken(AppUser appUser) {
