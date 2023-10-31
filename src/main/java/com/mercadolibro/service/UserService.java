@@ -1,5 +1,6 @@
 package com.mercadolibro.service;
 
+import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
@@ -55,5 +56,11 @@ public interface UserService extends UserDetailsService {
      * @throws ResourceNotFoundException If no user with the specified id exists.
      */
     UserDTO findById(Integer id) throws ResourceNotFoundException;
+
+    /**
+     * Find all roles
+     * @return A list of all roles
+     */
+    List<AppUserRole> findAllRoles();
 
 }
