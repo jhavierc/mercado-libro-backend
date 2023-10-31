@@ -35,15 +35,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "./target//mercadolibro-backend-1.0.0.jar"
         target: "/home/ec2-user/deploy"
-        
-    - name: Stop Backend
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          sudo systemctl stop backend-app.service
           
     - name: Run Backend
       uses: appleboy/ssh-action@v1.0.0
@@ -64,6 +55,8 @@ jobs:
           echo "DB_PORT=$DB_PORT" >> ~/.bashrc &&
           echo "DB_NAME=$DB_NAME" >> ~/.bashrc &&
           echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc &&
+          sudo systemctl stop backend-app.service &&
+          echo "Init service backend" &&
           sudo systemctl start backend-app.service
           ls -al
       
