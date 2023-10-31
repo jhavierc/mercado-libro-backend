@@ -44,8 +44,8 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           sh stop_service.sh
-
-    - name: Set Environments variables
+          
+    - name: Run Backend
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -64,14 +64,5 @@ jobs:
           echo "DB_PORT=$DB_PORT" >> ~/.bashrc &&
           echo "DB_NAME=$DB_NAME" >> ~/.bashrc &&
           echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc &&
-          source ~/.bashrc
-          
-    - name: Run Backend
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
           java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
       
