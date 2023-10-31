@@ -2,10 +2,10 @@ package com.mercadolibro.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
-import com.mercadolibro.entities.Book;
-import com.mercadolibro.entities.Category;
-import com.mercadolibro.exceptions.BookAlreadyExistsException;
-import com.mercadolibro.exceptions.BookNotFoundException;
+import com.mercadolibro.entity.Book;
+import com.mercadolibro.entity.Category;
+import com.mercadolibro.exception.BookAlreadyExistsException;
+import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;

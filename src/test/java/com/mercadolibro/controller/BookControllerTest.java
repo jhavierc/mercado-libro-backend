@@ -1,8 +1,7 @@
 package com.mercadolibro.controller;
 
-import com.mercadolibro.controllers.BookController;
-import com.mercadolibro.exceptions.BookAlreadyExistsException;
-import com.mercadolibro.exceptions.BookNotFoundException;
+import com.mercadolibro.exception.BookAlreadyExistsException;
+import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;

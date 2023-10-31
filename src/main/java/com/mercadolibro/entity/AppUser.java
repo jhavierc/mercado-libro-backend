@@ -1,4 +1,4 @@
-package com.mercadolibro.entities;
+package com.mercadolibro.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

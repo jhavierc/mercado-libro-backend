@@ -2,8 +2,8 @@ package com.mercadolibro.dto.mapper;
 
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.dto.UserRegisterDTO;
-import com.mercadolibro.entities.AppUser;
-import com.mercadolibro.entities.AppUserRole;
+import com.mercadolibro.entity.AppUser;
+import com.mercadolibro.entity.AppUserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

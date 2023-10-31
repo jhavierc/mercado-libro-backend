@@ -1,6 +1,6 @@
 package com.mercadolibro.repository;
 
-import com.mercadolibro.entities.Category;
+import com.mercadolibro.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.mercadolibro.entities;
+package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
