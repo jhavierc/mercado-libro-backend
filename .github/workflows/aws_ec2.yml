@@ -52,18 +52,18 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_USERNAME=${{ secrets.DB_USERNAME }}
-          export DB_HOST=${{ secrets.DB_HOST }}
-          export DB_PORT=${{ secrets.DB_PORT }}
-          export DB_NAME=${{ secrets.DB_NAME }}
-          export SERVER_PORT=${{ secrets.SERVER_PORT }}
-          echo "DB_PASSWORD=$DB_PASSWORD" >> ~/.bashrc
-          echo "DB_USERNAME=$DB_USERNAME" >> ~/.bashrc
-          echo "DB_HOST=$DB_HOST" >> ~/.bashrc
-          echo "DB_PORT=$DB_PORT" >> ~/.bashrc
-          echo "DB_NAME=$DB_NAME" >> ~/.bashrc
-          echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc
-          source ~/.bashrc
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }} &&
+          export DB_USERNAME=${{ secrets.DB_USERNAME }} &&
+          export DB_HOST=${{ secrets.DB_HOST }} &&
+          export DB_PORT=${{ secrets.DB_PORT }} &&
+          export DB_NAME=${{ secrets.DB_NAME }} &&
+          export SERVER_PORT=${{ secrets.SERVER_PORT }} &&
+          echo "DB_PASSWORD=$DB_PASSWORD" >> ~/.bashrc &&
+          echo "DB_USERNAME=$DB_USERNAME" >> ~/.bashrc &&
+          echo "DB_HOST=$DB_HOST" >> ~/.bashrc &&
+          echo "DB_PORT=$DB_PORT" >> ~/.bashrc &&
+          echo "DB_NAME=$DB_NAME" >> ~/.bashrc &&
+          echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc &&
+          source ~/.bashrc &&
           nohup java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
       
