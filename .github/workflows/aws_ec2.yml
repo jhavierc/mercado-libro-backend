@@ -43,8 +43,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          pid=$(pgrep -f mercadolibro-backend-1.0.0.jar)
-          kill $pid
+          sh stop_service.sh
           
     - name: Run Backend
       uses: appleboy/ssh-action@v1.0.0
