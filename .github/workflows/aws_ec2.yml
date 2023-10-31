@@ -43,6 +43,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          cd /usr/lib/jvm/java-17-amazon-corretto/bin &&
           export DB_PASSWORD=${{ secrets.DB_PASSWORD }} &&
           export DB_USERNAME=${{ secrets.DB_USERNAME }} &&
           export DB_HOST=${{ secrets.DB_HOST }} &&
