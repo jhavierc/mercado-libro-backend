@@ -1,12 +1,13 @@
 package com.mercadolibro.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
 import lombok.*;
+import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +43,7 @@ public class BookReqDTO {
     private String description;
 
     @NotBlank
-    //@ISBN
+    @ISBN(type = ISBN.Type.ANY)
     private String isbn;
 
     @Range(min = 0, max = 10000)
@@ -76,6 +77,7 @@ public class BookReqDTO {
     @NotNull
     private Integer stock;
 
+    @Valid
     @Size(min = 1, max = 10)
     @NotNull
     private Set<BookCategoryReqDTO> categories;

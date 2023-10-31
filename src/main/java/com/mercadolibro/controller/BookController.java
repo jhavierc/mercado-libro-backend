@@ -55,7 +55,7 @@ public class BookController {
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> patch(@PathVariable Long id, @RequestBody BookRespDTO bookReqDTO) {
+    public ResponseEntity<Object> patch(@PathVariable Long id, @RequestBody @Valid BookRespDTO bookReqDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqDTO));
     }
 }
