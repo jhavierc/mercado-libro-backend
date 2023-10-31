@@ -1,5 +1,6 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -61,6 +63,12 @@ public class UserController {
         String email = jwtUtil.extractUsername(jwt);
         UserDTO user = userService.findByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/roles")
+    @ApiOperation(value = "Get all roles", notes = "Returns all roles")
+    public ResponseEntity<List<AppUserRole>> getAllRoles() {
+        return new ResponseEntity<>(userService.findAllRoles(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
