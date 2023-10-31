@@ -65,4 +65,5 @@ jobs:
           echo "DB_NAME=$DB_NAME" >> ~/.bashrc &&
           echo "SERVER_PORT=$SERVER_PORT" >> ~/.bashrc &&
           java -jar deploy/target/mercadolibro-backend-1.0.0.jar &
+          ls -al
       
