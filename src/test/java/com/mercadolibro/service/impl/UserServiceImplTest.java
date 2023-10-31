@@ -227,4 +227,23 @@ class UserServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> userService.findById(user.getId()));
         verify(userRepository, times(1)).findById(user.getId());
     }
+
+    @Test
+    void findAllRolesShouldReturnAllRoles() {
+        // GIVEN
+        AppUserRole role = users.get(0).getRoles().get(0);
+
+        //WHEN
+        when(userRoleRepository.findAll()).thenReturn(Arrays.asList(role));
+
+        List<AppUserRole> rolesFound = userService.findAllRoles();
+
+        // THEN
+        assertNotNull(rolesFound);
+        assertEquals(1, rolesFound.size());
+        assertEquals(role.getId(), rolesFound.get(0).getId());
+        assertEquals(role.getDescription(), rolesFound.get(0).getDescription());
+        assertEquals(role.getStatus(), rolesFound.get(0).getStatus());
+        verify(userRoleRepository, times(1)).findAll();
+    }
 }
