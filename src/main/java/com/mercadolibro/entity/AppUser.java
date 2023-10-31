@@ -45,7 +45,7 @@ public class AppUser {
     @Column(name = "date_created")
     LocalDateTime dateCreated;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
