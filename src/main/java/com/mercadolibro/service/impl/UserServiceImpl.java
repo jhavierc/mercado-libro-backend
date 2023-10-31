@@ -65,6 +65,11 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(appUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User " + email + " not found")));
     }
 
+    @Override
+    public UserDTO findById(Integer id) throws ResourceNotFoundException {
+        return userMapper.toUserDTO(appUserRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found")));
+    }
+
     private List<AppUserRole> getRoles(List<String> roles) throws ResourceNotFoundException {
         List<AppUserRole> appUserRoles = new ArrayList<>();
         for (String role: roles) {
