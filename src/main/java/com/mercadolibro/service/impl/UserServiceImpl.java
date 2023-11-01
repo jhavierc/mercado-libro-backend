@@ -1,5 +1,6 @@
 package com.mercadolibro.service.impl;
 
+import com.mercadolibro.dto.UserUpdateDTO;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
@@ -10,6 +11,7 @@ import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
 import com.mercadolibro.service.UserService;
+import com.mercadolibro.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -63,6 +66,34 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO findByEmail(String email) throws ResourceNotFoundException {
         return userMapper.toUserDTO(appUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User " + email + " not found")));
+    }
+
+    @Override
+    public UserDTO findById(Integer id) throws ResourceNotFoundException {
+        return userMapper.toUserDTO(appUserRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found")));
+    }
+
+    @Override
+    public List<AppUserRole> findAllRoles() {
+        return appUserRoleRepository.findAll();
+    }
+
+    @Override
+    public List<UserDTO> findAll() {
+        return userMapper.toUserDTOs(appUserRepository.findAll());
+    }
+
+    @Override
+    public UserDTO update(UserUpdateDTO userUpdateDTO, Integer userId) throws ResourceNotFoundException {
+        AppUser appUser = appUserRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " not found"));
+        if (userUpdateDTO.getPassword() != null ) userUpdateDTO.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
+        if (userUpdateDTO.getRoles() != null) {
+            List<AppUserRole> roles = getRoles(userUpdateDTO.getRoles().stream().map(AppUserRole::getDescription).collect(Collectors.toList()));
+            userUpdateDTO.setRoles(roles);
+        }
+        Util.mergeObjects(userUpdateDTO, appUser);
+
+        return userMapper.toUserDTO(appUserRepository.save(appUser));
     }
 
     private List<AppUserRole> getRoles(List<String> roles) throws ResourceNotFoundException {

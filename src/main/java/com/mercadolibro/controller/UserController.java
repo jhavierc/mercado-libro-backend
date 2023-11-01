@@ -1,5 +1,7 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.UserUpdateDTO;
+import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -46,8 +49,14 @@ public class UserController {
         return new ResponseEntity<>(userService.create(userRegisterDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/me")
     @ApiOperation(value = "Get user by token", notes = "Returns the user", authorizations = {@Authorization(value = "JWT Token")})
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = UserDTO.class),
+                    @ApiResponse(code = 401, message = "Unauthorized")
+            }
+    )
     public ResponseEntity<UserDTO> getUser(HttpServletRequest request) throws ResourceNotFoundException {
         String token = request.getHeader("Authorization");
         if (token == null ) return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -55,5 +64,46 @@ public class UserController {
         String email = jwtUtil.extractUsername(jwt);
         UserDTO user = userService.findByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/roles")
+    @ApiOperation(value = "Get all roles", notes = "Returns all roles")
+    public ResponseEntity<List<AppUserRole>> getAllRoles() {
+        return new ResponseEntity<>(userService.findAllRoles(), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation(value = "Get user by id", notes = "Returns the user")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = UserDTO.class),
+                    @ApiResponse(code = 404, message = "User not found")
+            }
+    )
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.findById(id), HttpStatus.OK);
+    }
+
+    @GetMapping
+    @ApiOperation(value = "Get all users", notes = "Returns all users")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Users found", response = UserDTO.class, responseContainer = "List")
+            }
+    )
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    @ApiOperation(value = "Update user by id", notes = "Returns the user")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User updated", response = UserDTO.class),
+                    @ApiResponse(code = 404, message = "User not found")
+            }
+    )
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserUpdateDTO userDTO, @PathVariable Integer id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.update(userDTO, id), HttpStatus.OK);
     }
 }
