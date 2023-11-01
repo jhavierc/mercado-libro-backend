@@ -75,6 +75,11 @@ public class UserServiceImpl implements UserService {
         return appUserRoleRepository.findAll();
     }
 
+    @Override
+    public List<UserDTO> findAll() {
+        return userMapper.toUserDTOs(appUserRepository.findAll());
+    }
+
     private List<AppUserRole> getRoles(List<String> roles) throws ResourceNotFoundException {
         List<AppUserRole> appUserRoles = new ArrayList<>();
         for (String role: roles) {

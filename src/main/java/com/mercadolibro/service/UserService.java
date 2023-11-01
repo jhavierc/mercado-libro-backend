@@ -63,4 +63,10 @@ public interface UserService extends UserDetailsService {
      */
     List<AppUserRole> findAllRoles();
 
+    /**
+     * Find all users
+     * @return A list of all users
+     */
+    List<UserDTO> findAll();
+
 }
