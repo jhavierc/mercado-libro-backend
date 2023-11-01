@@ -42,7 +42,7 @@ public class BookControllerTest {
         when(bookService.update(bookId, input)).thenReturn(output);
 
         // Act
-        ResponseEntity<Object> response = bookController.update(bookId, input);
+        ResponseEntity<BookRespDTO> response = bookController.update(bookId, input);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -92,7 +92,7 @@ public class BookControllerTest {
         when(bookService.patch(bookId, input)).thenReturn(output);
 
         // Act
-        ResponseEntity<Object> response = bookController.patch(bookId, input);
+        ResponseEntity<BookRespDTO> response = bookController.patch(bookId, input);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
