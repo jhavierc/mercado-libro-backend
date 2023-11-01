@@ -66,7 +66,7 @@ public class BookController {
     }
 
     @GetMapping("/category/{name}")
-    @ApiOperation(value = "Get book by ID", notes = "Returns all books by category name")
+    @ApiOperation(value = "Get books by category name", notes = "Returns all books by category name")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(
             value = {
