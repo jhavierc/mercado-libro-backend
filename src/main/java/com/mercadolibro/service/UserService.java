@@ -1,5 +1,6 @@
 package com.mercadolibro.service;
 
+import com.mercadolibro.dto.UserUpdateDTO;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
@@ -68,5 +69,15 @@ public interface UserService extends UserDetailsService {
      * @return A list of all users
      */
     List<UserDTO> findAll();
+
+    /**
+     * Update a user
+     * @param userId The id of the user to update
+     * @param userUpdateDTO The user to update
+     * @return The updated user
+     * @throws ResourceNotFoundException If no user with the specified id exists.
+     * @throws ResourceNotFoundException If one or more roles provided do not exist in the system.
+     */
+    UserDTO update(UserUpdateDTO userUpdateDTO, Integer userId) throws ResourceNotFoundException;
 
 }
