@@ -48,7 +48,7 @@ public class UserController {
         return new ResponseEntity<>(userService.create(userRegisterDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/me")
     @ApiOperation(value = "Get user by token", notes = "Returns the user", authorizations = {@Authorization(value = "JWT Token")})
     @ApiResponses(
             value = {
@@ -81,5 +81,16 @@ public class UserController {
     )
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) throws ResourceNotFoundException {
         return new ResponseEntity<>(userService.findById(id), HttpStatus.OK);
+    }
+
+    @GetMapping
+    @ApiOperation(value = "Get all users", notes = "Returns all users")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Users found", response = UserDTO.class, responseContainer = "List")
+            }
+    )
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 }
