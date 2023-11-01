@@ -1,5 +1,6 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.UserUpdateDTO;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
@@ -92,5 +93,17 @@ public class UserController {
     )
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    @ApiOperation(value = "Update user by id", notes = "Returns the user")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User updated", response = UserDTO.class),
+                    @ApiResponse(code = 404, message = "User not found")
+            }
+    )
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserUpdateDTO userDTO, @PathVariable Integer id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.update(userDTO, id), HttpStatus.OK);
     }
 }
