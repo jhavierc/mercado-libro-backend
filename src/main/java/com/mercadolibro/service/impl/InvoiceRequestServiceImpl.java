@@ -11,6 +11,9 @@ import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,6 +54,35 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     public List<InvoiceRequestDTO> findAll() {
         // Invoice
         List<Invoice> invoiceList = invoiceRepository.findAll();
+        List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
+        for (Invoice invoice : invoiceList) {
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
+        }
+        // InvoiceRequest
+        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
+        for (InvoiceDTO invoiceDTO : invoiceDTOList) {
+            // InvoiceItem
+            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
+            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
+            for (InvoiceItem invoiceItem: invoiceItemList) {
+                invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
+            }
+            invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
+        }
+        return invoiceRequestDTOList;
+    }
+
+    @Override
+    public List<InvoiceRequestDTO> findAll(int page, int size, Boolean sortAsc, String column) {
+        // Page
+        page = (page==0) ? 1 : page;
+        size = (size==0) ? 10 : size;
+        column = (column==null) ? "id" : column;
+        Sort sort = (sortAsc == true) ? Sort.by(Sort.Direction.ASC,column) : Sort.by(Sort.Direction.DESC, column);
+
+        // Invoice
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size,sort));
+        List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
             invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
