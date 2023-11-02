@@ -15,20 +15,30 @@ import java.util.*;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoBooksToShowException.class)
-    public ResponseEntity<List<?>> processErrorNoBooksToShow() {
+    public ResponseEntity<List<?>> handleErrorNoBooksToShow() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
     }
+    @ExceptionHandler(NoPagesException.class)
+    public ResponseEntity<Long> handleNoPages() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(0L);
+    }
     @ExceptionHandler(BookNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> processErrorBookNotFound(BookNotFoundException bookNotFoundEx){
+    public ResponseEntity<ErrorResponseDTO> handleErrorBookNotFound(BookNotFoundException bookNotFoundEx){
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(bookNotFoundEx.getMessage(), HttpStatus.NOT_FOUND.value());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
     @ExceptionHandler(BookAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponseDTO> processBookAlreadyExistsException(BookAlreadyExistsException bookAlreadyExistsException){
+    public ResponseEntity<ErrorResponseDTO> handleBookAlreadyExistsException(BookAlreadyExistsException bookAlreadyExistsException){
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(bookAlreadyExistsException.getMessage(), HttpStatus.CONFLICT.value());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleErrorCategoryNotFound(CategoryNotFoundException categoryNotFoundException){
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(categoryNotFoundException.getMessage(), HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, List<Map<String, String>>>> processUnmergeException(final MethodArgumentNotValidException ex) {

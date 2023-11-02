@@ -18,11 +18,14 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
+import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,6 +70,7 @@ public class BookServiceTest {
         assertEquals(bookId, res.getId());
     }
 
+
     @Test
     public void testFindAllByCategory() {
         Long catID = 1L;
@@ -84,11 +88,14 @@ public class BookServiceTest {
         b.setTitle("boring title");
         b.setCategories(Set.of(cat));
 
-        List<Book> mockRepositoryResponse = List.of(a, b);
+        List<Book> books = List.of(a, b);
 
-        when(bookRepository.findAllByCategory(Mockito.any(String.class))).thenReturn(mockRepositoryResponse);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
-        List<BookRespDTO> res = bookService.findAllByCategory(catName);
+        when(bookRepository.findAllByCategory(Mockito.any(String.class),
+                Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAllByCategory(catName, (short) 1);
         assertFalse(res.isEmpty());
 
         Optional<CategoryRespDTO> resCategory = res.get(0).getCategories().stream()
@@ -112,7 +119,7 @@ public class BookServiceTest {
 
         when(bookRepository.findAll()).thenReturn(mockRepositoryResponse);
 
-        List<BookRespDTO> res = bookService.findAll();
+        List<BookRespDTO> res = bookService.findAll((short) 1);
         assertFalse(res.isEmpty());
         assertEquals(res.get(0).getTitle(), aTitle);
         assertEquals(res.get(1).getTitle(), bTitle);
@@ -153,7 +160,7 @@ public class BookServiceTest {
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.update(bookId, input));
-        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
+        assertEquals(String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId), exception.getMessage());
     }
 
     @Test
@@ -212,8 +219,8 @@ public class BookServiceTest {
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.patch(bookId, input));
-        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
-        bookService = new BookServiceImpl(bookRepository, new ObjectMapper(), new ModelMapper());
+        assertEquals(String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId), exception.getMessage());
+        bookService = new BookServiceImpl(bookRepository, categoryRepository, new ObjectMapper(), new ModelMapper());
     }
 
     @Test

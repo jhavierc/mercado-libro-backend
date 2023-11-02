@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entity.Book;
-import com.mercadolibro.exception.BookAlreadyExistsException;
-import com.mercadolibro.exception.NoBooksToShowException;
-import com.mercadolibro.exception.BookNotFoundException;
+import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
+import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -23,22 +24,51 @@ import java.util.stream.Collectors;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
     private final ObjectMapper mapper;
     private final ModelMapper modelMapper;
 
-    public static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
+    public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
 
     @Autowired
-    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper) {
+    public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository,
+                           ObjectMapper mapper, ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
+        this.categoryRepository = categoryRepository;
         this.mapper = mapper;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    public List<BookRespDTO> findAll() {
-        List<Book> searched = bookRepository.findAll();
+    public long getTotalPages() {
+        long totalBooks = bookRepository.count();
+
+        if (totalBooks != 0) {
+            int pageSize = 9;
+            return (totalBooks + pageSize - 1) / pageSize;
+        }
+
+        throw new NoPagesException();
+    };
+
+    @Override
+    public long getTotalPagesForCategory(String category) {
+        long totalBooks = bookRepository.countByCategory(category);
+
+        if (totalBooks != 0) {
+            int pageSize = 9;
+            return (totalBooks + pageSize - 1) / pageSize;
+        }
+
+        throw new NoPagesException();
+    };
+
+    @Override
+    public List<BookRespDTO> findAll(short page) {
+        Pageable pageable = PageRequest.of(page - 1, 9);
+        List<Book> searched = bookRepository.findAll(pageable).getContent();
+
         if (!searched.isEmpty()) {
             return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
                     .collect(Collectors.toList());
@@ -48,6 +78,13 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookRespDTO save(BookReqDTO book) {
+        book.getCategories().forEach(category -> {
+            Long id = category.getId();
+            if (!categoryRepository.existsById(id)) {
+                throw new CategoryNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "category", id));
+            }
+        });
+
         if (!bookRepository.existsByIsbn(book.getIsbn())) {
             Book saved = bookRepository.save(mapper.convertValue(book, Book.class));
             return mapper.convertValue(saved, BookRespDTO.class);
@@ -56,8 +93,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookRespDTO> findAllByCategory(String category) {
-        List<Book> searched = bookRepository.findAllByCategory(category);
+    public List<BookRespDTO> findAllByCategory(String category, short page) {
+        Pageable pageable = PageRequest.of(page - 1, 9);
+        List<Book> searched = bookRepository.findAllByCategory(category, pageable).getContent();
+
         if (!searched.isEmpty()) {
             return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
                     .collect(Collectors.toList());
@@ -69,7 +108,8 @@ public class BookServiceImpl implements BookService {
     public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
         if (bookRepository.existsById(id)) {
             if (bookRepository.existsByIsbnAndIdNot(bookReqDTO.getIsbn(), id)) {
-                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
+                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT,
+                        bookReqDTO.getIsbn()));
             }
 
             Book book = mapper.convertValue(bookReqDTO, Book.class);
@@ -78,7 +118,7 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(updated, BookRespDTO.class);
         }
 
-        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+        throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
 
     @Override
@@ -97,7 +137,7 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(book, BookRespDTO.class);
         }
 
-        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+        throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
 
     @Override
@@ -106,7 +146,7 @@ public class BookServiceImpl implements BookService {
         if (searched.isPresent()) {
             return mapper.convertValue(searched.get(), BookRespDTO.class);
         }
-        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+        throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
 
     @Override
@@ -114,7 +154,7 @@ public class BookServiceImpl implements BookService {
         if (bookRepository.existsById(id)) {
             bookRepository.deleteById(id);
         } else {
-            throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
+            throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
         }
     }
 }

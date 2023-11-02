@@ -9,12 +9,17 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@Validated
 @RequestMapping("/api/book")
 @CrossOrigin(origins = "*")
 public class BookController {
@@ -45,11 +50,37 @@ public class BookController {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 404, message = "No books to show")
+                    @ApiResponse(code = 404, message = "No books to show"),
+                    @ApiResponse(code = 400, message = "Page less than or equal to zero",
+                            response = Map.class)
             }
     )
-    public ResponseEntity<List<BookRespDTO>> findAll() {
-        return ResponseEntity.ok(bookService.findAll());
+    public ResponseEntity<List<BookRespDTO>> findAll(@RequestParam @Positive short page) {
+        return ResponseEntity.ok(bookService.findAll(page));
+    }
+
+    @GetMapping("/pages/{category}")
+    @ApiOperation(value = "Get all pages by category", notes = "Returns all category's pages")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
+            }
+    )
+    public ResponseEntity<Long> getTotalPagesForCategory(@PathVariable @Size(min = 3) String category) {
+        return ResponseEntity.ok(bookService.getTotalPagesForCategory(category));
+    }
+
+    @GetMapping("/pages")
+    @ApiOperation(value = "Get all pages", notes = "Returns all book pages")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
+            }
+    )
+    public ResponseEntity<Long> getTotalPages() {
+        return ResponseEntity.ok(bookService.getTotalPages());
     }
 
     @GetMapping("/{id}")
@@ -61,7 +92,7 @@ public class BookController {
                     @ApiResponse(code = 404, message = "Book not found")
             }
     )
-    public ResponseEntity<BookRespDTO> findByID(@PathVariable Long id) {
+    public ResponseEntity<BookRespDTO> findByID(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(bookService.findByID(id));
     }
 
@@ -71,11 +102,14 @@ public class BookController {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 404, message = "No books to show")
+                    @ApiResponse(code = 404, message = "No books to show"),
+                    @ApiResponse(code = 400, message = "Page less than or equal to zero",
+                            response = Map.class)
             }
     )
-    public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable String categoryName) {
-        return ResponseEntity.ok(bookService.findAllByCategory(categoryName));
+    public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable @Size(min = 3) String name,
+                                                               @RequestParam @Positive short page) {
+        return ResponseEntity.ok(bookService.findAllByCategory(name, page));
     }
 
     @DeleteMapping("/{id}")
@@ -87,7 +121,7 @@ public class BookController {
                     @ApiResponse(code = 404, message = "Book not found")
             }
     )
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
+    public ResponseEntity<Object> delete(@PathVariable @Positive Long id) {
         bookService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -103,10 +137,9 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> update(@PathVariable Long id, @RequestBody @Valid BookReqDTO bookReqDTO) {
+    public ResponseEntity<BookRespDTO> update(@PathVariable @Positive Long id, @RequestBody @Valid BookReqDTO bookReqDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.update(id, bookReqDTO));
     }
-
 
     @PatchMapping("/{id}")
     @ApiOperation(value = "Partially updates an existing book", notes = "Returns the updated book")
@@ -119,7 +152,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> patch(@PathVariable Long id, @RequestBody @Valid BookRespDTO bookRespDTO) {
+    public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @RequestBody @Valid BookRespDTO bookRespDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookRespDTO));
     }
 }
