@@ -9,12 +9,16 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/category")
+@Validated
 @CrossOrigin(origins = "*")
 public class CategoryController {
     private final CategoryService categoryService;
@@ -33,7 +37,7 @@ public class CategoryController {
                     @ApiResponse(code = 400, message = "Bad request"),
             }
     )
-    public ResponseEntity<CategoryRespDTO> save(@RequestBody CategoryReqDTO category) {
+    public ResponseEntity<CategoryRespDTO> save(@RequestBody @Valid CategoryReqDTO category) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(category));
     }
 
@@ -46,7 +50,7 @@ public class CategoryController {
                     @ApiResponse(code = 404, message = "Category not found"),
             }
     )
-    public ResponseEntity<CategoryRespDTO> findByID(@PathVariable Long id) {
+    public ResponseEntity<CategoryRespDTO> findByID(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(categoryService.findByID(id));
     }
 

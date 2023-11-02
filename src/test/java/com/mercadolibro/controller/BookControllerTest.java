@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
+import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,7 +55,7 @@ public class BookControllerTest {
         // Arrange
         Long bookId = 1L;
         BookReqDTO input = new BookReqDTO();
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         when(bookService.update(bookId, input)).thenThrow(new BookNotFoundException(expectedErrorMessage));
 
@@ -105,7 +105,7 @@ public class BookControllerTest {
         // Arrange
         Long bookId = 1L;
         BookRespDTO input = new BookRespDTO();
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         when(bookService.patch(bookId, input)).thenThrow(new BookNotFoundException(expectedErrorMessage));
 
@@ -151,7 +151,7 @@ public class BookControllerTest {
     public void testDeleteNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         doThrow(new BookNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
 
