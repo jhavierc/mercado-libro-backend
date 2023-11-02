@@ -59,9 +59,14 @@ public class BookServiceTest {
         mockRepositoryResponse.setId(bookId);
         mockRepositoryResponse.setTitle("a title");
 
+        BookCategoryReqDTO catInput = new BookCategoryReqDTO();
+        catInput.setId(1L);
+
         BookReqDTO input = new BookReqDTO();
+        input.setCategories(Set.of(catInput));
         input.setTitle("a title");
 
+        when(categoryRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         BookRespDTO res = bookService.save(input);
@@ -89,7 +94,6 @@ public class BookServiceTest {
         b.setCategories(Set.of(cat));
 
         List<Book> books = List.of(a, b);
-
         Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
         when(bookRepository.findAllByCategory(Mockito.any(String.class),
@@ -115,9 +119,10 @@ public class BookServiceTest {
         String bTitle = "boring title";
         b.setTitle(bTitle);
 
-        List<Book> mockRepositoryResponse = List.of(a, b);
+        List<Book> books = List.of(a, b);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
-        when(bookRepository.findAll()).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findAll(Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
 
         List<BookRespDTO> res = bookService.findAll((short) 1);
         assertFalse(res.isEmpty());

@@ -9,6 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 @ApiModel(description = "Category Request DTO", value = "CategoryReq")
