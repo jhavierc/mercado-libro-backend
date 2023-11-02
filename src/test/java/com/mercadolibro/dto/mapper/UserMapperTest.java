@@ -61,4 +61,12 @@ class UserMapperTest {
         assertEquals(appUser, mapper.toAppUser(userRegisterDTO));
     }
 
+    @Test
+    void shouldMapAppUserListToUserDTOList() {
+        List<AppUser> appUserList = this.appUserList;
+        List<UserDTO> userDTOList = this.userDTOList;
+
+        assertEquals(userDTOList, mapper.toUserDTOs(appUserList));
+    }
+
 }
