@@ -37,8 +37,8 @@ logging:
 
 aws:
   s3:
-    name: ${AWS_S3_NAME}
-    region: ${AWS_S3_REGION}
+    name: ${AWS_S3_NAME:mercadolibro-multimedia-g5}
+    region: ${AWS_S3_REGION:us-east-1}
     accessKey: ${AWS_S3_ACCESS_KEY}
     secretKey: ${AWS_S3_SECRET_KEY}
     imagesPath: ${AWS_S3_IMAGES_PATH:images/}
