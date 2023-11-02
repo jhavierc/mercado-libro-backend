@@ -42,6 +42,7 @@ aws:
     accessKey: ${AWS_S3_ACCESS_KEY}
     secretKey: ${AWS_S3_SECRET_KEY}
     imagesPath: ${AWS_S3_IMAGES_PATH:images/}
+    setUp: ${AWS_S3_SET_UP:false}
 
 #eureka:
 #  instance:
