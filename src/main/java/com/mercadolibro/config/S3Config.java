@@ -8,6 +8,9 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
+import static com.mercadolibro.util.S3Util.createS3Folder;
+import static com.mercadolibro.util.S3Util.doesS3FolderExist;
+
 @Configuration
 public class S3Config {
     @Value("${aws.s3.accessKey}")
@@ -28,6 +31,10 @@ public class S3Config {
                 .region(Region.of(region))
                 .credentialsProvider(() -> credentials)
                 .build();
+
+        if (!doesS3FolderExist(s3Client, bucketName, imagesPath)) {
+            createS3Folder(s3Client, bucketName, imagesPath);
+        }
 
         return s3Client;
     }
