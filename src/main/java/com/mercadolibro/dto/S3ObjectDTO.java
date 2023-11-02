@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class S3ObjectDTO {
-    private String name;
+    private String path;
     private String url;
     private String bucket;
 }

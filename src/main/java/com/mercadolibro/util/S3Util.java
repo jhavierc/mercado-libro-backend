@@ -35,7 +35,7 @@ public class S3Util {
         return System.currentTimeMillis() + "_" + originalFileName;
     }
 
-    public  static boolean doesS3FolderExist(S3Client s3Client, String bucketName, String folderPath) {
+    public static boolean doesS3FolderExist(S3Client s3Client, String bucketName, String folderPath) {
         ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .prefix(folderPath)
@@ -44,7 +44,7 @@ public class S3Util {
         return response.keyCount() > 0;
     }
 
-    public  static void createS3Folder(S3Client s3Client, String bucketName, String folderPath) {
+    public static void createS3Folder(S3Client s3Client, String bucketName, String folderPath) {
         s3Client.putObject(PutObjectRequest.builder()
                         .bucket(bucketName)
                         .key(folderPath)

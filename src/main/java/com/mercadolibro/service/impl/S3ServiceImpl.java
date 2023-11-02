@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mercadolibro.util.S3Util.convertMultipartFileToFile;
 import static com.mercadolibro.util.S3Util.generateUniqueFileName;
@@ -27,6 +29,17 @@ public class S3ServiceImpl implements S3Service {
         File file = convertMultipartFileToFile(multipartFile, uniqueFileName);
 
         return s3Repository.putFile(file);
+    }
+
+    @Override
+    public List<S3ObjectDTO> uploadFiles(List<MultipartFile> multipartFiles) {
+        List<S3ObjectDTO> uploadedObjects = new ArrayList<>();
+
+        for (MultipartFile file : multipartFiles) {
+            uploadedObjects.add(uploadFile(file));
+        }
+
+        return uploadedObjects;
     }
 
     @Override
