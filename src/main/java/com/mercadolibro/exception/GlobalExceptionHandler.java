@@ -66,9 +66,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResourceAlreadyExistsException(ResourceAlreadyExistsException e) {
         return ResponseEntity.status(409).body(e.getMessage());
     }
-
     @ExceptionHandler(S3Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleS3Exception(S3Exception e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+    @ExceptionHandler(MultipartFileToFileConversionException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToFileConversionException e) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
