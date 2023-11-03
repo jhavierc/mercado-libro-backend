@@ -7,6 +7,12 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
 public class BookSpecification {
+    /**
+     * Builds a condition that validates that a book has the same category as the one provided.
+     *
+     * @param category The category by which it is compared.
+     * @return a Specification object that is used to construct a condition that filters the results of a query.
+     */
     public static Specification<Book> categorySpec(String category) {
         return (root, query, criteriaBuilder) -> {
             Subquery<Long> subquery = query.subquery(Long.class);
@@ -26,9 +32,13 @@ public class BookSpecification {
         };
     }
 
+    /**
+     * Builds a condition that validates that a book has the same publisher as the one provided.
+     *
+     * @param publisher The publisher by which it is compared.
+     * @return a Specification object that is used to construct a condition that filters the results of a query.
+     */
     public static Specification<Book> publisherSpec(String publisher) {
-        return (root, query, criteriaBuilder) -> {
-            return criteriaBuilder.equal(root.get("publisher"), publisher);
-        };
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("publisher"), publisher);
     }
 }

@@ -166,10 +166,10 @@ public class BookServiceImpl implements BookService {
     private Pageable buildPageable(boolean asc, boolean desc, short page) {
         Sort sort = Sort.by("title");
 
-        if (asc) {
-            sort = sort.ascending();
-        } else if (desc) {
+        if (desc && !asc || asc && desc) {
             sort = sort.descending();
+        } else if (asc) {
+            sort = sort.ascending();
         }
 
         return PageRequest.of(page - 1, 9, sort);
