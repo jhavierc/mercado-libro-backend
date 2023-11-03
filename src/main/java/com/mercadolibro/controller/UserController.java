@@ -1,24 +1,22 @@
 package com.mercadolibro.controller;
 
-import com.mercadolibro.dto.UserUpdateDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
-import com.mercadolibro.dto.UserDTO;
-import com.mercadolibro.dto.UserRegisterDTO;
 import com.mercadolibro.service.UserService;
 import com.mercadolibro.util.JwtUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
-import io.swagger.v3.oas.annotations.headers.Header;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -86,13 +84,12 @@ public class UserController {
 
     @GetMapping
     @ApiOperation(value = "Get all users", notes = "Returns all users")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Users found", response = UserDTO.class, responseContainer = "List")
-            }
-    )
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
+    public ResponseEntity<PageDTO<UserDTO>> getAllUsers(
+            @ModelAttribute UserQuery userQuery,
+            @RequestParam @Positive Integer page,
+            @RequestParam @Positive Integer size
+    ) {
+        return new ResponseEntity<>(userService.find(userQuery, page, size), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
