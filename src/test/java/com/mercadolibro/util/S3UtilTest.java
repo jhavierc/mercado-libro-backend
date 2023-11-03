@@ -1,6 +1,6 @@
 package com.mercadolibro.util;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import java.io.File;
 import java.io.IOException;
 
 import static com.mercadolibro.util.S3Util.*;
@@ -38,11 +37,11 @@ public class S3UtilTest {
 
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectReqDTO s3ObjectReqDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
+        S3ObjectDTO s3ObjectDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
 
         verify(multipartFile).getBytes();
-        assertNotNull(s3ObjectReqDTO);
-        assertEquals(newFileName, s3ObjectReqDTO.getName());
+        assertNotNull(s3ObjectDTO);
+        assertEquals(newFileName, s3ObjectDTO.getName());
     }
 
     @Test
@@ -52,12 +51,12 @@ public class S3UtilTest {
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectReqDTO s3ObjectReqDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
+        S3ObjectDTO s3ObjectDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
 
         verify(multipartFile).getName();
         verify(multipartFile).getBytes();
-        assertNotNull(s3ObjectReqDTO);
-        assertEquals(mockedFileName, s3ObjectReqDTO.getName());
+        assertNotNull(s3ObjectDTO);
+        assertEquals(mockedFileName, s3ObjectDTO.getName());
     }
 
     @Test

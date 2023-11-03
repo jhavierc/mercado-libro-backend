@@ -1,8 +1,11 @@
 package com.mercadolibro.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
@@ -53,8 +56,9 @@ public class BookReqDTO {
 
     @Size(min = 1, max = 5)
     @NotNull
-    @JsonProperty("image_links")
-    private List<String> imageLinks;
+    @JsonIgnore
+    @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
+    private List<MultipartFile> images;
 
     @NotBlank
     private String language;

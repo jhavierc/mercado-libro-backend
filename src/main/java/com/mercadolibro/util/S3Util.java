@@ -1,6 +1,6 @@
 package com.mercadolibro.util;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.springframework.stereotype.Component;
@@ -22,27 +22,27 @@ public class S3Util {
 
 
     /**
-     * Converts a MultipartFile object to an S3ObjectReqDTO.
+     * Converts a MultipartFile object to an S3ObjectDTO.
      *
      * @param multipartFile The source file to convert.
      * @param newFileName   The optional new file name. If provided (not null or empty), it will be used as the file name.
      *                     If null or empty, the original name from the MultipartFile will be used.
-     * @return The S3ObjectReqDTO generated from the MultipartFile.
+     * @return The S3ObjectDTO generated from the MultipartFile.
      * @throws MultipartFileToFileConversionException When an error occurs during the conversion.
      */
-    public static S3ObjectReqDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName) {
+    public static S3ObjectDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName) {
         String fileName = (newFileName != null && !newFileName.isEmpty()) ? newFileName : multipartFile.getName();
 
-        S3ObjectReqDTO s3ObjectReqDTO = new S3ObjectReqDTO();
-        s3ObjectReqDTO.setName(fileName);
+        S3ObjectDTO s3ObjectDTO = new S3ObjectDTO();
+        s3ObjectDTO.setName(fileName);
 
         try {
-            s3ObjectReqDTO.setContent(new ByteArrayInputStream(multipartFile.getBytes()));
+            s3ObjectDTO.setContent(new ByteArrayInputStream(multipartFile.getBytes()));
         }catch (IOException e) {
             throw new MultipartFileToFileConversionException(MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT);
         }
 
-        return s3ObjectReqDTO;
+        return s3ObjectDTO;
     }
 
     /**

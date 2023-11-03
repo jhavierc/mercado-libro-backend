@@ -10,6 +10,7 @@ import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
+import com.mercadolibro.service.impl.S3ServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -179,7 +180,7 @@ public class BookServiceTest {
         // Arrange
         Long bookId = 1L;
         String title = "this title must not be overridden";
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
 
         Book existingBook = new Book();
         existingBook.setId(bookId);
@@ -205,7 +206,7 @@ public class BookServiceTest {
     void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
@@ -213,7 +214,6 @@ public class BookServiceTest {
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.patch(bookId, input));
         assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
-        bookService = new BookServiceImpl(bookRepository, new ObjectMapper(), new ModelMapper());
     }
 
     @Test
@@ -223,7 +223,7 @@ public class BookServiceTest {
         String actualBookIsbn = "978-0-261-10238-4";
         String alreadyExistingBookIsbn = "978-0-261-10238-4";
 
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         input.setIsbn(alreadyExistingBookIsbn);
 
         Book existingBook = new Book();

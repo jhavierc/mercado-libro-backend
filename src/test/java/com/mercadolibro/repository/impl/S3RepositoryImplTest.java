@@ -1,6 +1,6 @@
 package com.mercadolibro.repository.impl;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ public class S3RepositoryImplTest {
 
         // Expected
         String expectedKey = imagesPath + fileName;
-        S3ObjectReqDTO expectedReq = new S3ObjectReqDTO(fileName, new ByteArrayInputStream(bytesContent));
+        S3ObjectDTO expectedReq = new S3ObjectDTO(fileName, new ByteArrayInputStream(bytesContent));
         URL expectedUrl = new URL("https://" + bucketName + ".s3.amazonaws.com/" + expectedKey);
 
         // Set autowired vars because config is not loaded in tests
@@ -64,7 +64,7 @@ public class S3RepositoryImplTest {
         S3ObjectRespDTO result = s3Repository.putFile(expectedReq);
 
         // Assert
-        assertEquals(expectedKey, result.getPath());
+        assertEquals(expectedKey, result.getKey());
         assertEquals(expectedUrl.toString(), result.getUrl());
         assertEquals(bucketName, result.getBucket());
         verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
@@ -75,7 +75,7 @@ public class S3RepositoryImplTest {
         String fileName = "testFile.txt";
         byte[] bytesContent = "Test content".getBytes();
 
-        S3ObjectReqDTO expectedReq = new S3ObjectReqDTO(fileName, new ByteArrayInputStream(bytesContent));
+        S3ObjectDTO expectedReq = new S3ObjectDTO(fileName, new ByteArrayInputStream(bytesContent));
 
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).thenThrow(new RuntimeException());
 
@@ -93,9 +93,9 @@ public class S3RepositoryImplTest {
         byte[] bytesContent1 = "Test content 1".getBytes();
         byte[] bytesContent2 = "Test content 2".getBytes();
 
-        S3ObjectReqDTO reqDTO1 = new S3ObjectReqDTO("file1", new ByteArrayInputStream(bytesContent1));
-        S3ObjectReqDTO reqDTO2 = new S3ObjectReqDTO("file2", new ByteArrayInputStream(bytesContent2));
-        List<S3ObjectReqDTO> reqDTOs = new ArrayList<>();
+        S3ObjectDTO reqDTO1 = new S3ObjectDTO("file1", new ByteArrayInputStream(bytesContent1));
+        S3ObjectDTO reqDTO2 = new S3ObjectDTO("file2", new ByteArrayInputStream(bytesContent2));
+        List<S3ObjectDTO> reqDTOs = new ArrayList<>();
         reqDTOs.add(reqDTO1);
         reqDTOs.add(reqDTO2);
 
@@ -121,11 +121,11 @@ public class S3RepositoryImplTest {
         List<S3ObjectRespDTO> actualResponses = s3Repository.putFiles(reqDTOs);
 
         // Assert
-        assertEquals(expectedResponses.get(0).getPath(), actualResponses.get(0).getPath());
+        assertEquals(expectedResponses.get(0).getKey(), actualResponses.get(0).getKey());
         assertEquals(expectedResponses.get(0).getUrl(), actualResponses.get(0).getUrl());
         assertEquals(expectedResponses.get(0).getBucket(), actualResponses.get(0).getBucket());
 
-        assertEquals(expectedResponses.get(1).getPath(), actualResponses.get(1).getPath());
+        assertEquals(expectedResponses.get(1).getKey(), actualResponses.get(1).getKey());
         assertEquals(expectedResponses.get(1).getUrl(), actualResponses.get(1).getUrl());
         assertEquals(expectedResponses.get(1).getBucket(), actualResponses.get(1).getBucket());
     }

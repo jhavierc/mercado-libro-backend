@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 @Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class S3ObjectReqDTO {
+public class S3ObjectDTO {
     private String name;
     private ByteArrayInputStream content;
 }

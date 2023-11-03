@@ -1,6 +1,7 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Service
 public interface BookService {
     BookRespDTO update(Long id, BookReqDTO bookReqDTO);
-    BookRespDTO patch(Long id, BookRespDTO bookRespDTO);
+    BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO);
     List<BookRespDTO> findAll();
     BookRespDTO save(BookReqDTO book);
     List<BookRespDTO> findAllByCategory(String category);

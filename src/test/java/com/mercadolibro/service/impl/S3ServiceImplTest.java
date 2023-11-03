@@ -1,6 +1,6 @@
 package com.mercadolibro.service.impl;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.repository.S3Repository;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,15 +33,15 @@ public class S3ServiceImplTest {
 
         MockMultipartFile file = new MockMultipartFile("testFile", "testFile.txt", "text/plain", "content".getBytes());
 
-        when(s3Repository.putFile(any(S3ObjectReqDTO.class)))
+        when(s3Repository.putFile(any(S3ObjectDTO.class)))
                 .thenReturn(new S3ObjectRespDTO(fileName, url, bucketName));
 
         S3ObjectRespDTO result = s3Service.uploadFile(file);
 
-        assertEquals(fileName, result.getPath());
+        assertEquals(fileName, result.getKey());
         assertEquals(url, result.getUrl());
         assertEquals(bucketName, result.getBucket());
-        verify(s3Repository).putFile(any(S3ObjectReqDTO.class));
+        verify(s3Repository).putFile(any(S3ObjectDTO.class));
     }
 
     @Test
@@ -51,22 +50,22 @@ public class S3ServiceImplTest {
         MockMultipartFile file2 = new MockMultipartFile("file2", "file2.txt", "text/plain", "content2".getBytes());
         List<MultipartFile> files = Arrays.asList(file1, file2);
 
-        when(s3Repository.putFile(any(S3ObjectReqDTO.class)))
+        when(s3Repository.putFile(any(S3ObjectDTO.class)))
                 .thenReturn(new S3ObjectRespDTO("file1.txt", "https://url1", "bucket1"))
                 .thenReturn(new S3ObjectRespDTO("file2.txt", "https://url2", "bucket2"));
 
         List<S3ObjectRespDTO> result = s3Service.uploadFiles(files);
 
         assertEquals(2, result.size());
-        assertEquals("file1.txt", result.get(0).getPath());
+        assertEquals("file1.txt", result.get(0).getKey());
         assertEquals("https://url1", result.get(0).getUrl());
         assertEquals("bucket1", result.get(0).getBucket());
 
-        assertEquals("file2.txt", result.get(1).getPath());
+        assertEquals("file2.txt", result.get(1).getKey());
         assertEquals("https://url2", result.get(1).getUrl());
         assertEquals("bucket2", result.get(1).getBucket());
 
-        verify(s3Repository, times(2)).putFile(any(S3ObjectReqDTO.class));
+        verify(s3Repository, times(2)).putFile(any(S3ObjectDTO.class));
     }
 
     @Test

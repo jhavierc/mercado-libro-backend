@@ -2,6 +2,7 @@ package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.exception.BookAlreadyExistsException;
@@ -82,17 +83,17 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookRespDTO patch(Long id, BookRespDTO bookRespDTO) {
+    public BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
 
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
-            if (bookRepository.existsByIsbnAndIdNot(bookRespDTO.getIsbn(), id)) {
-                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookRespDTO.getIsbn()));
+            if (bookRepository.existsByIsbnAndIdNot(bookReqPatchDTO.getIsbn(), id)) {
+                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqPatchDTO.getIsbn()));
             }
 
-            bookRespDTO.setId(id);
-            modelMapper.map(bookRespDTO, optionalBook.get());
+            bookReqPatchDTO.setId(id);
+            modelMapper.map(bookReqPatchDTO, optionalBook.get());
             Book book = bookRepository.save(optionalBook.get());
             return mapper.convertValue(book, BookRespDTO.class);
         }

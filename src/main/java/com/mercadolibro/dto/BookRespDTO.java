@@ -28,7 +28,7 @@ public class BookRespDTO {
     @JsonProperty("ratings_count")
     private Short ratingsCount;
     @JsonProperty("image_links")
-    private ArrayList<String> imageLinks;
+    private ArrayList<S3ObjectRespDTO> images;
     private String language;
     private BigDecimal price;
     @JsonProperty("currency_code")

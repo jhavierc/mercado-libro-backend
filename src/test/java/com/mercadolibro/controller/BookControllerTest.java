@@ -1,5 +1,6 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.dto.BookReqDTO;
@@ -8,6 +9,7 @@ import com.mercadolibro.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,12 +27,8 @@ import static org.mockito.Mockito.*;
 public class BookControllerTest {
     @Mock
     private BookService bookService;
+    @InjectMocks
     private BookController bookController;
-
-    @BeforeEach
-    void setUp() {
-        bookController = new BookController(bookService);
-    }
 
     @Test
     public void testUpdateBook() {
@@ -86,7 +84,7 @@ public class BookControllerTest {
     public void testPatchBook() {
         // Arrange
         Long bookId = 1L;
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         BookRespDTO output = new BookRespDTO();
 
         when(bookService.patch(bookId, input)).thenReturn(output);
@@ -104,7 +102,7 @@ public class BookControllerTest {
     public void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
 
         when(bookService.patch(bookId, input)).thenThrow(new BookNotFoundException(expectedErrorMessage));
@@ -120,7 +118,7 @@ public class BookControllerTest {
         // Arrange
         Long bookId = 1L;
         String bookIsbn = "978-0-261-10238-4";
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         input.setIsbn(bookIsbn);
         String expectedErrorMessage = String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookIsbn);
 

@@ -1,6 +1,6 @@
 package com.mercadolibro.repository.impl;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.exception.S3Exception;
 import com.mercadolibro.repository.S3Repository;
@@ -31,8 +31,8 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     @Override
-    public S3ObjectRespDTO putFile(S3ObjectReqDTO s3ObjectReqDTO) {
-        String key = imagesPath + s3ObjectReqDTO.getName();
+    public S3ObjectRespDTO putFile(S3ObjectDTO s3ObjectDTO) {
+        String key = imagesPath + s3ObjectDTO.getName();
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -40,7 +40,7 @@ public class S3RepositoryImpl implements S3Repository {
                 .build();
 
         try {
-            s3Client.putObject(request, RequestBody.fromInputStream(s3ObjectReqDTO.getContent(), s3ObjectReqDTO.getContent().available()));
+            s3Client.putObject(request, RequestBody.fromInputStream(s3ObjectDTO.getContent(), s3ObjectDTO.getContent().available()));
         } catch (Exception e) {
             throw new S3Exception(UPLOAD_FILE_ERROR_FORMAT);
         }
@@ -51,10 +51,10 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     @Override
-    public List<S3ObjectRespDTO> putFiles(List<S3ObjectReqDTO> s3ObjectReqDTOS) {
+    public List<S3ObjectRespDTO> putFiles(List<S3ObjectDTO> s3ObjectDTOS) {
         List<S3ObjectRespDTO> uploadedObjects = new ArrayList<>();
 
-        for (S3ObjectReqDTO reqDTO : s3ObjectReqDTOS) {
+        for (S3ObjectDTO reqDTO : s3ObjectDTOS) {
             uploadedObjects.add(putFile(reqDTO));
         }
 

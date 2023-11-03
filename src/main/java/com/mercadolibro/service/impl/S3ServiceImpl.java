@@ -1,6 +1,6 @@
 package com.mercadolibro.service.impl;
 
-import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.repository.S3Repository;
 import com.mercadolibro.service.S3Service;
@@ -26,9 +26,9 @@ public class S3ServiceImpl implements S3Service {
     @Override
     public S3ObjectRespDTO uploadFile(MultipartFile multipartFile) {
         String uniqueFileName = generateUniqueFileName(multipartFile.getName());
-        S3ObjectReqDTO s3ObjectReqDTO = convertMultipartFileToS3ObjectReqDTO(multipartFile, uniqueFileName);
+        S3ObjectDTO s3ObjectDTO = convertMultipartFileToS3ObjectReqDTO(multipartFile, uniqueFileName);
 
-        return s3Repository.putFile(s3ObjectReqDTO);
+        return s3Repository.putFile(s3ObjectDTO);
     }
 
     @Override
