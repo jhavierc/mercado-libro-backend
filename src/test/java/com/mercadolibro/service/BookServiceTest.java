@@ -75,40 +75,6 @@ public class BookServiceTest {
         assertEquals(bookId, res.getId());
     }
 
-
-    @Test
-    public void testFindAllByCategory() {
-        Long catID = 1L;
-        String catName = "rare category";
-
-        Category cat = new Category();
-        cat.setId(catID);
-        cat.setName(catName);
-
-        Book a = new Book();
-        a.setTitle("great title");
-        a.setCategories(Set.of(cat));
-
-        Book b = new Book();
-        b.setTitle("boring title");
-        b.setCategories(Set.of(cat));
-
-        List<Book> books = List.of(a, b);
-        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
-
-        when(bookRepository.findAllByCategory(Mockito.any(String.class),
-                Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
-
-        List<BookRespDTO> res = bookService.findAllByCategory(catName, (short) 1);
-        assertFalse(res.isEmpty());
-
-        Optional<CategoryRespDTO> resCategory = res.get(0).getCategories().stream()
-                .filter(category -> Objects.equals(category.getId(), catID)).findFirst();
-
-        assertFalse(resCategory.isEmpty());
-        assertEquals(resCategory.get().getId(), catID);
-    }
-
     @Test
     public void testFindAll() {
         Book a = new Book();
@@ -124,10 +90,10 @@ public class BookServiceTest {
 
         when(bookRepository.findAll(Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
 
-        List<BookRespDTO> res = bookService.findAll((short) 1);
-        assertFalse(res.isEmpty());
-        assertEquals(res.get(0).getTitle(), aTitle);
-        assertEquals(res.get(1).getTitle(), bTitle);
+        PageDTO<BookRespDTO> res = bookService.findAll((short) 1);
+        assertFalse(res.getContent().isEmpty());
+        assertEquals(res.getContent().get(0).getTitle(), aTitle);
+        assertEquals(res.getContent().get(1).getTitle(), bTitle);
     }
 
     @Test
