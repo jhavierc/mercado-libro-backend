@@ -3,6 +3,7 @@ package com.mercadolibro.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
@@ -11,6 +12,7 @@ import com.mercadolibro.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,39 +43,24 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public long getTotalPages() {
-        long totalBooks = bookRepository.count();
-
-        if (totalBooks != 0) {
-            int pageSize = 9;
-            return (totalBooks + pageSize - 1) / pageSize;
-        }
-
-        throw new NoPagesException();
-    };
-
-    @Override
-    public long getTotalPagesForCategory(String category) {
-        long totalBooks = bookRepository.countByCategory(category);
-
-        if (totalBooks != 0) {
-            int pageSize = 9;
-            return (totalBooks + pageSize - 1) / pageSize;
-        }
-
-        throw new NoPagesException();
-    };
-
-    @Override
-    public List<BookRespDTO> findAll(short page) {
+    public PageDTO<BookRespDTO> findAll(short page) {
         Pageable pageable = PageRequest.of(page - 1, 9);
-        List<Book> searched = bookRepository.findAll(pageable).getContent();
+        Page<Book> res = bookRepository.findAll(pageable);
 
-        if (!searched.isEmpty()) {
-            return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
-                    .collect(Collectors.toList());
+        List<BookRespDTO> content = res.getContent().stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
+                .collect(Collectors.toList());
+
+        if (content.isEmpty()) {
+            throw new NoBooksToShowException();
         }
-        throw new NoBooksToShowException();
+
+        return new PageDTO<BookRespDTO>(
+                content,
+                res.getTotalPages(),
+                res.getTotalElements(),
+                res.getNumber() + 1,
+                res.getSize()
+        );
     }
 
     @Override
@@ -90,18 +77,6 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(saved, BookRespDTO.class);
         }
         throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, book.getIsbn()));
-    }
-
-    @Override
-    public List<BookRespDTO> findAllByCategory(String category, short page) {
-        Pageable pageable = PageRequest.of(page - 1, 9);
-        List<Book> searched = bookRepository.findAllByCategory(category, pageable).getContent();
-
-        if (!searched.isEmpty()) {
-            return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
-                    .collect(Collectors.toList());
-        }
-        throw new NoBooksToShowException();
     }
 
     @Override

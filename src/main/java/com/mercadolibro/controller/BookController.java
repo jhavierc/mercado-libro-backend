@@ -2,6 +2,7 @@ package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.service.BookService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -55,32 +54,8 @@ public class BookController {
                             response = Map.class)
             }
     )
-    public ResponseEntity<List<BookRespDTO>> findAll(@RequestParam @Positive short page) {
+    public ResponseEntity<PageDTO<BookRespDTO>> findAll(@RequestParam @Positive short page) {
         return ResponseEntity.ok(bookService.findAll(page));
-    }
-
-    @GetMapping("/pages/{category}")
-    @ApiOperation(value = "Get all pages by category", notes = "Returns all category's pages")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
-            }
-    )
-    public ResponseEntity<Long> getTotalPagesForCategory(@PathVariable @Size(min = 3) String category) {
-        return ResponseEntity.ok(bookService.getTotalPagesForCategory(category));
-    }
-
-    @GetMapping("/pages")
-    @ApiOperation(value = "Get all pages", notes = "Returns all book pages")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
-            }
-    )
-    public ResponseEntity<Long> getTotalPages() {
-        return ResponseEntity.ok(bookService.getTotalPages());
     }
 
     @GetMapping("/{id}")
@@ -94,22 +69,6 @@ public class BookController {
     )
     public ResponseEntity<BookRespDTO> findByID(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(bookService.findByID(id));
-    }
-
-    @GetMapping("/category/{name}")
-    @ApiOperation(value = "Get books by category name", notes = "Returns all books by category name")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 404, message = "No books to show"),
-                    @ApiResponse(code = 400, message = "Page less than or equal to zero",
-                            response = Map.class)
-            }
-    )
-    public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable @Size(min = 3) String name,
-                                                               @RequestParam @Positive short page) {
-        return ResponseEntity.ok(bookService.findAllByCategory(name, page));
     }
 
     @DeleteMapping("/{id}")
