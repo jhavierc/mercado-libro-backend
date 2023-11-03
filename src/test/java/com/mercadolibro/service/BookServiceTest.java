@@ -3,6 +3,7 @@ package com.mercadolibro.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Book;
+import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.repository.BookRepository;
@@ -17,6 +18,9 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -55,9 +59,14 @@ public class BookServiceTest {
         mockRepositoryResponse.setId(bookId);
         mockRepositoryResponse.setTitle("a title");
 
+        BookCategoryReqDTO catInput = new BookCategoryReqDTO();
+        catInput.setId(1L);
+
         BookReqDTO input = new BookReqDTO();
+        input.setCategories(Set.of(catInput));
         input.setTitle("a title");
 
+        when(categoryRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         BookRespDTO res = bookService.save(input);
@@ -76,9 +85,10 @@ public class BookServiceTest {
         String bTitle = "boring title";
         b.setTitle(bTitle);
 
-        List<Book> mockRepositoryResponse = List.of(a, b);
+        List<Book> books = List.of(a, b);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
-        when(bookRepository.findAll()).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findAll(Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
 
         PageDTO<BookRespDTO> res = bookService.findAll((short) 1);
         assertFalse(res.getContent().isEmpty());
