@@ -39,16 +39,8 @@ public class S3Runner implements ApplicationRunner {
 
     private void setUpS3() {
         if (!setUpS3) return;
-
         if (!doesS3FolderExist(s3Client, bucketName, imagesPath)) {
-            System.out.println("NOT EXISTS");
-
             createS3Folder(s3Client, bucketName, imagesPath);
-
-            System.out.println("NOW EXISTS");
-
         }
-        System.out.println("FINISHED");
-
     }
 }

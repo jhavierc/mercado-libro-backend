@@ -25,7 +25,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public S3ObjectDTO uploadFile(MultipartFile multipartFile) {
-        String uniqueFileName = generateUniqueFileName(multipartFile.getOriginalFilename());
+        String uniqueFileName = generateUniqueFileName(multipartFile.getName());
         File file = convertMultipartFileToFile(multipartFile, uniqueFileName);
 
         return s3Repository.putFile(file);
