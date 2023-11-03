@@ -1,11 +1,10 @@
 package com.mercadolibro.service;
 
-import com.mercadolibro.dto.UserUpdateDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
-import com.mercadolibro.dto.UserDTO;
-import com.mercadolibro.dto.UserRegisterDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
@@ -79,5 +78,13 @@ public interface UserService extends UserDetailsService {
      * @throws ResourceNotFoundException If one or more roles provided do not exist in the system.
      */
     UserDTO update(UserUpdateDTO userUpdateDTO, Integer userId) throws ResourceNotFoundException;
+
+    /**
+     * Find users by query
+     * @param userQuery The query to filter users. It can be null to get all users.
+     * @param page The page number
+     * @return A page of users
+     */
+    PageDTO<UserDTO> find(UserQuery userQuery, Integer page, Integer size);
 
 }
