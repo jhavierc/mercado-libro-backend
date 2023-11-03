@@ -356,4 +356,29 @@ class UserServiceImplTest {
         verify(userRepository, never()).save(any(AppUser.class));
         verify(userRoleRepository, atLeast(1)).findByDescription("ADMIN");
     }
+
+    @Test
+    void findShouldReturnAllUsers() {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findAll()).thenReturn(users);
+
+        List<UserDTO> usersFound = userService.findAll();
+
+        // THEN
+        assertNotNull(usersFound);
+        assertEquals(1, usersFound.size());
+        assertEquals(user.getName(), usersFound.get(0).getName());
+        assertEquals(user.getLastName(), usersFound.get(0).getLastName());
+        assertEquals(user.getEmail(), usersFound.get(0).getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), usersFound.get(0).getRoles().get(0).getDescription());
+        assertEquals(user.getId(), usersFound.get(0).getId());
+        assertEquals(user.getStatus(), usersFound.get(0).getStatus());
+        assertEquals(user.getDateCreated(), usersFound.get(0).getDateCreated());
+        verify(userRepository, times(1)).findAll();
+    }
+
+
 }
