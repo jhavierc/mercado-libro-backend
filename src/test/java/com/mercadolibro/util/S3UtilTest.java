@@ -1,5 +1,6 @@
 package com.mercadolibro.util;
 
+import com.mercadolibro.dto.S3ObjectReqDTO;
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
@@ -37,11 +38,11 @@ public class S3UtilTest {
 
         when(multipartFile.getBytes()).thenReturn(content);
 
-        File convertedFile = S3Util.convertMultipartFileToFile(multipartFile, newFileName);
+        S3ObjectReqDTO s3ObjectReqDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
 
         verify(multipartFile).getBytes();
-        assertNotNull(convertedFile);
-        assertEquals(newFileName, convertedFile.getName());
+        assertNotNull(s3ObjectReqDTO);
+        assertEquals(newFileName, s3ObjectReqDTO.getName());
     }
 
     @Test
@@ -51,12 +52,12 @@ public class S3UtilTest {
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenReturn(content);
 
-        File convertedFile = S3Util.convertMultipartFileToFile(multipartFile, null);
+        S3ObjectReqDTO s3ObjectReqDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
 
         verify(multipartFile).getName();
         verify(multipartFile).getBytes();
-        assertNotNull(convertedFile);
-        assertEquals(mockedFileName, convertedFile.getName());
+        assertNotNull(s3ObjectReqDTO);
+        assertEquals(mockedFileName, s3ObjectReqDTO.getName());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class S3UtilTest {
         when(multipartFile.getBytes()).thenThrow(IOException.class);
 
         MultipartFileToFileConversionException exception = assertThrows(MultipartFileToFileConversionException.class,
-                () -> S3Util.convertMultipartFileToFile(multipartFile, null));
+                () -> S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null));
 
         verify(multipartFile).getName();
         assertEquals(MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT, exception.getMessage());
