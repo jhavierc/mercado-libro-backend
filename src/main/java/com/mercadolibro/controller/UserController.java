@@ -86,8 +86,8 @@ public class UserController {
     @ApiOperation(value = "Get all users", notes = "Returns all users")
     public ResponseEntity<PageDTO<UserDTO>> getAllUsers(
             @ModelAttribute UserQuery userQuery,
-            @RequestParam @Positive Integer page,
-            @RequestParam @Positive Integer size
+            @RequestParam(defaultValue = "0") @Positive Integer page,
+            @RequestParam(defaultValue = "10") @Positive Integer size
     ) {
         return new ResponseEntity<>(userService.find(userQuery, page, size), HttpStatus.OK);
     }
