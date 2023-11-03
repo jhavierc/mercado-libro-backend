@@ -1,6 +1,7 @@
 package com.mercadolibro.util;
 
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
+import com.mercadolibro.exception.S3Exception;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -16,6 +17,9 @@ import java.io.IOException;
 @Component
 public class S3Util {
     public static final String MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT = "Error converting MultipartFile to File";
+    public static final String S3_FOLDER_EXISTS_ERROR = "Error while checking if folder exists";
+    public static final String S3_FOLDER_CREATE_ERROR = "Error while creating folder";
+
 
     /**
      * Converts a MultipartFile object to a File.
@@ -57,14 +61,19 @@ public class S3Util {
      * @param bucketName The name of the S3 bucket to search within.
      * @param folderPath The path of the folder to check for existence.
      * @return True if the specified folder exists in the S3 bucket; otherwise, false.
+     * @throws S3Exception When an error occurs during the folder search request.
      */
     public static boolean doesS3FolderExist(S3Client s3Client, String bucketName, String folderPath) {
-        ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
-                .bucket(bucketName)
-                .prefix(folderPath)
-                .build());
+        try {
+            ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .prefix(folderPath)
+                    .build());
 
-        return response.keyCount() > 0;
+            return response.keyCount() > 0;
+        }catch (Exception e){
+            throw new S3Exception(S3_FOLDER_EXISTS_ERROR);
+        }
     }
 
     /**
@@ -73,12 +82,18 @@ public class S3Util {
      * @param s3Client   The S3Client used to create the folder.
      * @param bucketName The name of the S3 bucket in which the folder will be created.
      * @param folderPath The path of the folder to be created.
+     * @throws S3Exception When an error occurs during the folder creation request.
      */
     public static void createS3Folder(S3Client s3Client, String bucketName, String folderPath) {
-        s3Client.putObject(PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(folderPath)
-                        .build(),
-                RequestBody.fromBytes(new byte[0]));
+        try {
+            s3Client.putObject(PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(folderPath)
+                            .build(),
+            RequestBody.fromBytes(new byte[0]));
+        }
+        catch (Exception e){
+            throw new S3Exception(S3_FOLDER_CREATE_ERROR);
+        }
     }
 }
