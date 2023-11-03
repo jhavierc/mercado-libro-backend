@@ -8,17 +8,16 @@ import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.BookService;
+import com.mercadolibro.service.specification.BookSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Optional;
-
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 @Service
@@ -65,9 +64,15 @@ public class BookServiceImpl implements BookService {
     };
 
     @Override
-    public List<BookRespDTO> findAll(short page) {
-        Pageable pageable = PageRequest.of(page - 1, 9);
-        List<Book> searched = bookRepository.findAll(pageable).getContent();
+    public List<BookRespDTO> findAll(String category, String publisher, boolean asc, boolean desc, short page) {
+        if (asc && desc) {
+            desc = false;
+        }
+
+        Specification<Book> spec = buildSpecification(category, publisher);
+        Pageable pageable = buildPageable(asc, desc, page);
+
+        List<Book> searched = bookRepository.findAll(spec, pageable).getContent();;
 
         if (!searched.isEmpty()) {
             return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
@@ -93,15 +98,15 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookRespDTO> findAllByCategory(String category, short page) {
-        Pageable pageable = PageRequest.of(page - 1, 9);
-        List<Book> searched = bookRepository.findAllByCategory(category, pageable).getContent();
+    public long getTotalPagesForCategoryAndPublisher(String category, String publisher) {
+        long totalBooks = bookRepository.countByCategoryAndPublisher(category, publisher);
 
-        if (!searched.isEmpty()) {
-            return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
-                    .collect(Collectors.toList());
+        if (totalBooks != 0) {
+            int pageSize = 9;
+            return (totalBooks + pageSize - 1) / pageSize;
         }
-        throw new NoBooksToShowException();
+
+        throw new NoPagesException();
     }
 
     @Override
@@ -156,5 +161,33 @@ public class BookServiceImpl implements BookService {
         } else {
             throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
         }
+    }
+
+    private Pageable buildPageable(boolean asc, boolean desc, short page) {
+        Sort sort = Sort.by("title");
+
+        if (asc) {
+            sort = sort.ascending();
+        } else if (desc) {
+            sort = sort.descending();
+        }
+
+        return PageRequest.of(page - 1, 9, sort);
+    }
+
+    private Specification<Book> buildSpecification(String category, String publisher) {
+        Specification<Book> spec = Specification.where(null);
+
+        if (category != null && publisher != null) {
+            spec = Specification
+                    .where(BookSpecification.categorySpec(category))
+                    .and(BookSpecification.publisherSpec(publisher));
+        } else if (category != null) {
+            spec = BookSpecification.categorySpec(category);
+        } else if (publisher != null) {
+            spec = BookSpecification.publisherSpec(publisher);
+        }
+
+        return spec;
     }
 }

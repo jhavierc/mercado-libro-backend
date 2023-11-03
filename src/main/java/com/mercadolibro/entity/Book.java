@@ -1,19 +1,20 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "book")
+@AllArgsConstructor
 @RequiredArgsConstructor
 public class Book {
     @Id

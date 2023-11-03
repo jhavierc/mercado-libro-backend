@@ -6,21 +6,21 @@ import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
+import com.mercadolibro.exception.NoBooksToShowException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
+import com.mercadolibro.service.specification.BookSpecification;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.*;
 
@@ -75,7 +75,6 @@ public class BookServiceTest {
         assertEquals(bookId, res.getId());
     }
 
-
     @Test
     public void testFindAllByCategory() {
         Long catID = 1L;
@@ -96,10 +95,10 @@ public class BookServiceTest {
         List<Book> books = List.of(a, b);
         Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
-        when(bookRepository.findAllByCategory(Mockito.any(String.class),
-                Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
 
-        List<BookRespDTO> res = bookService.findAllByCategory(catName, (short) 1);
+        List<BookRespDTO> res = bookService.findAll(catName, null, false, false, (short) 1);
         assertFalse(res.isEmpty());
 
         Optional<CategoryRespDTO> resCategory = res.get(0).getCategories().stream()
@@ -122,12 +121,127 @@ public class BookServiceTest {
         List<Book> books = List.of(a, b);
         Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
 
-        when(bookRepository.findAll(Mockito.any(Pageable.class))).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
 
-        List<BookRespDTO> res = bookService.findAll((short) 1);
+        List<BookRespDTO> res = bookService.findAll(null, null, false, false, (short) 1);
         assertFalse(res.isEmpty());
         assertEquals(res.get(0).getTitle(), aTitle);
         assertEquals(res.get(1).getTitle(), bTitle);
+    }
+
+    @Test
+    public void testFindNoBooks() {
+        List<Book> books = Collections.emptyList();
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), 0);
+
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
+
+        assertThrows(NoBooksToShowException.class,
+                () -> bookService.findAll(null, null, false, false, (short) 1));
+    }
+
+    @Test
+    public void testFindAllByPublisher() {
+        String publisher = "annoying publisher";
+
+        Book a = new Book();
+        a.setPublisher(publisher);
+
+        Book b = new Book();
+        b.setPublisher(publisher);
+
+        List<Book> books = List.of(a, b);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
+
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAll(null, publisher, false, false, (short) 1);
+
+        assertFalse(res.isEmpty());
+        assertEquals(res.get(0).getPublisher(), publisher);
+        assertEquals(res.get(1).getPublisher(), publisher);
+    }
+
+    @Test
+    public void testFindAllByPublisherAndCategory() {
+        String publisher = "happy publisher";
+        String category = "sad category";
+
+        CategoryRespDTO categoryResponse = CategoryRespDTO.builder().name(category).build();
+        Category categoryRequest = Category.builder().name(category).build();
+
+        Book a = new Book();
+        a.setPublisher(publisher);
+        a.setCategories(Set.of(categoryRequest));
+
+        Book b = new Book();
+        b.setPublisher(publisher);
+        b.setCategories(Set.of(categoryRequest));
+
+        List<Book> books = List.of(a, b);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
+
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAll(category, publisher, false, false, (short) 1);
+
+        assertFalse(res.isEmpty());
+        assertEquals(res.get(0).getPublisher(), publisher);
+        assertTrue(res.get(0).getCategories().contains(categoryResponse));
+        assertEquals(res.get(1).getPublisher(), publisher);
+        assertTrue(res.get(1).getCategories().contains(categoryResponse));
+    }
+
+    @Test
+    public void testFindAllSortedAscendant() {
+        String firstTitle = "amusing title";
+        String secondTitle = "sadistic title";
+
+        Book a = new Book();
+        a.setTitle(firstTitle);
+
+        Book b = new Book();
+        b.setTitle(secondTitle);
+
+        List<Book> books = List.of(a, b);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
+
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAll(null, null, true, false, (short) 1);
+
+        assertFalse(res.isEmpty());
+        assertEquals(res.get(0).getTitle(), firstTitle);
+        assertEquals(res.get(1).getTitle(), secondTitle);
+    }
+
+    @Test
+    public void testFindAllSortedDescendant() {
+        String firstTitle = "amusing title";
+        String secondTitle = "sadistic title";
+
+        Book a = new Book();
+        a.setTitle(firstTitle);
+
+        Book b = new Book();
+        b.setTitle(secondTitle);
+
+        List<Book> books = List.of(b, a);
+        Page<Book> mockRepositoryResponse = new PageImpl<>(books, Pageable.unpaged(), books.size());
+
+        when(bookRepository.findAll(ArgumentMatchers.<Specification<Book>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(mockRepositoryResponse);
+
+        List<BookRespDTO> res = bookService.findAll(null, null, false, true, (short) 1);
+
+        assertFalse(res.isEmpty());
+        assertEquals(res.get(0).getTitle(), secondTitle);
+        assertEquals(res.get(1).getTitle(), firstTitle);
     }
 
     @Test

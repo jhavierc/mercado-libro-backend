@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
+import java.util.Objects;
+
+@Builder
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -25,4 +28,21 @@ public class CategoryRespDTO {
     @JsonProperty("image_link")
     @ApiModelProperty(value = "Image link of the category", required = true, example = "https://example.com")
     private String imageLink;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CategoryRespDTO that = (CategoryRespDTO) o;
+        return Objects.equals(id, that.id)
+                && Objects.equals(name, that.name)
+                && Objects.equals(status, that.status)
+                && Objects.equals(description, that.description)
+                && Objects.equals(imageLink, that.imageLink);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, status, description, imageLink);
+    }
 }

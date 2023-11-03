@@ -34,13 +34,17 @@ public interface BookService {
     BookRespDTO patch(Long id, BookRespDTO bookRespDTO);
 
     /**
-     * Retrieves all books.
+     * Retrieves books. This search can be filtered and sorted in several ways.
      *
+     * @param category Not required. It is used in case you want to filter by category.
+     * @param publisher Not required. It is used in case you want to filter by publisher.
+     * @param asc Not required. It is used if you want to sort in ascending order.
+     * @param desc Not required. It is used if you want to sort in descending order.
      * @param page The page number being searched.
-     * @return A list of BookRespDTO containing all available books.
+     * @return A list of BookRespDTO containing books, whether filtered, sorted, or all.
      * @throws NoBooksToShowException If no books are found.
      */
-    List<BookRespDTO> findAll(short page);
+    List<BookRespDTO> findAll(String category, String publisher, boolean asc, boolean desc, short page);
 
     /**
      * Saves a new book.
@@ -52,14 +56,14 @@ public interface BookService {
     BookRespDTO save(BookReqDTO book);
 
     /**
-     * Retrieves all books belonging to a specific category.
+     * Retrieves the number of pages that the specified category and publisher includes.
      *
      * @param category The category by which books are filtered.
-     * @param page The page number being searched.
-     * @return A list of BookRespDTO containing books within the specified category.
-     * @throws NoBooksToShowException If no books are found for the given category.
+     * @param publisher The publisher by which the number of pages is calculated.
+     * @return A number that specifies the total number of pages that the chosen category and publisher includes.
+     * @throws NoPagesException If no pages are found.
      */
-    List<BookRespDTO> findAllByCategory(String category, short page);
+    long getTotalPagesForCategoryAndPublisher(String category, String publisher);
 
     /**
      * Retrieves total pages related to all books.

@@ -45,18 +45,22 @@ public class BookController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Get all books", notes = "Returns all books")
+    @ApiOperation(value = "Get books", notes = "Returns books, whether filtered, ordered, or all")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
                     @ApiResponse(code = 404, message = "No books to show"),
-                    @ApiResponse(code = 400, message = "Page less than or equal to zero",
-                            response = Map.class)
+                    @ApiResponse(code = 400, message = "Page less than or equal to zero", response = Map.class)
             }
     )
-    public ResponseEntity<List<BookRespDTO>> findAll(@RequestParam @Positive short page) {
-        return ResponseEntity.ok(bookService.findAll(page));
+    public ResponseEntity<List<BookRespDTO>> findAll(
+            @RequestParam(required = false) @Size(min = 3) String category,
+            @RequestParam(required = false) @Size(min = 3) String publisher,
+            @RequestParam(required = false) boolean asc,
+            @RequestParam(required = false) boolean desc,
+            @RequestParam @Positive short page) {
+        return ResponseEntity.ok(bookService.findAll(category, publisher, asc, desc, page));
     }
 
     @GetMapping("/pages/{category}")
@@ -65,10 +69,26 @@ public class BookController {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
+                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
             }
     )
     public ResponseEntity<Long> getTotalPagesForCategory(@PathVariable @Size(min = 3) String category) {
         return ResponseEntity.ok(bookService.getTotalPagesForCategory(category));
+    }
+
+    @GetMapping("/pages/{category}/{publisher}")
+    @ApiOperation(value = "Get all pages by category and publisher", notes = "Returns all the publisher pages " +
+            "regarding the category")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
+                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
+            }
+    )
+    public ResponseEntity<Long> getTotalPagesForCategoryAndPublisher(@PathVariable @Size(min = 3) String category,
+                                                                     @PathVariable @Size(min = 3) String publisher) {
+        return ResponseEntity.ok(bookService.getTotalPagesForCategoryAndPublisher(category, publisher));
     }
 
     @GetMapping("/pages")
@@ -77,6 +97,7 @@ public class BookController {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
+                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
             }
     )
     public ResponseEntity<Long> getTotalPages() {
@@ -94,22 +115,6 @@ public class BookController {
     )
     public ResponseEntity<BookRespDTO> findByID(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(bookService.findByID(id));
-    }
-
-    @GetMapping("/category/{name}")
-    @ApiOperation(value = "Get books by category name", notes = "Returns all books by category name")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 404, message = "No books to show"),
-                    @ApiResponse(code = 400, message = "Page less than or equal to zero",
-                            response = Map.class)
-            }
-    )
-    public ResponseEntity<List<BookRespDTO>> findAllByCategory(@PathVariable @Size(min = 3) String name,
-                                                               @RequestParam @Positive short page) {
-        return ResponseEntity.ok(bookService.findAllByCategory(name, page));
     }
 
     @DeleteMapping("/{id}")
