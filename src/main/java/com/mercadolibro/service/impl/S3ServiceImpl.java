@@ -1,17 +1,17 @@
 package com.mercadolibro.service.impl;
 
-import com.mercadolibro.dto.S3ObjectDTO;
+import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.repository.S3Repository;
 import com.mercadolibro.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mercadolibro.util.S3Util.convertMultipartFileToFile;
+import static com.mercadolibro.util.S3Util.convertMultipartFileToS3ObjectReqDTO;
 import static com.mercadolibro.util.S3Util.generateUniqueFileName;
 
 @Service
@@ -24,16 +24,16 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public S3ObjectDTO uploadFile(MultipartFile multipartFile) {
+    public S3ObjectRespDTO uploadFile(MultipartFile multipartFile) {
         String uniqueFileName = generateUniqueFileName(multipartFile.getName());
-        File file = convertMultipartFileToFile(multipartFile, uniqueFileName);
+        S3ObjectReqDTO s3ObjectReqDTO = convertMultipartFileToS3ObjectReqDTO(multipartFile, uniqueFileName);
 
-        return s3Repository.putFile(file);
+        return s3Repository.putFile(s3ObjectReqDTO);
     }
 
     @Override
-    public List<S3ObjectDTO> uploadFiles(List<MultipartFile> multipartFiles) {
-        List<S3ObjectDTO> uploadedObjects = new ArrayList<>();
+    public List<S3ObjectRespDTO> uploadFiles(List<MultipartFile> multipartFiles) {
+        List<S3ObjectRespDTO> uploadedObjects = new ArrayList<>();
 
         for (MultipartFile file : multipartFiles) {
             uploadedObjects.add(uploadFile(file));

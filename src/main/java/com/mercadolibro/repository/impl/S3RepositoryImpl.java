@@ -1,15 +1,15 @@
 package com.mercadolibro.repository.impl;
 
-import com.mercadolibro.dto.S3ObjectDTO;
+import com.mercadolibro.dto.S3ObjectReqDTO;
+import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.exception.S3Exception;
 import com.mercadolibro.repository.S3Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,8 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     @Override
-    public S3ObjectDTO putFile(File file) {
-        String key = imagesPath + file.getName();
+    public S3ObjectRespDTO putFile(S3ObjectReqDTO s3ObjectReqDTO) {
+        String key = imagesPath + s3ObjectReqDTO.getName();
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -40,22 +40,22 @@ public class S3RepositoryImpl implements S3Repository {
                 .build();
 
         try {
-            s3Client.putObject(request, RequestBody.fromFile(file));
+            s3Client.putObject(request, RequestBody.fromInputStream(s3ObjectReqDTO.getContent(), s3ObjectReqDTO.getContent().available()));
         } catch (Exception e) {
             throw new S3Exception(UPLOAD_FILE_ERROR_FORMAT);
         }
 
         URL url = s3Client.utilities().getUrl(r -> r.bucket(bucketName).key(key));
 
-        return new S3ObjectDTO(key, url.toString(), bucketName);
+        return new S3ObjectRespDTO(key, url.toString(), bucketName);
     }
 
     @Override
-    public List<S3ObjectDTO> putFiles(List<File> files) {
-        List<S3ObjectDTO> uploadedObjects = new ArrayList<>();
+    public List<S3ObjectRespDTO> putFiles(List<S3ObjectReqDTO> s3ObjectReqDTOS) {
+        List<S3ObjectRespDTO> uploadedObjects = new ArrayList<>();
 
-        for (File file : files) {
-            uploadedObjects.add(putFile(file));
+        for (S3ObjectReqDTO reqDTO : s3ObjectReqDTOS) {
+            uploadedObjects.add(putFile(reqDTO));
         }
 
         return uploadedObjects;
@@ -65,8 +65,13 @@ public class S3RepositoryImpl implements S3Repository {
     public void deleteFile(String fileName) {
         String key = imagesPath + fileName;
 
+        DeleteObjectRequest dor = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
         try {
-            s3Client.deleteObject(r -> r.bucket(bucketName).key(key));
+            s3Client.deleteObject(dor);
         } catch (Exception e) {
             throw new S3Exception(DELETE_FILE_ERROR_FORMAT);
         }

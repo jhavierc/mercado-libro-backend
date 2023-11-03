@@ -1,5 +1,6 @@
 package com.mercadolibro.util;
 
+import com.mercadolibro.dto.S3ObjectReqDTO;
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.springframework.stereotype.Component;
@@ -10,8 +11,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 @Component
@@ -22,26 +22,27 @@ public class S3Util {
 
 
     /**
-     * Converts a MultipartFile object to a File.
+     * Converts a MultipartFile object to an S3ObjectReqDTO.
      *
      * @param multipartFile The source file to convert.
      * @param newFileName   The optional new file name. If provided (not null or empty), it will be used as the file name.
      *                     If null or empty, the original name from the MultipartFile will be used.
-     * @return The File generated from the MultipartFile.
+     * @return The S3ObjectReqDTO generated from the MultipartFile.
      * @throws MultipartFileToFileConversionException When an error occurs during the conversion.
      */
-    public static File convertMultipartFileToFile(MultipartFile multipartFile, String newFileName) {
+    public static S3ObjectReqDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName) {
         String fileName = (newFileName != null && !newFileName.isEmpty()) ? newFileName : multipartFile.getName();
 
-        File file = new File(fileName);
+        S3ObjectReqDTO s3ObjectReqDTO = new S3ObjectReqDTO();
+        s3ObjectReqDTO.setName(fileName);
 
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            outputStream.write(multipartFile.getBytes());
+        try {
+            s3ObjectReqDTO.setContent(new ByteArrayInputStream(multipartFile.getBytes()));
         }catch (IOException e) {
             throw new MultipartFileToFileConversionException(MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT);
         }
 
-        return file;
+        return s3ObjectReqDTO;
     }
 
     /**
