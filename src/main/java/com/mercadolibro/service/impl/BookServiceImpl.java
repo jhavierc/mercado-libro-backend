@@ -9,18 +9,16 @@ import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.BookService;
+import com.mercadolibro.service.specification.BookSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Optional;
-
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 @Service
@@ -43,12 +41,15 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PageDTO<BookRespDTO> findAll(short page) {
-        Pageable pageable = PageRequest.of(page - 1, 9);
-        Page<Book> res = bookRepository.findAll(pageable);
+    public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+                                        boolean older, boolean newer, boolean asc, boolean desc, short page) {
 
-        List<BookRespDTO> content = res.getContent().stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
-                .collect(Collectors.toList());
+        Specification<Book> spec = buildSpecification(category, publisher, releases);
+        Pageable pageable = buildPageable(asc, desc, older, newer, page);
+
+        Page<Book> res = bookRepository.findAll(spec, pageable);
+        List<BookRespDTO> content = res.getContent().stream().map(book ->
+                        mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
 
         if (content.isEmpty()) {
             throw new NoBooksToShowException();
@@ -131,5 +132,41 @@ public class BookServiceImpl implements BookService {
         } else {
             throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
         }
+    }
+
+    private Pageable buildPageable(boolean asc, boolean desc, boolean older, boolean newer, short page) {
+        Sort sort = Sort.unsorted();
+
+        if (desc) {
+            sort = Sort.by("title").descending();
+        } else if (asc) {
+            sort = Sort.by("title").ascending();
+        }
+
+        if (newer) {
+            sort = sort.and(Sort.by("publishedDate")).descending();
+        } else if (older) {
+            sort = sort.and(Sort.by("publishedDate")).ascending();
+        }
+
+        return PageRequest.of(page - 1, 9, sort);
+    }
+
+    private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
+        Specification<Book> spec = Specification.where(null);
+
+        if (category != null) {
+            spec = spec.and(BookSpecification.categorySpec(category));
+        }
+
+        if (publisher != null) {
+            spec = spec.and(BookSpecification.publisherSpec(publisher));
+        }
+
+        if (releases) {
+            spec = spec.and(BookSpecification.releasesSpec());
+        }
+
+        return spec;
     }
 }

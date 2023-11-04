@@ -1,19 +1,22 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "book")
+@AllArgsConstructor
 @RequiredArgsConstructor
 public class Book {
     @Id
@@ -63,6 +66,10 @@ public class Book {
 
     @Column
     private Integer stock;
+
+    @JsonProperty("created_at")
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
