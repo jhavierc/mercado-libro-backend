@@ -3,8 +3,8 @@ package com.mercadolibro.service.specification;
 import com.mercadolibro.entity.Book;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
+import javax.persistence.criteria.*;
+import java.util.Calendar;
 
 public class BookSpecification {
     /**
@@ -40,5 +40,29 @@ public class BookSpecification {
      */
     public static Specification<Book> publisherSpec(String publisher) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("publisher"), publisher);
+    }
+
+    /**
+     * Builds a condition that validates that a book has been published in the current month.
+     *
+     * @return a Specification object that is used to construct a condition that filters the results of a query.
+     */
+    public static Specification<Book> releasesSpec() {
+        return (root, query, criteriaBuilder) -> {
+            Calendar calendar = Calendar.getInstance();
+            int currentYear = calendar.get(Calendar.YEAR);
+            int currentMonth = calendar.get(Calendar.MONTH) + 1;
+
+            return criteriaBuilder.and(
+                    criteriaBuilder.equal(
+                            criteriaBuilder.function("year", Integer.class, root.get("createdAt")),
+                            currentYear
+                    ),
+                    criteriaBuilder.equal(
+                            criteriaBuilder.function("month", Integer.class, root.get("createdAt")),
+                            currentMonth
+                    )
+            );
+        };
     }
 }

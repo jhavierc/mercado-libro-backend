@@ -3,6 +3,7 @@ package com.mercadolibro.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
@@ -40,45 +41,27 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public long getTotalPages() {
-        long totalBooks = bookRepository.count();
+    public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+                                        boolean older, boolean newer, boolean asc, boolean desc, short page) {
 
-        if (totalBooks != 0) {
-            int pageSize = 9;
-            return (totalBooks + pageSize - 1) / pageSize;
+        Specification<Book> spec = buildSpecification(category, publisher, releases);
+        Pageable pageable = buildPageable(asc, desc, older, newer, page);
+
+        Page<Book> res = bookRepository.findAll(spec, pageable);
+        List<BookRespDTO> content = res.getContent().stream().map(book ->
+                        mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
+
+        if (content.isEmpty()) {
+            throw new NoBooksToShowException();
         }
 
-        throw new NoPagesException();
-    };
-
-    @Override
-    public long getTotalPagesForCategory(String category) {
-        long totalBooks = bookRepository.countByCategory(category);
-
-        if (totalBooks != 0) {
-            int pageSize = 9;
-            return (totalBooks + pageSize - 1) / pageSize;
-        }
-
-        throw new NoPagesException();
-    };
-
-    @Override
-    public List<BookRespDTO> findAll(String category, String publisher, boolean asc, boolean desc, short page) {
-        if (asc && desc) {
-            desc = false;
-        }
-
-        Specification<Book> spec = buildSpecification(category, publisher);
-        Pageable pageable = buildPageable(asc, desc, page);
-
-        List<Book> searched = bookRepository.findAll(spec, pageable).getContent();;
-
-        if (!searched.isEmpty()) {
-            return searched.stream().map(book -> mapper.convertValue(book, BookRespDTO.class))
-                    .collect(Collectors.toList());
-        }
-        throw new NoBooksToShowException();
+        return new PageDTO<BookRespDTO>(
+                content,
+                res.getTotalPages(),
+                res.getTotalElements(),
+                res.getNumber() + 1,
+                res.getSize()
+        );
     }
 
     @Override
@@ -95,18 +78,6 @@ public class BookServiceImpl implements BookService {
             return mapper.convertValue(saved, BookRespDTO.class);
         }
         throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, book.getIsbn()));
-    }
-
-    @Override
-    public long getTotalPagesForCategoryAndPublisher(String category, String publisher) {
-        long totalBooks = bookRepository.countByCategoryAndPublisher(category, publisher);
-
-        if (totalBooks != 0) {
-            int pageSize = 9;
-            return (totalBooks + pageSize - 1) / pageSize;
-        }
-
-        throw new NoPagesException();
     }
 
     @Override
@@ -163,29 +134,37 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    private Pageable buildPageable(boolean asc, boolean desc, short page) {
-        Sort sort = Sort.by("title");
+    private Pageable buildPageable(boolean asc, boolean desc, boolean older, boolean newer, short page) {
+        Sort sort = Sort.unsorted();
 
-        if (desc && !asc || asc && desc) {
-            sort = sort.descending();
+        if (desc) {
+            sort = Sort.by("title").descending();
         } else if (asc) {
-            sort = sort.ascending();
+            sort = Sort.by("title").ascending();
+        }
+
+        if (newer) {
+            sort = sort.and(Sort.by("publishedDate")).descending();
+        } else if (older) {
+            sort = sort.and(Sort.by("publishedDate")).ascending();
         }
 
         return PageRequest.of(page - 1, 9, sort);
     }
 
-    private Specification<Book> buildSpecification(String category, String publisher) {
+    private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
         Specification<Book> spec = Specification.where(null);
 
-        if (category != null && publisher != null) {
-            spec = Specification
-                    .where(BookSpecification.categorySpec(category))
-                    .and(BookSpecification.publisherSpec(publisher));
-        } else if (category != null) {
-            spec = BookSpecification.categorySpec(category);
-        } else if (publisher != null) {
-            spec = BookSpecification.publisherSpec(publisher);
+        if (category != null) {
+            spec = spec.and(BookSpecification.categorySpec(category));
+        }
+
+        if (publisher != null) {
+            spec = spec.and(BookSpecification.publisherSpec(publisher));
+        }
+
+        if (releases) {
+            spec = spec.and(BookSpecification.releasesSpec());
         }
 
         return spec;

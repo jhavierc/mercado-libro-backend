@@ -6,6 +6,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -64,6 +66,10 @@ public class Book {
 
     @Column
     private Integer stock;
+
+    @JsonProperty("created_at")
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

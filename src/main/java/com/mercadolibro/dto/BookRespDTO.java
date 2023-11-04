@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -86,4 +87,8 @@ public class BookRespDTO {
     @Size(min = 1, max = 10)
     @ApiModelProperty(value = "Categories of the book", example = "[{\"id\": 1}]")
     private Set<CategoryRespDTO> categories;
+
+    @JsonProperty("created_at")
+    @ApiModelProperty(value = "Date and time of creation", example = "2023-11-03T06:35:17")
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

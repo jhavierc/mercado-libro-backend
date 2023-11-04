@@ -2,6 +2,7 @@ package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.service.BookService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -54,9 +55,12 @@ public class BookController {
                     @ApiResponse(code = 400, message = "Page less than or equal to zero", response = Map.class)
             }
     )
-    public ResponseEntity<List<BookRespDTO>> findAll(
+    public ResponseEntity<PageDTO<BookRespDTO>> findAll(
             @RequestParam(required = false) @Size(min = 3) String category,
             @RequestParam(required = false) @Size(min = 3) String publisher,
+            @RequestParam(required = false) boolean releases,
+            @RequestParam(required = false) boolean older,
+            @RequestParam(required = false) boolean newer,
             @RequestParam(required = false) boolean asc,
             @RequestParam(required = false) boolean desc,
             @RequestParam @Positive short page) {
