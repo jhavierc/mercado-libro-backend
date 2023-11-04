@@ -10,7 +10,6 @@ import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
-import com.mercadolibro.service.impl.S3ServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +18,8 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -33,7 +34,8 @@ import static org.mockito.Mockito.*;
 public class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
-
+    @Mock
+    private S3Service s3Service;
     @Mock
     private CategoryRepository categoryRepository;
 
@@ -52,20 +54,44 @@ public class BookServiceTest {
     @Test
     public void testSaveBook() {
         Long bookId = 1L;
+        String title = "a title";
+        String isbn = "978-3-4877-9565-2";
+        String firstImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
+        String secondImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
-        Book mockRepositoryResponse = new Book();
-        mockRepositoryResponse.setId(bookId);
-        mockRepositoryResponse.setTitle("a title");
+        ArrayList<String> imageLinks = new ArrayList<>();
+        imageLinks.add(firstImageLink);
+        imageLinks.add(secondImageLink);
 
-        BookReqDTO input = new BookReqDTO();
-        input.setTitle("a title");
+        MockMultipartFile file1 = new MockMultipartFile("example-file-1", "example-file-1.jpg", "image/png", new byte[0]);
+        MockMultipartFile file2 = new MockMultipartFile("example-file-2", "example-file-2.jpg", "image/png", new byte[0]);
+        List<MultipartFile> files = Arrays.asList(file1, file2);
 
-        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
+        Book mockedBook = new Book();
+        mockedBook.setId(bookId);
+        mockedBook.setTitle(title);
+        mockedBook.setIsbn(isbn);
+        mockedBook.setImageLinks(imageLinks);
 
-        BookRespDTO res = bookService.save(input);
+        BookReqDTO bookReqDTO = new BookReqDTO();
+        bookReqDTO.setTitle(title);
+        bookReqDTO.setIsbn(isbn);
+        bookReqDTO.setImages(files);
+
+        S3ObjectDTO s3ObjectDTO1 = new S3ObjectDTO("images/example-file-1.jpg", firstImageLink, "my-bucket-name");
+        S3ObjectDTO s3ObjectDTO2 = new S3ObjectDTO("images/example-file-2.jpg", secondImageLink, "my-bucket-name");
+        List<S3ObjectDTO> s3ObjectDTOS = Arrays.asList(s3ObjectDTO1, s3ObjectDTO2);
+
+        when(bookRepository.existsByIsbn(any(String.class))).thenReturn(false);
+        when(bookRepository.save(any(Book.class))).thenReturn(mockedBook);
+        when(s3Service.uploadFiles(anyList())).thenReturn(s3ObjectDTOS);
+
+        BookRespDTO res = bookService.save(bookReqDTO);
         assertNotNull(res);
-        assertEquals(input.getTitle(), res.getTitle());
+        assertEquals(title, res.getTitle());
         assertEquals(bookId, res.getId());
+        assertEquals(isbn, res.getIsbn());
+        assertEquals(imageLinks, res.getImageLinks());
     }
 
     @Test
@@ -243,8 +269,11 @@ public class BookServiceTest {
     void testDeleteExistingBook() {
         // Arrange
         Long bookId = 1L;
+        String images = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg," +
+                "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
         doReturn(true).when(bookRepository).existsById(bookId);
+        when(bookRepository.findImageLinksById(bookId)).thenReturn(images);
         doNothing().when(bookRepository).deleteById(1L);
 
         // Act

@@ -1,6 +1,6 @@
 package com.mercadolibro.util;
 
-import com.mercadolibro.dto.S3ObjectDTO;
+import com.mercadolibro.dto.S3ObjectUploadDTO;
 import com.mercadolibro.exception.MultipartFileToFileConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
@@ -37,11 +37,11 @@ public class S3UtilTest {
 
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectDTO s3ObjectDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
+        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
 
         verify(multipartFile).getBytes();
-        assertNotNull(s3ObjectDTO);
-        assertEquals(newFileName, s3ObjectDTO.getName());
+        assertNotNull(s3ObjectUploadDTO);
+        assertEquals(newFileName, s3ObjectUploadDTO.getName());
     }
 
     @Test
@@ -51,12 +51,12 @@ public class S3UtilTest {
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectDTO s3ObjectDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
+        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
 
         verify(multipartFile).getName();
         verify(multipartFile).getBytes();
-        assertNotNull(s3ObjectDTO);
-        assertEquals(mockedFileName, s3ObjectDTO.getName());
+        assertNotNull(s3ObjectUploadDTO);
+        assertEquals(mockedFileName, s3ObjectUploadDTO.getName());
     }
 
     @Test
@@ -74,11 +74,9 @@ public class S3UtilTest {
 
     @Test
     public void testGenerateUniqueFileNameSuccess() {
-        String originalName = "name";
+        String uniqueName = S3Util.generateFileName();
 
-        String uniqueName = S3Util.generateUniqueFileName(originalName);
-
-        assertTrue(uniqueName.contains("_" + originalName));
+        assertNotNull(uniqueName);
     }
 
     @Test

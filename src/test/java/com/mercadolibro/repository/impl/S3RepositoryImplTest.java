@@ -1,7 +1,7 @@
 package com.mercadolibro.repository.impl;
 
 import com.mercadolibro.dto.S3ObjectDTO;
-import com.mercadolibro.dto.S3ObjectRespDTO;
+import com.mercadolibro.dto.S3ObjectUploadDTO;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,10 +13,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Utilities;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -45,7 +42,7 @@ public class S3RepositoryImplTest {
 
         // Expected
         String expectedKey = imagesPath + fileName;
-        S3ObjectDTO expectedReq = new S3ObjectDTO(fileName, new ByteArrayInputStream(bytesContent));
+        S3ObjectUploadDTO expectedReq = new S3ObjectUploadDTO(fileName, new ByteArrayInputStream(bytesContent));
         URL expectedUrl = new URL("https://" + bucketName + ".s3.amazonaws.com/" + expectedKey);
 
         // Set autowired vars because config is not loaded in tests
@@ -61,7 +58,7 @@ public class S3RepositoryImplTest {
         when(s3Client.utilities()).thenReturn(expectedS3Utilities);
 
         // Act
-        S3ObjectRespDTO result = s3Repository.putFile(expectedReq);
+        S3ObjectDTO result = s3Repository.putFile(expectedReq);
 
         // Assert
         assertEquals(expectedKey, result.getKey());
@@ -75,7 +72,7 @@ public class S3RepositoryImplTest {
         String fileName = "testFile.txt";
         byte[] bytesContent = "Test content".getBytes();
 
-        S3ObjectDTO expectedReq = new S3ObjectDTO(fileName, new ByteArrayInputStream(bytesContent));
+        S3ObjectUploadDTO expectedReq = new S3ObjectUploadDTO(fileName, new ByteArrayInputStream(bytesContent));
 
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).thenThrow(new RuntimeException());
 
@@ -93,15 +90,15 @@ public class S3RepositoryImplTest {
         byte[] bytesContent1 = "Test content 1".getBytes();
         byte[] bytesContent2 = "Test content 2".getBytes();
 
-        S3ObjectDTO reqDTO1 = new S3ObjectDTO("file1", new ByteArrayInputStream(bytesContent1));
-        S3ObjectDTO reqDTO2 = new S3ObjectDTO("file2", new ByteArrayInputStream(bytesContent2));
-        List<S3ObjectDTO> reqDTOs = new ArrayList<>();
+        S3ObjectUploadDTO reqDTO1 = new S3ObjectUploadDTO("file1", new ByteArrayInputStream(bytesContent1));
+        S3ObjectUploadDTO reqDTO2 = new S3ObjectUploadDTO("file2", new ByteArrayInputStream(bytesContent2));
+        List<S3ObjectUploadDTO> reqDTOs = new ArrayList<>();
         reqDTOs.add(reqDTO1);
         reqDTOs.add(reqDTO2);
 
-        S3ObjectRespDTO respDTO1 = new S3ObjectRespDTO("testPath/file1", "https://test-bucket.s3.amazonaws.com/testPath/file1", "test-bucket");
-        S3ObjectRespDTO respDTO2 = new S3ObjectRespDTO("testPath/file2", "https://test-bucket.s3.amazonaws.com/testPath/file2", "test-bucket");
-        List<S3ObjectRespDTO> expectedResponses = new ArrayList<>();
+        S3ObjectDTO respDTO1 = new S3ObjectDTO("testPath/file1", "https://test-bucket.s3.amazonaws.com/testPath/file1", "test-bucket");
+        S3ObjectDTO respDTO2 = new S3ObjectDTO("testPath/file2", "https://test-bucket.s3.amazonaws.com/testPath/file2", "test-bucket");
+        List<S3ObjectDTO> expectedResponses = new ArrayList<>();
         expectedResponses.add(respDTO1);
         expectedResponses.add(respDTO2);
 
@@ -118,7 +115,7 @@ public class S3RepositoryImplTest {
         when(s3Client.utilities()).thenReturn(expectedS3Utilities);
 
         // Act
-        List<S3ObjectRespDTO> actualResponses = s3Repository.putFiles(reqDTOs);
+        List<S3ObjectDTO> actualResponses = s3Repository.putFiles(reqDTOs);
 
         // Assert
         assertEquals(expectedResponses.get(0).getKey(), actualResponses.get(0).getKey());
@@ -132,26 +129,28 @@ public class S3RepositoryImplTest {
 
     @Test
     public void deleteFileSuccess() {
-        String fileName = "testFile.txt";
+        List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
+        s3ObjectDTOS.add(new S3ObjectDTO("test", "test", "test"));
+        DeleteObjectsResponse deleteResponse = DeleteObjectsResponse.builder().build();
 
-        DeleteObjectResponse deleteResponse = DeleteObjectResponse.builder().build();
-        when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(deleteResponse);
+        when(s3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
 
-        s3Repository.deleteFile(fileName);
+        s3Repository.deleteFiles(s3ObjectDTOS);
 
-        verify(s3Client).deleteObject(any(DeleteObjectRequest.class));
+        verify(s3Client).deleteObjects(any(DeleteObjectsRequest.class));
     }
 
     @Test
     public void deleteFileException() {
-        String fileName = "testFile.txt";
+        List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
+        s3ObjectDTOS.add(new S3ObjectDTO("test", "test", "test"));
 
-        when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(new RuntimeException());
+        when(s3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenThrow(new RuntimeException());
 
         S3Exception exception = assertThrows(S3Exception.class,
-                () -> s3Repository.deleteFile(fileName));
+                () -> s3Repository.deleteFiles(s3ObjectDTOS));
 
-        verify(s3Client).deleteObject(any(DeleteObjectRequest.class));
+        verify(s3Client).deleteObjects(any(DeleteObjectsRequest.class));
         assertEquals(DELETE_FILE_ERROR_FORMAT, exception.getMessage());
     }
 }
