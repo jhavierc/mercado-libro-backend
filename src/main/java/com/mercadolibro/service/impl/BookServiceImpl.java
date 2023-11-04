@@ -56,7 +56,7 @@ public class BookServiceImpl implements BookService {
                 content,
                 res.getTotalPages(),
                 res.getTotalElements(),
-                res.getNumber() + 1,
+                res.getNumber(),
                 res.getSize()
         );
     }
@@ -151,7 +151,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Sort sorted = Sort.by(orders);
-        return PageRequest.of(page - 1, 9, sorted);
+        return PageRequest.of(page, 9, sorted);
     }
 
     private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
