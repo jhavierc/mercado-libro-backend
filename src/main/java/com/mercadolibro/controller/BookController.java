@@ -14,9 +14,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -59,12 +60,12 @@ public class BookController {
             @RequestParam(required = false) @Size(min = 3) String category,
             @RequestParam(required = false) @Size(min = 3) String publisher,
             @RequestParam(required = false) boolean releases,
-            @RequestParam(required = false) boolean older,
-            @RequestParam(required = false) boolean newer,
-            @RequestParam(required = false) boolean asc,
-            @RequestParam(required = false) boolean desc,
-            @RequestParam @Positive short page) {
-        return ResponseEntity.ok(bookService.findAll(category, publisher, releases, older, newer, asc, desc, page));
+            @RequestParam(required = false) @Size(min = 3)
+            @Pattern(regexp = "newer|older", message = "selection value must be 'newer' or 'older'")String selection,
+            @RequestParam(required = false) @Size(min = 3)
+            @Pattern(regexp = "asc|desc", message = "sort value must be 'asc' or 'desc'") String sort,
+            @RequestParam @PositiveOrZero short page) {
+        return ResponseEntity.ok(bookService.findAll(category, publisher, releases, selection, sort, page));
     }
 
     @GetMapping("/{id}")

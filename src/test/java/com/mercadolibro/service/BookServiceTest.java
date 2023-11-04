@@ -158,10 +158,8 @@ public class BookServiceTest {
                 category,
                 null,
                 false,
-                false,
-                false,
-                false,
-                false,
+                null,
+                null,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -195,10 +193,8 @@ public class BookServiceTest {
                 null,
                 null,
                 false,
-                false,
-                false,
-                false,
-                false,
+                null,
+                null,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -208,10 +204,10 @@ public class BookServiceTest {
     }
 
     @Test
-    @DisplayName("should throw NoBooksToShowException when tries to find all and there are no books")
+    @DisplayName("should return an empty page when tries to find all and there are no books")
     public void testFindNoBooks() {
         // WHEN
-        Page<Book> mockResponse = new PageImpl<>(Collections.emptyList(), Pageable.unpaged(), 0);
+        Page<Book> mockResponse = new PageImpl<>(Collections.emptyList(), Pageable.ofSize(9), 0);
 
         when(bookRepository.findAll(
                 ArgumentMatchers.<Specification<Book>>any(),
@@ -219,15 +215,19 @@ public class BookServiceTest {
                 .thenReturn(mockResponse);
 
         // THEN
-        assertThrows(NoBooksToShowException.class, () -> bookService.findAll(
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                "random",
+                null,
+                false,
                 null,
                 null,
-                false,
-                false,
-                false,
-                false,
-                false,
-                (short) 1));
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertTrue(books.isEmpty());
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getTotalPages());
     }
 
     @Test
@@ -242,7 +242,7 @@ public class BookServiceTest {
                         .publisher(publisher)
                         .build()
         );
-        Page<Book> mockResponse = new PageImpl<>(content, Pageable.unpaged(), content.size());
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
 
         when(bookRepository.findAll(
                 ArgumentMatchers.<Specification<Book>>any(),
@@ -254,10 +254,8 @@ public class BookServiceTest {
                 null,
                 publisher,
                 false,
-                false,
-                false,
-                false,
-                false,
+                null,
+                null,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -282,7 +280,7 @@ public class BookServiceTest {
                                 .build()))
                         .build()
         );
-        Page<Book> mockResponse = new PageImpl<>(content, Pageable.unpaged(), content.size());
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
 
         when(bookRepository.findAll(
                 ArgumentMatchers.<Specification<Book>>any(),
@@ -294,10 +292,8 @@ public class BookServiceTest {
                 category,
                 publisher,
                 false,
-                false,
-                false,
-                false,
-                false,
+                null,
+                null,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -312,7 +308,7 @@ public class BookServiceTest {
     @DisplayName("should find all books sorted ascendant")
     public void testFindAllSortedAscendant() {
         // GIVEN
-        boolean ascendant = true;
+        String sort = "asc";
 
         // WHEN
         List<Book> content = List.of(
@@ -338,10 +334,8 @@ public class BookServiceTest {
                 null,
                 null,
                 false,
-                false,
-                false,
-                ascendant,
-                false,
+                null,
+                sort,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -355,7 +349,7 @@ public class BookServiceTest {
     @DisplayName("should find all books sorted descendant")
     public void testFindAllSortedDescendant() {
         // GIVEN
-        boolean descendant = true;
+        String sort = "desc";
 
         // WHEN
         List<Book> content = List.of(
@@ -381,10 +375,8 @@ public class BookServiceTest {
                 null,
                 null,
                 false,
-                false,
-                false,
-                false,
-                descendant,
+                null,
+                sort,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();
@@ -406,7 +398,7 @@ public class BookServiceTest {
                         .createdAt(LocalDateTime.now())
                         .build()
         );
-        Page<Book> mockResponse = new PageImpl<>(content, Pageable.unpaged(), content.size());
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
 
         when(bookRepository.findAll(
                 ArgumentMatchers.<Specification<Book>>any(),
@@ -418,10 +410,8 @@ public class BookServiceTest {
                 null,
                 null,
                 releases,
-                false,
-                false,
-                false,
-                false,
+                null,
+                null,
                 (short) 1);
 
         List<BookRespDTO> books = result.getContent();

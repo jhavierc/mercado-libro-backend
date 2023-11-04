@@ -36,17 +36,16 @@ public interface BookService {
      *
      * @param category Not required. It is used in case you want to filter by category.
      * @param publisher Not required. It is used in case you want to filter by publisher.
-     * @param lastMonth Not required. It is used when you want to filter the latest news of the month.
-     * @param older Not required. It is used if you want to sort from older books to newer ones.
-     * @param newer Not required. It is used if you want to sort from newer books to older ones.
-     * @param asc Not required. It is used if you want to sort in ascending order.
-     * @param desc Not required. It is used if you want to sort in descending order.
+     * @param releases Not required. It is used when you want to filter the latest news of the month.
+     * @param selection Not required. It is used if you want to sort from newer books to older ones or
+     *                  from older books to newer ones.
+     * @param sort Not required. It is used if you want to sort in ascending order or descending order.
      * @param page The page number being searched.
      * @return A list of BookRespDTO containing books, whether filtered, sorted, or all.
      * @throws NoBooksToShowException If no books are found.
      */
-    PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases, boolean older, boolean newer,
-                                 boolean asc, boolean desc, short page);
+    PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+                                 String sort, String selection, short page);
 
     /**
      * Saves a new book.

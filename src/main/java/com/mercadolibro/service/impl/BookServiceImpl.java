@@ -17,6 +17,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,10 +43,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
-                                        boolean older, boolean newer, boolean asc, boolean desc, short page) {
+                                        String selection, String sort, short page) {
 
         Specification<Book> spec = buildSpecification(category, publisher, releases);
-        Pageable pageable = buildPageable(asc, desc, older, newer, page);
+        Pageable pageable = buildPageable(sort, selection, page);
 
         Page<Book> res = bookRepository.findAll(spec, pageable);
         List<BookRespDTO> content = res.getContent().stream().map(book ->
@@ -130,22 +131,27 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    private Pageable buildPageable(boolean asc, boolean desc, boolean older, boolean newer, short page) {
-        Sort sort = Sort.unsorted();
+    private Pageable buildPageable(String sort, String selection, short page) {
+        List<Sort.Order> orders = new ArrayList<>();
 
-        if (desc) {
-            sort = Sort.by("title").descending();
-        } else if (asc) {
-            sort = Sort.by("title").ascending();
+        if (sort != null) {
+            if (sort.equalsIgnoreCase("desc")) {
+                orders.add(Sort.Order.desc("title"));
+            } else if (sort.equalsIgnoreCase("asc")) {
+                orders.add(Sort.Order.asc("title"));
+            }
         }
 
-        if (newer) {
-            sort = sort.and(Sort.by("publishedDate")).descending();
-        } else if (older) {
-            sort = sort.and(Sort.by("publishedDate")).ascending();
+        if (selection != null) {
+            if (selection.equalsIgnoreCase("newer")) {
+                orders.add(Sort.Order.desc("publishedDate"));
+            } else if (selection.equalsIgnoreCase("older")) {
+                orders.add(Sort.Order.asc("publishedDate"));
+            }
         }
 
-        return PageRequest.of(page - 1, 9, sort);
+        Sort sorted = Sort.by(orders);
+        return PageRequest.of(page - 1, 9, sorted);
     }
 
     private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
