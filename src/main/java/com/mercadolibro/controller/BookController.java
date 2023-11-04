@@ -1,35 +1,33 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.annotation.BookRequest;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
-import com.mercadolibro.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/book")
 @CrossOrigin(origins = "*")
 public class BookController {
     private final BookService bookService;
-    private final S3Service s3Service;
 
     @Autowired
-    public BookController(BookService bookService, S3Service s3Service) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.s3Service = s3Service;
     }
 
     @PostMapping("/save")
-    public ResponseEntity<BookRespDTO> save(@RequestBody @Valid BookReqDTO book) {
-        s3Service.uploadFiles(book.getImages());
-
+    public ResponseEntity<BookRespDTO> save(@BookRequest @Valid BookReqDTO book) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.save(book));
     }
 
@@ -55,13 +53,13 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody @Valid BookReqDTO bookReqDTO) {
+    public ResponseEntity<Object> update(@PathVariable Long id, @BookRequest @Valid BookReqDTO bookReqDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.update(id, bookReqDTO));
     }
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> patch(@PathVariable Long id, @RequestBody @Valid BookReqPatchDTO bookReqPatchDTO) {
+    public ResponseEntity<Object> patch(@PathVariable Long id, @BookRequest @Valid BookReqPatchDTO bookReqPatchDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqPatchDTO));
     }
 }

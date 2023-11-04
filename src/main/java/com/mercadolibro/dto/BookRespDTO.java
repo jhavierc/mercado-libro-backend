@@ -28,11 +28,11 @@ public class BookRespDTO {
     @JsonProperty("ratings_count")
     private Short ratingsCount;
     @JsonProperty("image_links")
-    private ArrayList<S3ObjectRespDTO> images;
+    private ArrayList<String> imageLinks;
     private String language;
     private BigDecimal price;
     @JsonProperty("currency_code")
     private String currencyCode;
     private Integer stock;
     private Set<CategoryRespDTO> categories;
-}
+} // TODO: delete validations when merging with the other product branch (If you don't understand this while merging conflicts dm me @nachofra)

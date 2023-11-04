@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -76,6 +77,8 @@ public class BookReqDTO {
     @NotNull
     private Integer stock;
 
+    @Valid
     @Size(min = 1, max = 10)
+    @NotNull
     private Set<BookCategoryReqDTO> categories;
 }

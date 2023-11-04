@@ -1,7 +1,7 @@
 package com.mercadolibro.service.impl;
 
+import com.mercadolibro.dto.S3ObjectUploadDTO;
 import com.mercadolibro.dto.S3ObjectDTO;
-import com.mercadolibro.dto.S3ObjectRespDTO;
 import com.mercadolibro.repository.S3Repository;
 import com.mercadolibro.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mercadolibro.util.S3Util.convertMultipartFileToS3ObjectReqDTO;
-import static com.mercadolibro.util.S3Util.generateUniqueFileName;
+import static com.mercadolibro.util.S3Util.generateFileName;
 
 @Service
 public class S3ServiceImpl implements S3Service {
@@ -24,16 +24,16 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public S3ObjectRespDTO uploadFile(MultipartFile multipartFile) {
-        String uniqueFileName = generateUniqueFileName(multipartFile.getName());
-        S3ObjectDTO s3ObjectDTO = convertMultipartFileToS3ObjectReqDTO(multipartFile, uniqueFileName);
+    public S3ObjectDTO uploadFile(MultipartFile multipartFile) {
+        String uniqueFileName = generateFileName();
+        S3ObjectUploadDTO s3ObjectUploadDTO = convertMultipartFileToS3ObjectReqDTO(multipartFile, uniqueFileName);
 
-        return s3Repository.putFile(s3ObjectDTO);
+        return s3Repository.putFile(s3ObjectUploadDTO);
     }
 
     @Override
-    public List<S3ObjectRespDTO> uploadFiles(List<MultipartFile> multipartFiles) {
-        List<S3ObjectRespDTO> uploadedObjects = new ArrayList<>();
+    public List<S3ObjectDTO> uploadFiles(List<MultipartFile> multipartFiles) {
+        List<S3ObjectDTO> uploadedObjects = new ArrayList<>();
 
         for (MultipartFile file : multipartFiles) {
             uploadedObjects.add(uploadFile(file));
@@ -43,7 +43,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public void deleteFile(String fileName) {
-        s3Repository.deleteFile(fileName);
+    public void deleteFiles(List<S3ObjectDTO> s3ObjectDTOS) {
+        s3Repository.deleteFiles(s3ObjectDTOS);
     }
 }

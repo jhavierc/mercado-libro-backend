@@ -68,9 +68,9 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(S3Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleS3Exception(S3Exception e) {
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), e.getCode());
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return ResponseEntity.status(e.getCode()).body(errorResponse);
     }
     @ExceptionHandler(MultipartFileToFileConversionException.class)
     public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToFileConversionException e) {

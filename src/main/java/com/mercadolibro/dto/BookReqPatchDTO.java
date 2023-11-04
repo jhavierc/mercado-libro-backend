@@ -15,10 +15,7 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Past;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -93,5 +90,6 @@ public class BookReqPatchDTO {
     @Valid
     @Size(min = 1, max = 10)
     @ApiModelProperty(value = "Categories of the book", example = "[{\"id\": 1}]")
-    private Set<CategoryReqDTO> categories;
+    @NotNull
+    private Set<BookCategoryReqDTO> categories;
 }

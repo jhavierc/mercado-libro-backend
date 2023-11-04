@@ -4,17 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.NoBooksToShowException;
 import com.mercadolibro.exception.BookNotFoundException;
+import com.mercadolibro.exception.S3Exception;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
+import com.mercadolibro.service.S3Service;
+import com.mercadolibro.util.S3Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import java.util.List;
@@ -26,15 +31,20 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final ObjectMapper mapper;
     private final ModelMapper modelMapper;
+    private final S3Service s3Service;
 
     public static final String BOOK_NOT_FOUND_ERROR_FORMAT = "Could not found book with ID #%d.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
 
+    public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload rolled back successfully";
+
+
     @Autowired
-    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper) {
+    public BookServiceImpl(BookRepository bookRepository, ObjectMapper mapper, ModelMapper modelMapper, S3Service s3Service) {
         this.bookRepository = bookRepository;
         this.mapper = mapper;
         this.modelMapper = modelMapper;
+        this.s3Service = s3Service;
     }
 
     @Override
@@ -48,12 +58,21 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookRespDTO save(BookReqDTO book) {
-        if (!bookRepository.existsByIsbn(book.getIsbn())) {
-            Book saved = bookRepository.save(mapper.convertValue(book, Book.class));
-            return mapper.convertValue(saved, BookRespDTO.class);
+    public BookRespDTO save(BookReqDTO bookReqDTO) {
+        if (!bookRepository.existsByIsbn(bookReqDTO.getIsbn())) {
+            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
+            try {
+                Book mappedBook = mapper.convertValue(bookReqDTO, Book.class);
+                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
+
+                Book saved = bookRepository.save(mappedBook);
+                return mapper.convertValue(saved, BookRespDTO.class);
+            }catch (Exception e){
+                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload
+                throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
+            }
         }
-        throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, book.getIsbn()));
+        throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
     }
 
     @Override
@@ -113,6 +132,16 @@ public class BookServiceImpl implements BookService {
     @Override
     public void delete(Long id) {
         if (bookRepository.existsById(id)) {
+            String imageLinks = bookRepository.findImageLinksById(id);
+            String[] splitLinks = imageLinks.split(",");
+
+            List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
+
+            for (String link : splitLinks) {
+                s3ObjectDTOS.add(S3Util.parseS3Url(link));
+            }
+            s3Service.deleteFiles(s3ObjectDTOS);
+
             bookRepository.deleteById(id);
         } else {
             throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));

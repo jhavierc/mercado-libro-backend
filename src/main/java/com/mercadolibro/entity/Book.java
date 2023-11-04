@@ -48,7 +48,7 @@ public class Book {
     private Short ratingsCount;
 
     @JsonProperty("image_links")
-    @Column(name = "image_links")
+    @Column(name = "image_links") // TODO: Research a way to make default mediumblob type in mysql
     private ArrayList<String> imageLinks;
 
     @Column
