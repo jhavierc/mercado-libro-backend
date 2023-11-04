@@ -18,6 +18,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
 @ApiModel(description = "Book Request DTO", value = "BookReq")

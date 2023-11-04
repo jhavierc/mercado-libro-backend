@@ -64,48 +64,7 @@ public class BookController {
             @RequestParam(required = false) boolean asc,
             @RequestParam(required = false) boolean desc,
             @RequestParam @Positive short page) {
-        return ResponseEntity.ok(bookService.findAll(category, publisher, asc, desc, page));
-    }
-
-    @GetMapping("/pages/{category}")
-    @ApiOperation(value = "Get all pages by category", notes = "Returns all category's pages")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
-                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
-            }
-    )
-    public ResponseEntity<Long> getTotalPagesForCategory(@PathVariable @Size(min = 3) String category) {
-        return ResponseEntity.ok(bookService.getTotalPagesForCategory(category));
-    }
-
-    @GetMapping("/pages/{category}/{publisher}")
-    @ApiOperation(value = "Get all pages by category and publisher", notes = "Returns all the publisher pages " +
-            "regarding the category")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
-                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
-            }
-    )
-    public ResponseEntity<Long> getTotalPagesForCategoryAndPublisher(@PathVariable @Size(min = 3) String category,
-                                                                     @PathVariable @Size(min = 3) String publisher) {
-        return ResponseEntity.ok(bookService.getTotalPagesForCategoryAndPublisher(category, publisher));
-    }
-
-    @GetMapping("/pages")
-    @ApiOperation(value = "Get all pages", notes = "Returns all book pages")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Pages calculated successfully", response = Long.class),
-                    @ApiResponse(code = 404, message = "Pages not found", response = Long.class)
-            }
-    )
-    public ResponseEntity<Long> getTotalPages() {
-        return ResponseEntity.ok(bookService.getTotalPages());
+        return ResponseEntity.ok(bookService.findAll(category, publisher, releases, older, newer, asc, desc, page));
     }
 
     @GetMapping("/{id}")

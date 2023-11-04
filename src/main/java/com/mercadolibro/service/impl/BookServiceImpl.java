@@ -51,10 +51,6 @@ public class BookServiceImpl implements BookService {
         List<BookRespDTO> content = res.getContent().stream().map(book ->
                         mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
 
-        if (content.isEmpty()) {
-            throw new NoBooksToShowException();
-        }
-
         return new PageDTO<BookRespDTO>(
                 content,
                 res.getTotalPages(),
