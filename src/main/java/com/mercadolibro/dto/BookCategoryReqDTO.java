@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
 @ApiModel(description = "Book Category Request DTO", value = "BookCategoryReq")

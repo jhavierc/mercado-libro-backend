@@ -14,7 +14,6 @@ import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
 
 import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.and;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
