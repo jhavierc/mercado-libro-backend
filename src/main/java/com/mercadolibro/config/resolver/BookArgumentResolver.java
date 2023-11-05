@@ -2,9 +2,14 @@ package com.mercadolibro.config.resolver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mercadolibro.dto.BookCategoryReqDTO;
 import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.annotation.BookRequest;
+import com.mercadolibro.exception.UnsupportedParameterTypeException;
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -16,15 +21,21 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class BookArgumentResolver implements HandlerMethodArgumentResolver {
     private final ObjectMapper mapper;
+    private final ModelMapper modelMapper;
+    public static final String ARGUMENT_RESOLVER_UNSUPPORTED_PARAMETER_TYPE_ERROR = "The parameter class is not supported. Please use BookReqDTO or BookReqPatchDTO.";
 
     @Autowired
-    public BookArgumentResolver(ObjectMapper mapper) {
+    public BookArgumentResolver(ObjectMapper mapper, ModelMapper modelMapper) {
         this.mapper = mapper;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -42,10 +53,23 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
 
         Map<String, Object> simpleAttributes = extractSimpleAttributes(attributes);
 
-        BookReqDTO bookReqDTO = mapper.convertValue(simpleAttributes, BookReqDTO.class);
-        handleMultipartData(httpServletRequest, bookReqDTO);
+        if (parameter.getParameterType().equals(BookReqDTO.class)) {
+            BookReqDTO bookReqDTO = mapper.convertValue(simpleAttributes, BookReqDTO.class);
+            handleMultipartData(httpServletRequest, bookReqDTO);
 
-        return bookReqDTO;
+            return bookReqDTO;
+        } else if (parameter.getParameterType().equals(BookReqPatchDTO.class)) {
+            modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+            mapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+
+
+            BookReqPatchDTO bookReqPatchDTO = mapper.convertValue(simpleAttributes, BookReqPatchDTO.class);
+            handleMultipartData(httpServletRequest, bookReqPatchDTO);
+
+            return bookReqPatchDTO;
+        }
+
+        throw new UnsupportedParameterTypeException(ARGUMENT_RESOLVER_UNSUPPORTED_PARAMETER_TYPE_ERROR);
     }
 
     private Map<String, Object> extractSimpleAttributes(Map<String, String[]> attributes) throws JsonProcessingException {
@@ -53,11 +77,17 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
         for (Map.Entry<String, String[]> entry : attributes.entrySet()) {
             String[] values = entry.getValue();
             if (values.length > 0) {
-                if ("categories[]".equals(entry.getKey())) {
-                    List<BookCategoryReqDTO> bookCategoryReqDTOS = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, BookCategoryReqDTO.class));
-                    simpleAttributes.put("categories", bookCategoryReqDTOS);
-                } else {
-                    simpleAttributes.put(entry.getKey(), values[0]);
+                switch (entry.getKey()){
+                    case "categories[]":
+                        List<BookCategoryReqDTO> bookCategoryReqDTOS = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, BookCategoryReqDTO.class));
+                        simpleAttributes.put("categories", bookCategoryReqDTOS);
+                        break;
+                    case "images_to_replace_urls[]":
+                        List<String> imageToReplaceURLs = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+                        simpleAttributes.put("images_to_replace_urls", imageToReplaceURLs);
+                        break;
+                    default:
+                        simpleAttributes.put(entry.getKey(), values[0]);
                 }
             }
         }
@@ -67,8 +97,18 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
     private void handleMultipartData(HttpServletRequest httpServletRequest, BookReqDTO bookReqDTO) {
         if (httpServletRequest instanceof StandardMultipartHttpServletRequest) {
             StandardMultipartHttpServletRequest multipartRequest = (StandardMultipartHttpServletRequest) httpServletRequest;
+
             List<MultipartFile> files = multipartRequest.getMultiFileMap().get("images[]");
             bookReqDTO.setImages(files);
+        }
+    }
+
+    private void handleMultipartData(HttpServletRequest httpServletRequest, BookReqPatchDTO bookReqPatchDTO) {
+        if (httpServletRequest instanceof StandardMultipartHttpServletRequest) {
+            StandardMultipartHttpServletRequest multipartRequest = (StandardMultipartHttpServletRequest) httpServletRequest;
+
+            List<MultipartFile> files = multipartRequest.getMultiFileMap().get("images[]");
+            bookReqPatchDTO.setImages(files);
         }
     }
 }

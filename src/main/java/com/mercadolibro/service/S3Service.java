@@ -23,6 +23,15 @@ public interface S3Service {
     List<S3ObjectDTO> uploadFiles(List<MultipartFile> multipartFiles);
 
     /**
+     * Replace files to the S3 repository using specified URLs.
+     *
+     * @param multipartFiles The list of MultipartFiles to be uploaded.
+     * @param fileURLs       The corresponding URLs for the files to be uploaded.
+     * @return A list of S3ObjectDTOs representing metadata of the uploaded files.
+     */
+    List<S3ObjectDTO> replaceFilesByURLs(List<MultipartFile> multipartFiles, List<String> fileURLs);
+
+    /**
      * Deletes files from the S3 repository by their object information.
      *
      * @param s3ObjectDTOS A list of S3ObjectDTO representing files to be deleted from the S3 repository.

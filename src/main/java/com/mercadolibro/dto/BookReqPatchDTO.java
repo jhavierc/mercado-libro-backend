@@ -1,9 +1,8 @@
 package com.mercadolibro.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
+import com.mercadolibro.dto.deserializer.DateDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -18,7 +17,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +42,7 @@ public class BookReqPatchDTO {
     private String publisher;
 
     @Past
-    @JsonDeserialize(using = DateDeserializers.DateDeserializer.class)
+    @JsonDeserialize(using = DateDeserializer.class)
     @JsonProperty("published_date")
     @ApiModelProperty(value = "Published date of the book", example = "1991-06-14")
     private LocalDate publishedDate;
@@ -69,7 +67,12 @@ public class BookReqPatchDTO {
 
     @Size(min = 1, max = 5)
     @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
-    private ArrayList<MultipartFile> images;
+    private List<MultipartFile> images;
+
+    @Size(min = 1, max = 5)
+    @JsonProperty("images_to_replace_urls")
+    @ApiModelProperty(value = "Select at least 1 and at most 5 URLs of the images to replace.", example = "[\"https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg\", \"https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg\"]")
+    private List<String> imagesToReplaceURLs;
 
     @ApiModelProperty(value = "Language of the book", example = "ES")
     private String language;
@@ -90,6 +93,5 @@ public class BookReqPatchDTO {
     @Valid
     @Size(min = 1, max = 10)
     @ApiModelProperty(value = "Categories of the book", example = "[{\"id\": 1}]")
-    @NotNull
     private Set<BookCategoryReqDTO> categories;
 }

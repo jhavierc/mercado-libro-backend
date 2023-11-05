@@ -18,26 +18,24 @@ import java.util.List;
 public class S3RepositoryImpl implements S3Repository {
     private final S3Client s3Client;
     private final String bucketName;
-    private final String imagesPath;
 
     public static final String UPLOAD_FILE_ERROR_FORMAT = "Error while uploading file to S3";
     public static final String DELETE_FILE_ERROR_FORMAT = "Error while deleting file from S3";
 
     @Autowired
-    public S3RepositoryImpl(S3Client s3Client, String bucketName, String imagesPath) {
+    public S3RepositoryImpl(S3Client s3Client, String bucketName) {
         this.s3Client = s3Client;
         this.bucketName = bucketName;
-        this.imagesPath = imagesPath;
     }
 
     @Override
     public S3ObjectDTO putFile(S3ObjectUploadDTO s3ObjectUploadDTO) {
-        String key = imagesPath + s3ObjectUploadDTO.getName();
+        String fileKey = s3ObjectUploadDTO.getKey();
 
         try {
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(key)
+                    .key(fileKey)
                     .contentType("image/png") // Amazon forces all images to be png type in metadata to be previewed through the browser with the URL. See more: https://repost.aws/knowledge-center/cloudfront-troubleshooting-images
                     .build();
 
@@ -46,9 +44,9 @@ public class S3RepositoryImpl implements S3Repository {
             throw new S3Exception(UPLOAD_FILE_ERROR_FORMAT);
         }
 
-        URL url = s3Client.utilities().getUrl(r -> r.bucket(bucketName).key(key));
+        URL url = s3Client.utilities().getUrl(r -> r.bucket(bucketName).key(fileKey));
 
-        return new S3ObjectDTO(key, url.toString(), bucketName);
+        return new S3ObjectDTO(fileKey, url.toString(), bucketName);
     }
 
     @Override

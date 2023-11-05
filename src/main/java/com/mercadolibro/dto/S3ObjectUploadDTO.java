@@ -10,6 +10,6 @@ import java.io.ByteArrayInputStream;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class S3ObjectUploadDTO {
-    private String name;
+    private String key;
     private ByteArrayInputStream content;
 }

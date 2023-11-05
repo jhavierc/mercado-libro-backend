@@ -34,14 +34,15 @@ public class S3Util {
      * @param multipartFile The source file to convert.
      * @param newFileName   The optional new file name. If provided (not null or empty), it will be used as the file name.
      *                     If null or empty, the original name from the MultipartFile will be used.
+     * @param filePath      The path in the S3 bucket where the file will be stored.
      * @return The S3ObjectUploadDTO generated from the MultipartFile.
      * @throws MultipartFileToDTOConversionException When an error occurs during the conversion.
      */
-    public static S3ObjectUploadDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName) {
+    public static S3ObjectUploadDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName, String filePath) {
         String fileName = (newFileName != null && !newFileName.isEmpty()) ? newFileName : multipartFile.getName();
 
         S3ObjectUploadDTO s3ObjectUploadDTO = new S3ObjectUploadDTO();
-        s3ObjectUploadDTO.setName(fileName);
+        s3ObjectUploadDTO.setKey(filePath + fileName);
 
         try {
             s3ObjectUploadDTO.setContent(new ByteArrayInputStream(multipartFile.getBytes()));

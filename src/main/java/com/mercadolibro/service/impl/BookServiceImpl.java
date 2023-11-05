@@ -6,10 +6,7 @@ import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.S3ObjectDTO;
 import com.mercadolibro.entity.Book;
-import com.mercadolibro.exception.BookAlreadyExistsException;
-import com.mercadolibro.exception.NoBooksToShowException;
-import com.mercadolibro.exception.BookNotFoundException;
-import com.mercadolibro.exception.S3Exception;
+import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.service.BookService;
 import com.mercadolibro.service.S3Service;
@@ -18,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -37,6 +35,7 @@ public class BookServiceImpl implements BookService {
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
 
     public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload rolled back successfully";
+    public static final String FILE_NOT_FOUND_MESSAGE = "The file associated with URL: %s does not exist.";
 
 
     @Autowired
@@ -120,9 +119,30 @@ public class BookServiceImpl implements BookService {
                 throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqPatchDTO.getIsbn()));
             }
 
+            List<MultipartFile> imagesToUpload = bookReqPatchDTO.getImages();
+            List<String> imageURLs = bookReqPatchDTO.getImagesToReplaceURLs();
+
+            String existingImageLinks = bookRepository.findImageLinksById(id);
+            List<String> splitLinks = List.of(existingImageLinks.split(","));
+            for (String URL : imageURLs) {
+                if (!splitLinks.contains(URL)) {
+                    throw new BookImageKeyDoesNotExistException(String.format(FILE_NOT_FOUND_MESSAGE, URL));
+                }
+            }
+
+            List<S3ObjectDTO> uploadedFiles = s3Service.replaceFilesByURLs(imagesToUpload, imageURLs);
+
+            ArrayList<String> imageLinks = new ArrayList<>();
+            for (S3ObjectDTO file : uploadedFiles) {
+                imageLinks.add(file.getUrl());
+            }
+
+            optionalBook.get().setImageLinks(imageLinks);
+
             bookReqPatchDTO.setId(id);
             modelMapper.map(bookReqPatchDTO, optionalBook.get());
             Book book = bookRepository.save(optionalBook.get());
+
             return mapper.convertValue(book, BookRespDTO.class);
         }
 
@@ -151,7 +171,8 @@ public class BookServiceImpl implements BookService {
 
             s3Service.deleteFiles(s3ObjectDTOS);
             bookRepository.deleteById(id);
+        }else {
+            throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
         }
-        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 }
