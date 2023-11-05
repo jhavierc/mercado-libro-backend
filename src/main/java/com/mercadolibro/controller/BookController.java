@@ -5,6 +5,7 @@ import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.service.BookService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,14 +58,69 @@ public class BookController {
             }
     )
     public ResponseEntity<PageDTO<BookRespDTO>> findAll(
-            @RequestParam(required = false) @Size(min = 3) String category,
-            @RequestParam(required = false) @Size(min = 3) String publisher,
-            @RequestParam(required = false) boolean releases,
-            @RequestParam(required = false) @Size(min = 3)
-            @Pattern(regexp = "newer|older", message = "selection value must be 'newer' or 'older'")String selection,
-            @RequestParam(required = false) @Size(min = 3)
-            @Pattern(regexp = "asc|desc", message = "sort value must be 'asc' or 'desc'") String sort,
-            @RequestParam @PositiveOrZero short page) {
+            @RequestParam(required = false)
+            @Size(min = 3)
+            @ApiParam(
+                    name =  "category",
+                    type = "String",
+                    value = "category by which it is filtered",
+                    example = "Fiction",
+                    required = false)
+                    String category,
+
+            @RequestParam(required = false)
+            @Size(min = 3)
+            @ApiParam(
+                    name =  "publisher",
+                    type = "String",
+                    value = "publisher by which it is filtered",
+                    example = "HarperCollins",
+                    required = false)
+                    String publisher,
+
+            @RequestParam(required = false)
+            @ApiParam(
+                    name =  "releases",
+                    type = "boolean",
+                    value = "to obtain latest releases",
+                    example = "true",
+                    required = false)
+                    boolean releases,
+
+            @RequestParam(required = false)
+            @Size(min = 3)
+            @ApiParam(
+                    name =  "selection",
+                    type = "String",
+                    value = "selection type",
+                    example = "newer",
+                    required = false,
+                    allowableValues = "newer,older")
+            @Pattern(regexp = "newer|older", message = "selection value must be 'newer' or 'older'")
+                    String selection,
+
+            @RequestParam(required = false)
+            @Size(min = 3)
+            @ApiParam(
+                    name =  "sort",
+                    type = "String",
+                    value = "sort type",
+                    example = "asc",
+                    required = false,
+                    allowableValues = "asc,desc")
+            @Pattern(regexp = "asc|desc", message = "sort value must be 'asc' or 'desc'")
+                    String sort,
+
+            @RequestParam
+            @PositiveOrZero
+            @ApiParam(
+                    name = "page",
+                    type = "short",
+                    value = "page number (starts at zero)",
+                    example = "0",
+                    required = true)
+                    short page
+    ) {
         return ResponseEntity.ok(bookService.findAll(category, publisher, releases, selection, sort, page));
     }
 
