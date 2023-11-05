@@ -1,7 +1,7 @@
 package com.mercadolibro.util;
 
 import com.mercadolibro.dto.S3ObjectUploadDTO;
-import com.mercadolibro.exception.MultipartFileToFileConversionException;
+import com.mercadolibro.exception.MultipartFileToDTOConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,11 +65,11 @@ public class S3UtilTest {
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenThrow(IOException.class);
 
-        MultipartFileToFileConversionException exception = assertThrows(MultipartFileToFileConversionException.class,
+        MultipartFileToDTOConversionException exception = assertThrows(MultipartFileToDTOConversionException.class,
                 () -> S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null));
 
         verify(multipartFile).getName();
-        assertEquals(MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT, exception.getMessage());
+        assertEquals(MULTIPART_FILE_TO_DTO_CONVERSION_ERROR_FORMAT, exception.getMessage());
     }
 
     @Test

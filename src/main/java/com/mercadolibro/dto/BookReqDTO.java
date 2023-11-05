@@ -57,7 +57,6 @@ public class BookReqDTO {
 
     @Size(min = 1, max = 5)
     @NotNull
-    @JsonIgnore
     @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
     private List<MultipartFile> images;
 

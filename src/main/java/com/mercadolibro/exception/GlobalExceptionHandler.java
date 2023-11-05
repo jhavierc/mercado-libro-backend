@@ -72,8 +72,8 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(e.getCode()).body(errorResponse);
     }
-    @ExceptionHandler(MultipartFileToFileConversionException.class)
-    public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToFileConversionException e) {
+    @ExceptionHandler(MultipartFileToDTOConversionException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToDTOConversionException e) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

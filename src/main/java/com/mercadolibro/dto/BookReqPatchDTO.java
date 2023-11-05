@@ -19,6 +19,7 @@ import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -67,7 +68,6 @@ public class BookReqPatchDTO {
     private Short ratingsCount;
 
     @Size(min = 1, max = 5)
-    @JsonIgnore
     @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
     private ArrayList<MultipartFile> images;
 

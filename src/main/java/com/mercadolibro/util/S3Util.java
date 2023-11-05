@@ -2,7 +2,7 @@ package com.mercadolibro.util;
 
 import com.mercadolibro.dto.S3ObjectUploadDTO;
 import com.mercadolibro.dto.S3ObjectDTO;
-import com.mercadolibro.exception.MultipartFileToFileConversionException;
+import com.mercadolibro.exception.MultipartFileToDTOConversionException;
 import com.mercadolibro.exception.S3Exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,10 +23,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class S3Util {
-    public static final String MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT = "Error converting MultipartFile to File";
+    public static final String MULTIPART_FILE_TO_DTO_CONVERSION_ERROR_FORMAT = "Error converting MultipartFile to S3ObjectUploadDTO";
     public static final String S3_FOLDER_EXISTS_ERROR = "Error while checking if folder exists";
     public static final String S3_FOLDER_CREATE_ERROR = "Error while creating folder";
-    public static final String S3_URL_DOES_NOT_MATCH_PATTERN_ERROR = "Error S3 URL does not match expected pattern, URL example: https://my-bucket-name.s3.amazonaws.com/images/example-file.jpg";
+    public static final String S3_URL_DOES_NOT_MATCH_PATTERN_ERROR = "Error: S3 URL does not match the expected pattern. URL example: https://my-bucket-name.s3.amazonaws.com/images/example-file.jpg";
 
     /**
      * Converts a MultipartFile object to an S3ObjectUploadDTO.
@@ -35,7 +35,7 @@ public class S3Util {
      * @param newFileName   The optional new file name. If provided (not null or empty), it will be used as the file name.
      *                     If null or empty, the original name from the MultipartFile will be used.
      * @return The S3ObjectUploadDTO generated from the MultipartFile.
-     * @throws MultipartFileToFileConversionException When an error occurs during the conversion.
+     * @throws MultipartFileToDTOConversionException When an error occurs during the conversion.
      */
     public static S3ObjectUploadDTO convertMultipartFileToS3ObjectReqDTO(MultipartFile multipartFile, String newFileName) {
         String fileName = (newFileName != null && !newFileName.isEmpty()) ? newFileName : multipartFile.getName();
@@ -45,13 +45,12 @@ public class S3Util {
 
         try {
             s3ObjectUploadDTO.setContent(new ByteArrayInputStream(multipartFile.getBytes()));
-        }catch (IOException e) {
-            throw new MultipartFileToFileConversionException(MULTIPART_FILE_TO_FILE_CONVERSION_ERROR_FORMAT);
+        } catch (IOException e) {
+            throw new MultipartFileToDTOConversionException(MULTIPART_FILE_TO_DTO_CONVERSION_ERROR_FORMAT);
         }
 
         return s3ObjectUploadDTO;
     }
-
     /**
      * Generates a unique file name by combining the current system time in milliseconds
      * with the sanitized version of the original file name, including a unique identifier.

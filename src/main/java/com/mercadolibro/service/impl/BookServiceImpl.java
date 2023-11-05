@@ -67,8 +67,8 @@ public class BookServiceImpl implements BookService {
 
                 Book saved = bookRepository.save(mappedBook);
                 return mapper.convertValue(saved, BookRespDTO.class);
-            }catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload
+            } catch (Exception e){
+                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload TODO: check if a can do a fallback method instead of repeating rollback with try catch
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
         }
@@ -91,10 +91,19 @@ public class BookServiceImpl implements BookService {
             if (bookRepository.existsByIsbnAndIdNot(bookReqDTO.getIsbn(), id)) {
                 throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
             }
+            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
+            Book mappedBook;
 
-            Book book = mapper.convertValue(bookReqDTO, Book.class);
-            book.setId(id);
-            Book updated = bookRepository.save(book);
+            try {
+                mappedBook = mapper.convertValue(bookReqDTO, Book.class);
+                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
+                mappedBook.setId(id);
+            } catch (Exception e){
+                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload TODO: check if a can do a fallback method instead of repeating rollback with try catch
+                throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
+            }
+
+            Book updated = bookRepository.save(mappedBook);
             return mapper.convertValue(updated, BookRespDTO.class);
         }
 
@@ -136,15 +145,13 @@ public class BookServiceImpl implements BookService {
             String[] splitLinks = imageLinks.split(",");
 
             List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
-
             for (String link : splitLinks) {
                 s3ObjectDTOS.add(S3Util.parseS3Url(link));
             }
-            s3Service.deleteFiles(s3ObjectDTOS);
 
+            s3Service.deleteFiles(s3ObjectDTOS);
             bookRepository.deleteById(id);
-        } else {
-            throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
         }
+        throw new BookNotFoundException(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, id));
     }
 }
