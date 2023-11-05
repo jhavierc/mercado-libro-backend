@@ -21,8 +21,8 @@ public class PageDTO <DTO>{
     @ApiModelProperty(value = "Page size", required = true)
     Integer pageSize;
 
-    public PageDTO(List<DTO> contet, Integer totalPages, Long totalElements, Integer currentPage, Integer pageSize) {
-        this.content = contet;
+    public PageDTO(List<DTO> content, Integer totalPages, Long totalElements, Integer currentPage, Integer pageSize) {
+        this.content = content;
         this.totalPages = totalPages;
         this.totalElements = totalElements;
         this.currentPage = currentPage;
