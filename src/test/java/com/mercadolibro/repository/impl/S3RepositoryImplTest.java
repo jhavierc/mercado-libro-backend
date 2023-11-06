@@ -44,10 +44,10 @@ public class S3RepositoryImplTest {
         String expectedKey = imagesPath + fileName;
         S3ObjectUploadDTO expectedReq = new S3ObjectUploadDTO(fileName, new ByteArrayInputStream(bytesContent));
         URL expectedUrl = new URL("https://" + bucketName + ".s3.amazonaws.com/" + expectedKey);
+        expectedReq.setKey(expectedKey);
 
         // Set autowired vars because config is not loaded in tests
         ReflectionTestUtils.setField(s3Repository, "bucketName", bucketName);
-        ReflectionTestUtils.setField(s3Repository, "imagesPath", imagesPath);
 
         // Mock (but It's not a mock :))
         S3Utilities expectedS3Utilities = S3Utilities.builder().region(Region.US_EAST_1).build();
@@ -92,6 +92,9 @@ public class S3RepositoryImplTest {
 
         S3ObjectUploadDTO reqDTO1 = new S3ObjectUploadDTO("file1", new ByteArrayInputStream(bytesContent1));
         S3ObjectUploadDTO reqDTO2 = new S3ObjectUploadDTO("file2", new ByteArrayInputStream(bytesContent2));
+        reqDTO1.setKey(imagesPath + "file1");
+        reqDTO2.setKey(imagesPath + "file2");
+
         List<S3ObjectUploadDTO> reqDTOs = new ArrayList<>();
         reqDTOs.add(reqDTO1);
         reqDTOs.add(reqDTO2);
@@ -104,7 +107,6 @@ public class S3RepositoryImplTest {
 
         // Set autowired vars because config is not loaded in tests
         ReflectionTestUtils.setField(s3Repository, "bucketName", bucketName);
-        ReflectionTestUtils.setField(s3Repository, "imagesPath", imagesPath);
 
         // Mock (but It's not a mock :))
         S3Utilities expectedS3Utilities = S3Utilities.builder().region(Region.US_EAST_1).build();

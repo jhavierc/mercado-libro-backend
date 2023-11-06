@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,14 +47,18 @@ public class S3ServiceImplTest {
     }
 
     @Test
-    void uploadFiles_Success() {
+    void uploadFilesSuccess() {
         MockMultipartFile file1 = new MockMultipartFile("file1", "file1.txt", "text/plain", "content1".getBytes());
         MockMultipartFile file2 = new MockMultipartFile("file2", "file2.txt", "text/plain", "content2".getBytes());
         List<MultipartFile> files = Arrays.asList(file1, file2);
 
-        when(s3Repository.putFile(any(S3ObjectUploadDTO.class)))
-                .thenReturn(new S3ObjectDTO("file1.txt", "https://url1", "my-bucket-name"))
-                .thenReturn(new S3ObjectDTO("file2.txt", "https://url2", "my-bucket-name"));
+        List<S3ObjectDTO> returnedObjects = new ArrayList<>();
+        returnedObjects.add(new S3ObjectDTO("file1.txt", "https://url1", "my-bucket-name"));
+        returnedObjects.add(new S3ObjectDTO("file2.txt", "https://url2", "my-bucket-name"));
+
+
+        when(s3Repository.putFiles(anyList()))
+                .thenReturn(returnedObjects);
 
         List<S3ObjectDTO> result = s3Service.uploadFiles(files);
 
@@ -66,7 +71,7 @@ public class S3ServiceImplTest {
         assertEquals("https://url2", result.get(1).getUrl());
         assertEquals("my-bucket-name", result.get(1).getBucket());
 
-        verify(s3Repository, times(2)).putFile(any(S3ObjectUploadDTO.class));
+        verify(s3Repository).putFiles(anyList());
     }
 
     @Test

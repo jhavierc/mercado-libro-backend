@@ -32,41 +32,47 @@ public class S3UtilTest {
 
     @Test
     public void testConvertMultipartFileToFileWithNewFileName() throws Exception {
+        String path = "images/";
         String newFileName = "newFileName.txt";
+        String filePath = path + newFileName;
         byte[] content = "Mock content".getBytes();
 
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName);
+        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, newFileName, path);
 
         verify(multipartFile).getBytes();
         assertNotNull(s3ObjectUploadDTO);
-        assertEquals(newFileName, s3ObjectUploadDTO.getName());
+        assertEquals(filePath, s3ObjectUploadDTO.getKey());
     }
 
     @Test
     public void testConvertMultipartFileToFileWithoutNewFileName() throws Exception {
+        String path = "images/";
         String mockedFileName = "mockFile.txt";
+        String filePath = path + mockedFileName;
         byte[] content = "Mock content".getBytes();
+
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenReturn(content);
 
-        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null);
+        S3ObjectUploadDTO s3ObjectUploadDTO = S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null, path);
 
         verify(multipartFile).getName();
         verify(multipartFile).getBytes();
         assertNotNull(s3ObjectUploadDTO);
-        assertEquals(mockedFileName, s3ObjectUploadDTO.getName());
+        assertEquals(filePath, s3ObjectUploadDTO.getKey());
     }
 
     @Test
     public void testConvertMultipartFileToFileException() throws Exception {
         String mockedFileName = "mockFile.txt";
+        String filePath = "images/";
         when(multipartFile.getName()).thenReturn(mockedFileName);
         when(multipartFile.getBytes()).thenThrow(IOException.class);
 
         MultipartFileToDTOConversionException exception = assertThrows(MultipartFileToDTOConversionException.class,
-                () -> S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null));
+                () -> S3Util.convertMultipartFileToS3ObjectReqDTO(multipartFile, null, filePath));
 
         verify(multipartFile).getName();
         assertEquals(MULTIPART_FILE_TO_DTO_CONVERSION_ERROR_FORMAT, exception.getMessage());

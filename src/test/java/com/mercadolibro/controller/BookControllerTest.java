@@ -6,7 +6,6 @@ import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
+import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,7 +39,7 @@ public class BookControllerTest {
         when(bookService.update(bookId, input)).thenReturn(output);
 
         // Act
-        ResponseEntity<Object> response = bookController.update(bookId, input);
+        ResponseEntity<BookRespDTO> response = bookController.update(bookId, input);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -53,7 +52,7 @@ public class BookControllerTest {
         // Arrange
         Long bookId = 1L;
         BookReqDTO input = new BookReqDTO();
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         when(bookService.update(bookId, input)).thenThrow(new BookNotFoundException(expectedErrorMessage));
 
@@ -90,7 +89,7 @@ public class BookControllerTest {
         when(bookService.patch(bookId, input)).thenReturn(output);
 
         // Act
-        ResponseEntity<Object> response = bookController.patch(bookId, input);
+        ResponseEntity<BookRespDTO> response = bookController.patch(bookId, input);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -103,7 +102,7 @@ public class BookControllerTest {
         // Arrange
         Long bookId = 1L;
         BookReqPatchDTO input = new BookReqPatchDTO();
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         when(bookService.patch(bookId, input)).thenThrow(new BookNotFoundException(expectedErrorMessage));
 
@@ -149,7 +148,7 @@ public class BookControllerTest {
     public void testDeleteNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        String expectedErrorMessage = String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId);
+        String expectedErrorMessage = String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId);
 
         doThrow(new BookNotFoundException(expectedErrorMessage)).when(bookService).delete(bookId);
 
