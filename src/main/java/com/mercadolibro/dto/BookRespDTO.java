@@ -3,9 +3,12 @@ package com.mercadolibro.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
 
@@ -15,13 +18,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 @ApiModel(description = "Book Response DTO", value = "BookResp")
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class BookRespDTO {
     @ApiModelProperty(value = "ID of the book", required = true, example = "1")
     private Long id;
@@ -31,8 +36,10 @@ public class BookRespDTO {
     private String title;
 
     @Size(min = 1, max = 255)
-    @ApiModelProperty(value = "Authors of the book", example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
-    private String authors;
+    @Type(type = "json")
+    @ApiModelProperty(value = "Authors of the book",
+            example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
+    private List<AuthorDTO> authors;
 
     @Size(min = 1, max = 70)
     @ApiModelProperty(value = "Publisher of the book", example = "Editorial Planeta")
@@ -45,7 +52,9 @@ public class BookRespDTO {
     private LocalDate publishedDate;
 
     @Size(min = 1, max = 255)
-    @ApiModelProperty(value = "Description of the book", example = "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde en el desierto y se encuentra con un jinete moribundo que buscaba.")
+    @ApiModelProperty(value = "Description of the book", example =
+            "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde " +
+                    "en el desierto y se encuentra con un jinete moribundo que buscaba.")
     private String description;
 
     @ISBN(type = ISBN.Type.ANY)
@@ -64,7 +73,8 @@ public class BookRespDTO {
 
     @Size(min = 1, max = 5)
     @JsonProperty("image_links")
-    @ApiModelProperty(value = "Image links of the book", example = "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
+    @ApiModelProperty(value = "Image links of the book", example =
+            "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
     private ArrayList<String> imageLinks;
 
     @ApiModelProperty(value = "Language of the book", example = "ES")

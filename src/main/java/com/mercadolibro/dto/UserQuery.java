@@ -29,9 +29,11 @@ public class UserQuery {
     String email;
     @ApiModelProperty(value = "Status of the user", required = false, example = "ACTIVE")
     String status;
-    @ApiModelProperty(value = "Direction of the sort", required = false, example = "ASC", notes = "Only ASC or DESC are valid values")
+    @ApiModelProperty(value = "Direction of the sort", required = false, example = "ASC",
+            notes = "Only ASC or DESC are valid values")
     Sort.Direction orderDirection = Sort.Direction.ASC;
-    @ApiModelProperty(value = "Order by of the user", required = false, example = "NAME", notes = "Only ID, NAME, LAST_NAME, EMAIL or STATUS are valid values")
+    @ApiModelProperty(value = "Order by of the user", required = false, example = "NAME",
+            notes = "Only ID, NAME, LAST_NAME, EMAIL or STATUS are valid values")
     OrderBy orderBy = OrderBy.ID;
 
     @Getter

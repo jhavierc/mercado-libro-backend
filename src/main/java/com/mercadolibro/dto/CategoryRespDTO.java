@@ -22,7 +22,9 @@ public class CategoryRespDTO {
     @ApiModelProperty(value = "Status of the category", required = true, example = "ACTIVE")
     private String status;
 
-    @ApiModelProperty(value = "Description of the category", required = true, example = "La novela desarrolla tramas complejas, personajes profundos y entornos detallados. Explora narrativas extensas y multifacéticas, permitiendo una inmersión profunda en mundos ficticios.")
+    @ApiModelProperty(value = "Description of the category", required = true, example =
+            "La novela desarrolla tramas complejas, personajes profundos y entornos detallados. Explora narrativas " +
+                    "extensas y multifacéticas, permitiendo una inmersión profunda en mundos ficticios.")
     private String description;
 
     @JsonProperty("image_link")

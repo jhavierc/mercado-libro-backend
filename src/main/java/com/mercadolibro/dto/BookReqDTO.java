@@ -3,9 +3,13 @@ package com.mercadolibro.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
 
@@ -19,9 +23,10 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-@RequiredArgsConstructor
 @ApiModel(description = "Book Request DTO", value = "BookReq")
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class BookReqDTO {
     @Size(min = 1, max = 70)
     @NotBlank
@@ -29,9 +34,10 @@ public class BookReqDTO {
     private String title;
 
     @Size(min = 1, max = 255)
-    @NotBlank
-    @ApiModelProperty(value = "JSON String with information about the authors of the book", required = true, example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
-    private String authors;
+    @Type(type = "json")
+    @ApiModelProperty(value = "JSON String with information about the authors of the book", required = true,
+            example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
+    private List<AuthorDTO> authors;
 
     @Size(min = 1, max = 70)
     @NotBlank
@@ -47,7 +53,9 @@ public class BookReqDTO {
 
     @Size(min = 1, max = 255)
     @NotBlank
-    @ApiModelProperty(value = "Description of the book", required = true, example = "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde en el desierto y se encuentra con un jinete moribundo que buscaba.")
+    @ApiModelProperty(value = "Description of the book", required = true, example =
+            "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde " +
+                    "en el desierto y se encuentra con un jinete moribundo que buscaba.")
     private String description;
 
     @NotBlank
@@ -70,7 +78,8 @@ public class BookReqDTO {
     @Size(min = 1, max = 5)
     @NotNull
     @JsonProperty("image_links")
-    @ApiModelProperty(value = "Image links of the book", required = true, example = "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
+    @ApiModelProperty(value = "Image links of the book", required = true, example =
+            "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
     private List<String> imageLinks;
 
     @NotBlank
@@ -96,6 +105,7 @@ public class BookReqDTO {
     @Valid
     @Size(min = 1, max = 10)
     @NotNull
-    @ApiModelProperty(value = "JSON with the IDs of categories of the book", required = true, example = "[{\"id\": 1}]")
+    @ApiModelProperty(value = "JSON with the IDs of categories of the book", required = true,
+            example = "[{\"id\": 1}]")
     private Set<BookCategoryReqDTO> categories;
 }
