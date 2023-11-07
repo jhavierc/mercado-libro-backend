@@ -1,6 +1,8 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.annotation.BookRequest;
 import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.service.BookService;
@@ -21,8 +23,8 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.util.Map;
 
-@RestController
 @Validated
+@RestController
 @RequestMapping("/api/book")
 @CrossOrigin(origins = "*")
 public class BookController {
@@ -43,7 +45,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> save(@RequestBody @Valid BookReqDTO book) {
+    public ResponseEntity<BookRespDTO> save(@BookRequest @Valid BookReqDTO book) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.save(book));
     }
 
@@ -162,7 +164,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> update(@PathVariable @Positive Long id, @RequestBody @Valid BookReqDTO bookReqDTO) {
+    public ResponseEntity<BookRespDTO> update(@PathVariable @Positive Long id, @BookRequest @Valid BookReqDTO bookReqDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.update(id, bookReqDTO));
     }
 
@@ -177,7 +179,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @RequestBody @Valid BookRespDTO bookRespDTO) {
-        return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookRespDTO));
+    public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @BookRequest @Valid BookReqPatchDTO bookReqPatchDTO) {
+        return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqPatchDTO));
     }
 }

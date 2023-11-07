@@ -1,5 +1,6 @@
 package com.mercadolibro.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -77,10 +79,9 @@ public class BookReqDTO {
 
     @Size(min = 1, max = 5)
     @NotNull
-    @JsonProperty("image_links")
-    @ApiModelProperty(value = "Image links of the book", required = true, example =
-            "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
-    private List<String> imageLinks;
+    @JsonIgnore
+    @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
+    private List<MultipartFile> images;
 
     @NotBlank
     @ApiModelProperty(value = "Language of the book", required = true, example = "ES")

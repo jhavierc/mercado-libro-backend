@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.data.domain.Sort;
 
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Email;
 
 /**

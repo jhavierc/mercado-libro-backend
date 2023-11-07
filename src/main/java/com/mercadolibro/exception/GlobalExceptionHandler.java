@@ -115,4 +115,32 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ErrorResponseDTO> handleS3Exception(S3Exception e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), e.getCode());
+
+        return ResponseEntity.status(e.getCode()).body(errorResponse);
+    }
+
+    @ExceptionHandler(MultipartFileToDTOConversionException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToDTOConversionException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(BookImageKeyDoesNotExistException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBookImageKeyDoesNotExist(BookImageKeyDoesNotExistException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(UnsupportedParameterTypeException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnsupportedParameterTypeException(UnsupportedParameterTypeException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
 }
