@@ -1,14 +1,18 @@
 package com.mercadolibro.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,17 +29,17 @@ import java.util.Set;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @ApiModel(description = "Book Patch Request DTO", value = "BookReqPatch")
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class BookReqPatchDTO {
-    @ApiModelProperty(value = "ID of the book", required = true, example = "1")
-    private Long id;
-
     @Size(min = 1, max = 70)
     @ApiModelProperty(value = "Title of the book", example = "El inmortal")
     private String title;
 
     @Size(min = 1, max = 255)
-    @ApiModelProperty(value = "Authors of the book", example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
-    private String authors;
+    @Type(type = "json")
+    @ApiModelProperty(value = "JSON String with information about the authors of the book", required = true,
+            example = "[{'name': 'Jorge Luis Borges', 'email': 'jorgito556@gmail.com'}]")
+    private List<AuthorDTO> authors;
 
     @Size(min = 1, max = 70)
     @ApiModelProperty(value = "Publisher of the book", example = "Editorial Planeta")
@@ -48,7 +52,9 @@ public class BookReqPatchDTO {
     private LocalDate publishedDate;
 
     @Size(min = 1, max = 255)
-    @ApiModelProperty(value = "Description of the book", example = "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde en el desierto y se encuentra con un jinete moribundo que buscaba.")
+    @ApiModelProperty(value = "Description of the book", required = true, example =
+            "Este nuevo texto, relata que, huyendo de unos sediciosos, Rufo se pierde " +
+                    "en el desierto y se encuentra con un jinete moribundo que buscaba.")
     private String description;
 
     @ISBN(type = ISBN.Type.ANY)
@@ -66,6 +72,7 @@ public class BookReqPatchDTO {
     private Short ratingsCount;
 
     @Size(min = 1, max = 5)
+    @JsonIgnore
     @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
     private List<MultipartFile> images;
 
@@ -92,6 +99,7 @@ public class BookReqPatchDTO {
 
     @Valid
     @Size(min = 1, max = 10)
-    @ApiModelProperty(value = "Categories of the book", example = "[{\"id\": 1}]")
+    @ApiModelProperty(value = "JSON with the IDs of categories of the book", required = true,
+            example = "[{\"id\": 1}]")
     private Set<BookCategoryReqDTO> categories;
 }

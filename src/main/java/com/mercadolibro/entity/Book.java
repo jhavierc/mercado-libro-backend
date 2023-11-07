@@ -1,14 +1,18 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import lombok.*;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -17,7 +21,8 @@ import java.util.Set;
 @Entity
 @Table(name = "book")
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +31,9 @@ public class Book {
     @Column
     private String title;
 
-    @Column
-    private String authors;
+    @Column(columnDefinition = "json")
+    @Type(type = "json")
+    private List<Author> authors;
 
     @Column
     private String publisher;
@@ -78,4 +84,14 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Author implements Serializable {
+        private String name;
+        private String email;
+    }
 }
+

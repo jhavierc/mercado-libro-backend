@@ -1,12 +1,9 @@
 package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookReqPatchDTO;
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.dto.S3ObjectDTO;
-import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Book;
+import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
@@ -23,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,7 +88,7 @@ public class BookServiceImpl implements BookService {
                 Book saved = bookRepository.save(mappedBook);
                 return mapper.convertValue(saved, BookRespDTO.class);
             } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload TODO: check if a can do a fallback method instead of repeating rollback with try catch
+                s3Service.deleteFiles(imagesRespDTOs); // TODO: check if a can do a fallback method instead of repeating rollback with try catch
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
         }
@@ -111,13 +109,18 @@ public class BookServiceImpl implements BookService {
                 mappedBook = mapper.convertValue(bookReqDTO, Book.class);
                 mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
                 mappedBook.setId(id);
+
+                Book updated = bookRepository.save(mappedBook);
+
+                // TODO: At this point, we need to remove old images. However, due to the current backend architecture
+                //  and database structure, the logic for this task would be ugly. Creating an images entity
+                //  would be necessary to resolve these issues.
+
+                return mapper.convertValue(updated, BookRespDTO.class);
             } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs); // Rollback image upload TODO: check if a can do a fallback method instead of repeating rollback with try catch
+                s3Service.deleteFiles(imagesRespDTOs);
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
-
-            Book updated = bookRepository.save(mappedBook);
-            return mapper.convertValue(updated, BookRespDTO.class);
         }
 
         throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
@@ -126,6 +129,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+        modelMapper.getConfiguration().setCollectionsMergeEnabled(false);
 
         Optional<Book> optionalBook = bookRepository.findById(id);
         if (optionalBook.isPresent()) {
@@ -144,17 +148,15 @@ public class BookServiceImpl implements BookService {
                 }
             }
 
-            List<S3ObjectDTO> uploadedFiles = s3Service.replaceFilesByURLs(imagesToUpload, imageURLs);
+            s3Service.replaceFilesByURLs(imagesToUpload, imageURLs); // I do not replace new image links in the database because them stays with the same key/url
 
-            ArrayList<String> imageLinks = new ArrayList<>();
-            for (S3ObjectDTO file : uploadedFiles) {
-                imageLinks.add(file.getUrl());
-            }
+            HashSet<Category> categoriesOnlyWithID = bookReqPatchDTO.getCategories().stream()
+                    .map(categoryDTO -> mapper.convertValue(categoryDTO, Category.class))
+                    .collect(Collectors.toCollection(HashSet::new));
+            optionalBook.get().setCategories(categoriesOnlyWithID);
 
-            optionalBook.get().setImageLinks(imageLinks);
-
-            bookReqPatchDTO.setId(id);
             modelMapper.map(bookReqPatchDTO, optionalBook.get());
+
             Book book = bookRepository.save(optionalBook.get());
 
             return mapper.convertValue(book, BookRespDTO.class);

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Builder
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 @ApiModel(description = "Book Category Request DTO", value = "BookCategoryReq")
 public class BookCategoryReqDTO {
     @NotNull

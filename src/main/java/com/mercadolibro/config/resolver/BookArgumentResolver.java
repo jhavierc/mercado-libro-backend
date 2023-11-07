@@ -1,15 +1,14 @@
 package com.mercadolibro.config.resolver;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mercadolibro.dto.AuthorDTO;
 import com.mercadolibro.dto.BookCategoryReqDTO;
 import com.mercadolibro.dto.BookReqDTO;
 import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.annotation.BookRequest;
 import com.mercadolibro.exception.UnsupportedParameterTypeException;
-import org.modelmapper.Conditions;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -29,13 +28,13 @@ import java.util.Map;
 @Component
 public class BookArgumentResolver implements HandlerMethodArgumentResolver {
     private final ObjectMapper mapper;
-    private final ModelMapper modelMapper;
+    private final ObjectMapper patchMapper;
     public static final String ARGUMENT_RESOLVER_UNSUPPORTED_PARAMETER_TYPE_ERROR = "The parameter class is not supported. Please use BookReqDTO or BookReqPatchDTO.";
 
     @Autowired
-    public BookArgumentResolver(ObjectMapper mapper, ModelMapper modelMapper) {
+    public BookArgumentResolver(ObjectMapper mapper, ObjectMapper patchMapper) {
         this.mapper = mapper;
-        this.modelMapper = modelMapper;
+        this.patchMapper = patchMapper;
     }
 
     @Override
@@ -59,11 +58,9 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
 
             return bookReqDTO;
         } else if (parameter.getParameterType().equals(BookReqPatchDTO.class)) {
-            modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
-            mapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+            patchMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-
-            BookReqPatchDTO bookReqPatchDTO = mapper.convertValue(simpleAttributes, BookReqPatchDTO.class);
+            BookReqPatchDTO bookReqPatchDTO = patchMapper.convertValue(simpleAttributes, BookReqPatchDTO.class);
             handleMultipartData(httpServletRequest, bookReqPatchDTO);
 
             return bookReqPatchDTO;
@@ -85,6 +82,10 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
                     case "images_to_replace_urls[]":
                         List<String> imageToReplaceURLs = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, String.class));
                         simpleAttributes.put("images_to_replace_urls", imageToReplaceURLs);
+                        break;
+                    case "authors[]":
+                        List<AuthorDTO> authors = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, AuthorDTO.class));
+                        simpleAttributes.put("authors", authors);
                         break;
                     default:
                         simpleAttributes.put(entry.getKey(), values[0]);
