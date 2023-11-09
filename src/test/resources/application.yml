@@ -20,3 +20,12 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
+aws:
+  s3:
+    name: ${AWS_S3_NAME:my-bucket-name}
+    region: ${AWS_S3_REGION:us-east-1}
+    accessKey: ${AWS_S3_ACCESS_KEY:access-key}
+    secretKey: ${AWS_S3_SECRET_KEY:secret-key}
+    imagesPath: ${AWS_S3_IMAGES_PATH:images/}
+    setUp: ${AWS_S3_SET_UP:false}

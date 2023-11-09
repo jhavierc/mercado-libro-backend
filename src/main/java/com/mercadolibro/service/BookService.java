@@ -1,9 +1,11 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.BookReqDTO;
+import com.mercadolibro.dto.BookReqPatchDTO;
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.exception.BookAlreadyExistsException;
+import com.mercadolibro.exception.BookImageKeyDoesNotExistException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.exception.NoBooksToShowException;
 
@@ -21,15 +23,16 @@ public interface BookService {
     BookRespDTO update(Long id, BookReqDTO bookReqDTO);
 
     /**
-     * Partially updates a book identified by its ID.
+     * Partially updates a book identified by its ID with the provided patch information.
      *
-     * @param id The ID of the book to partially update.
-     * @param bookRespDTO The BookRespDTO object containing partial book information.
-     * @return The BookRespDTO representing the partially updated book.
+     * @param id The ID of the book to be partially updated.
+     * @param bookReqPatchDTO The BookReqPatchDTO object containing partial book information for the update.
+     * @return The updated Book entity after applying the partial changes.
      * @throws BookNotFoundException If the book with the specified ID is not found.
-     * @throws BookAlreadyExistsException If a book with the same ISBN already exists.
+     * @throws BookAlreadyExistsException If an attempt is made to update a book with an ISBN that already exists for a different book.
+     * @throws BookImageKeyDoesNotExistException If an image key specified for replacement does not exist in the book's associated images.
      */
-    BookRespDTO patch(Long id, BookRespDTO bookRespDTO);
+    BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO);
 
     /**
      * Retrieves books. This search can be filtered and sorted in several ways.

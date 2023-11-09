@@ -7,7 +7,6 @@ import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.exception.CategoryNotFoundException;
-import com.mercadolibro.exception.NoBooksToShowException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
@@ -22,6 +21,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -38,7 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
-
+    @Mock
+    private S3Service s3Service;
     @Mock
     private CategoryRepository categoryRepository;
 
@@ -63,32 +65,57 @@ public class BookServiceTest {
     @DisplayName("should save book")
     public void testSaveBook() {
         // GIVEN
+        String firstImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
+        String secondImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
+
+        ArrayList<String> imageLinks = new ArrayList<>();
+        imageLinks.add(firstImageLink);
+        imageLinks.add(secondImageLink);
+
+        MockMultipartFile file1 = new MockMultipartFile("example-file-1", "example-file-1.jpg", "image/png", new byte[0]);
+        MockMultipartFile file2 = new MockMultipartFile("example-file-2", "example-file-2.jpg", "image/png", new byte[0]);
+        List<MultipartFile> files = Arrays.asList(file1, file2);
+
+        S3ObjectDTO s3ObjectDTO1 = new S3ObjectDTO("images/example-file-1.jpg", firstImageLink, "my-bucket-name");
+        S3ObjectDTO s3ObjectDTO2 = new S3ObjectDTO("images/example-file-2.jpg", secondImageLink, "my-bucket-name");
+        List<S3ObjectDTO> s3ObjectDTOS = Arrays.asList(s3ObjectDTO1, s3ObjectDTO2);
+
         BookCategoryReqDTO category = BookCategoryReqDTO.builder()
                 .id(1L)
                 .build();
         BookReqDTO book = BookReqDTO.builder()
+                .title("a title")
                 .isbn("0-7921-0519-2")
+                .images(files)
                 .categories(Set.of(category))
                 .build();
 
-        // WHEN
         Book mockResponse = Book.builder()
                 .id(1L)
+                .title("a title")
                 .isbn("0-7921-0519-2")
+                .imageLinks(imageLinks)
                 .categories(Set.of(
                         Category.builder()
                                 .id(1L)
                                 .build()))
                 .build();
 
+        // WHEN
         when(categoryRepository.existsById(1L)).thenReturn(true);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockResponse);
+        when(s3Service.uploadFiles(anyList())).thenReturn(s3ObjectDTOS);
 
         // THEN
         BookRespDTO result = bookService.save(book);
+
         assertNotNull(result);
-        assertNotNull(result.getCategories());
         assertEquals(result.getId(), 1L);
+        assertEquals("0-7921-0519-2", result.getIsbn());
+        assertNotNull(result.getCategories());
+        assertEquals("a title", result.getTitle());
+        assertEquals(imageLinks, result.getImageLinks());
+
         verify(categoryRepository, times(1)).existsById(1L);
         verify(bookRepository, times(1)).existsByIsbn(book.getIsbn());
     }
@@ -485,7 +512,17 @@ public class BookServiceTest {
         // Arrange
         Long bookId = 1L;
         String title = "this title must not be overridden";
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
+
+        String imageURL1 = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
+        String imageURL2 = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
+        List<String> imagesToReplace = new ArrayList<>();
+
+        imagesToReplace.add(imageURL1);
+        imagesToReplace.add(imageURL2);
+
+        input.setImagesToReplaceURLs(imagesToReplace);
+        String imageLinks = imageURL1 + "," + imageURL2;
 
         Book existingBook = new Book();
         existingBook.setId(bookId);
@@ -497,6 +534,7 @@ public class BookServiceTest {
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findImageLinksById(bookId)).thenReturn(imageLinks);
 
         // Act
         BookRespDTO result = bookService.patch(bookId, input);
@@ -512,7 +550,7 @@ public class BookServiceTest {
     void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
@@ -520,7 +558,6 @@ public class BookServiceTest {
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.patch(bookId, input));
         assertEquals(String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId), exception.getMessage());
-        bookService = new BookServiceImpl(bookRepository, categoryRepository, new ObjectMapper(), new ModelMapper());
     }
 
     @Test
@@ -531,7 +568,7 @@ public class BookServiceTest {
         String actualBookIsbn = "978-0-261-10238-4";
         String alreadyExistingBookIsbn = "978-0-261-10238-4";
 
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         input.setIsbn(alreadyExistingBookIsbn);
 
         Book existingBook = new Book();
@@ -552,8 +589,11 @@ public class BookServiceTest {
     void testDeleteExistingBook() {
         // Arrange
         Long bookId = 1L;
+        String images = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg," +
+                "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
         doReturn(true).when(bookRepository).existsById(bookId);
+        when(bookRepository.findImageLinksById(bookId)).thenReturn(images);
         doNothing().when(bookRepository).deleteById(1L);
 
         // Act
