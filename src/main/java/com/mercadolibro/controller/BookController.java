@@ -182,4 +182,27 @@ public class BookController {
     public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @BookRequest @Valid BookReqPatchDTO bookReqPatchDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqPatchDTO));
     }
+
+    @GetMapping("/searchbar")
+    public ResponseEntity<PageDTO<BookRespDTO>> searchBooks(
+            @RequestParam(required = false)
+            @Size(min = 3)
+            @ApiParam(
+                    name = "keyword",
+                    type = "String",
+                    value = "keyword to search in title or description",
+                    example = "Harry Potter",
+                    required = false)
+            String keyword,
+            @RequestParam
+            @PositiveOrZero
+            @ApiParam(
+                    name = "page",
+                    type = "short",
+                    value = "page number (starts at zero)",
+                    example = "0",
+                    required = true)
+            short page) {
+        return ResponseEntity.ok(bookService.findByTitleOrDescriptionContaining(keyword, page));
+    }
 }
