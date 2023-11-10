@@ -22,6 +22,6 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
 
     boolean existsByIsbnAndIdNot(String isbn, Long id);
 
-    @Query("SELECT b FROM Book b WHERE b.title LIKE %:keyword% OR b.description LIKE %:keyword%")
+    @Query("SELECT b FROM Book b WHERE b.title LIKE %:keyword% OR b.description LIKE %:keyword% OR b.authors LIKE %:keyword% OR b.publisher LIKE %:keyword%")
     Page<Book> findByTitleOrDescriptionContaining(String keyword, Pageable pageable);
 }
