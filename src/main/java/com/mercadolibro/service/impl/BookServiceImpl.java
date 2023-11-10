@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.jpa.domain.Specification;
 
+import org.springframework.data.domain.Pageable;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
@@ -190,6 +192,23 @@ public class BookServiceImpl implements BookService {
         } else {
             throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
         }
+    }
+
+    @Override
+    public PageDTO<BookRespDTO> findByTitleOrDescriptionContaining(String keyword,short page) {
+        int size = 9; // Set the page size to 9
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Book> res = bookRepository.findByTitleOrDescriptionContaining(keyword, pageable);
+        List<BookRespDTO> content = res.getContent().stream().map(book ->
+                mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
+        return new PageDTO<>(
+                content,
+                res.getTotalPages(),
+                res.getTotalElements(),
+                res.getNumber(),
+                res.getSize()
+        );
     }
 
     private Pageable buildPageable(String sort, String selection, short page) {
