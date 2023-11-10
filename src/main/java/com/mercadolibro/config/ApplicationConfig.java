@@ -3,7 +3,6 @@ package com.mercadolibro.config;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import com.mercadolibro.service.TestService;
 import com.mercadolibro.service.impl.TestServiceImpl;
 
