@@ -185,7 +185,7 @@ public class BookController {
 
     @GetMapping("/searchbar")
     public ResponseEntity<PageDTO<BookRespDTO>> searchBooks(
-            @RequestParam(required = false)
+            @RequestParam
             @Size(min = 3)
             @ApiParam(
                     name = "keyword",
