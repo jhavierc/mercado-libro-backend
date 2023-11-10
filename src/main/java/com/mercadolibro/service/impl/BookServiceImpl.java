@@ -35,8 +35,8 @@ public class BookServiceImpl implements BookService {
 
     public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
-
-    public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload rolled back successfully";
+    public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload " +
+            "rolled back successfully";
     public static final String FILE_NOT_FOUND_MESSAGE = "The file associated with URL: %s does not exist.";
 
 

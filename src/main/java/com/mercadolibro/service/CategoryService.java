@@ -32,4 +32,12 @@ public interface CategoryService {
      * @return The CategoryRespDTO of the newly saved category.
      */
     CategoryRespDTO save(CategoryReqDTO category);
+
+    /**
+     * Updates an existing category.
+     * @param id The CategoryReqDTO object representing the category to be updated.
+     * @param category The CategoryReqDTO object representing the category to be updated.
+     * @return The CategoryRespDTO of the updated category.
+     */
+    CategoryRespDTO update(Long id, CategoryReqDTO category);
 }

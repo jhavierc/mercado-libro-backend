@@ -1,12 +1,16 @@
 package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.CategoryReqDTO;
-import com.mercadolibro.dto.CategoryRespDTO;
+import com.mercadolibro.dto.*;
+import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
+import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
+import com.mercadolibro.exception.CategoryNotFoundException;
+import com.mercadolibro.exception.S3Exception;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.CategoryService;
+import com.mercadolibro.util.S3Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,5 +55,17 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryRespDTO save(CategoryReqDTO category) {
         Category saved = categoryRepository.save(mapper.convertValue(category, Category.class));
         return mapper.convertValue(saved, CategoryRespDTO.class);
+    }
+
+    @Override
+    public CategoryRespDTO update(Long id, CategoryReqDTO category){
+        if (categoryRepository.existsById(id)) {
+            Category toUpdate = mapper.convertValue(category, Category.class);
+            toUpdate.setId(id);
+            Category updated = categoryRepository.save(toUpdate);
+            return mapper.convertValue(updated, CategoryRespDTO.class);
+        }
+
+        throw new CategoryNotFoundException(String.format(CATEGORY_NOT_FOUND_ERROR_FORMAT, id));
     }
 }
