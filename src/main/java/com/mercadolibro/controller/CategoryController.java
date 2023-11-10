@@ -66,4 +66,17 @@ public class CategoryController {
     public ResponseEntity<List<CategoryRespDTO>> findAll() {
         return ResponseEntity.ok(categoryService.findAll());
     }
+
+    @PutMapping("/{id}")
+    @ApiOperation(value = "Updates an existing category", notes = "Returns the updated category")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Category updated successfully", response = CategoryRespDTO.class),
+                    @ApiResponse(code = 404, message = "Category not found"),
+            }
+    )
+    public ResponseEntity<CategoryRespDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody CategoryReqDTO category) {
+        return ResponseEntity.ok(categoryService.update(id, category));
+    }
 }
