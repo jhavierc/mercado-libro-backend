@@ -190,7 +190,7 @@ public class BookController {
             @ApiParam(
                     name = "keyword",
                     type = "String",
-                    value = "keyword to search in title or description",
+                    value = "keyword to search in title, description, authors or publisher",
                     example = "Harry Potter",
                     required = false)
             String keyword,
