@@ -17,7 +17,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping(value = "/api/category", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT } )
 @Validated
 @CrossOrigin(origins = "*")
 public class CategoryController {

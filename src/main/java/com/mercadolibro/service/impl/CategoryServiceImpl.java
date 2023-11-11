@@ -2,15 +2,11 @@ package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
-import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
-import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.exception.CategoryNotFoundException;
-import com.mercadolibro.exception.S3Exception;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.CategoryService;
-import com.mercadolibro.util.S3Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
