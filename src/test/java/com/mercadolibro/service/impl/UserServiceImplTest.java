@@ -400,16 +400,35 @@ class UserServiceImplTest {
 
     @Test
     void sendResetCode_shouldSendEmailWithCode() throws ResourceNotFoundException {
-        // Arrange
+        // Given
         AppUser user = users.get(0);
         String email = user.getEmail();
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
-        // Act
+        // WHEN
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         userService.sendResetCode(email);
 
-        // Assert
+        // THEN
         verify(emailService, times(1)).sendEmail(any(), any(), any(), any());
+
+    }
+
+    @Test
+    void resetPasswordShouldResetPassword() throws ResourceNotFoundException {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        String newPassword = "newPassword";
+
+        // When
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        String code = userService.generateResetCode(email);
+
+       userService.resetPassword(code, newPassword);
+
+        // Then
+        verify(userRepository, times(1)).save(any(AppUser.class));
+
 
     }
 
