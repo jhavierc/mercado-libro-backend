@@ -380,5 +380,19 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).findAll();
     }
 
+    @Test
+    void generateResetCode_shouldGenerateCode() {
+        // GIVEN
+        String email = "test@example.com";
+
+        // WHEN
+        String code = userService.generateResetCode(email);
+
+        // THEN
+        assertNotNull(code);
+        assertFalse(code.isEmpty());
+
+    }
+
 
 }
