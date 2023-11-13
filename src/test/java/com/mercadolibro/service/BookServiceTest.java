@@ -614,4 +614,41 @@ public class BookServiceTest {
         // Act and Assert
         assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
+    @Test
+    public void testFindByTitleOrDescriptionContaining() {
+        // GIVEN
+        String keyword = "test";
+        short page = 0;
+        Pageable pageable = PageRequest.of(page, 9);
+
+        // Configurar comportamiento simulado del repositorio
+        List<Book> mockBooks = Arrays.asList(new Book(), new Book());
+        Page<Book> mockPage = new PageImpl<>(mockBooks, pageable, mockBooks.size());
+        when(bookRepository.findByTitleOrDescriptionContaining(eq(keyword), any(Pageable.class))).thenReturn(mockPage);
+
+        // WHEN
+        PageDTO<BookRespDTO> result = bookService.findByTitleOrDescriptionContaining(keyword, page);
+
+        // THEN
+        assertNotNull(result);
+        assertFalse(result.getContent().isEmpty());
+        assertEquals(mockPage.getTotalPages(), result.getTotalPages());
+        assertEquals(mockPage.getTotalElements(), result.getTotalElements());
+    }
+    @Test
+    public void testFindByTitleOrDescriptionContainingEmpty() {
+        // GIVEN
+        String keyword = "test";
+        short page = 0;
+        Pageable pageable = PageRequest.of(page, 9);
+
+        List<Book> mockBooks = Arrays.asList();
+        Page<Book> mockPage = new PageImpl<>(mockBooks, pageable, 0);
+        when(bookRepository.findByTitleOrDescriptionContaining(eq(keyword), any(Pageable.class))).thenReturn(mockPage);
+
+        // WHEN & THEN
+        assertThrows(BookNotFoundException.class, () -> {
+            bookService.findByTitleOrDescriptionContaining(keyword, page);
+        });
+    }
 }
