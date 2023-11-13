@@ -184,6 +184,15 @@ public class BookController {
     }
 
     @GetMapping("/searchbar")
+    @ApiOperation(value = "Get books", notes = "Returns books, searching in title, description, authors or publisher")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
+                    @ApiResponse(code = 404, message = "No books to show"),
+                    @ApiResponse(code = 400, message = "Page less than or equal to zero", response = Map.class)
+            }
+    )
     public ResponseEntity<PageDTO<BookRespDTO>> searchBooks(
             @RequestParam
             @Size(min = 3)
