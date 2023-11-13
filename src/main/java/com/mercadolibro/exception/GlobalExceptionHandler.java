@@ -1,9 +1,11 @@
 package com.mercadolibro.exception;
 
+import com.mercadolibro.dto.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -14,17 +16,36 @@ import java.util.*;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoBooksToShowException.class)
-    public ResponseEntity<List<?>> processErrorNoBooksToShow() {
+    public ResponseEntity<List<?>> handleErrorNoBooksToShow() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
     }
+
+    @ExceptionHandler(NoPagesException.class)
+    public ResponseEntity<Long> handleNoPages() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(0L);
+    }
+
     @ExceptionHandler(BookNotFoundException.class)
-    public ResponseEntity<String> processErrorBookNotFound(BookNotFoundException bookNotFoundEx){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ERROR: " + bookNotFoundEx.getMessage());
+    public ResponseEntity<ErrorResponseDTO> handleErrorBookNotFound(BookNotFoundException bookNotFoundEx){
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(bookNotFoundEx.getMessage(), HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
+
     @ExceptionHandler(BookAlreadyExistsException.class)
-    public ResponseEntity<String> processBookAlreadyExistsException(BookAlreadyExistsException bookAlreadyExistsException){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("ERROR: " + bookAlreadyExistsException.getMessage());
+    public ResponseEntity<ErrorResponseDTO> handleBookAlreadyExistsException(BookAlreadyExistsException bookAlreadyExistsException){
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(bookAlreadyExistsException.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleErrorCategoryNotFound(CategoryNotFoundException categoryNotFoundException){
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(categoryNotFoundException.getMessage(), HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, List<Map<String, String>>>> processUnmergeException(final MethodArgumentNotValidException ex) {
         Map<String, List<Map<String, String>>> errorResponse = new HashMap<>();
@@ -41,6 +62,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, List<Map<String, String>>>> handleValidationException(ConstraintViolationException e) {
         Map<String, List<Map<String, String>>> errorResponse = new HashMap<>();
@@ -57,12 +79,68 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<ErrorResponseDTO> handleResourceNotFoundException(ResourceNotFoundException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<String> handleResourceAlreadyExistsException(ResourceAlreadyExistsException e) {
-        return ResponseEntity.status(409).body(e.getMessage());
+    public ResponseEntity<ErrorResponseDTO> handleResourceAlreadyExistsException(ResourceAlreadyExistsException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(IncorrectDateFormatException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIncorrectDateFormatException(IncorrectDateFormatException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ErrorResponseDTO> handleS3Exception(S3Exception e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), e.getCode());
+
+        return ResponseEntity.status(e.getCode()).body(errorResponse);
+    }
+
+    @ExceptionHandler(MultipartFileToDTOConversionException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMultipartFileToFileConversionException(MultipartFileToDTOConversionException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(BookImageKeyDoesNotExistException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBookImageKeyDoesNotExist(BookImageKeyDoesNotExistException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(UnsupportedParameterTypeException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnsupportedParameterTypeException(UnsupportedParameterTypeException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }

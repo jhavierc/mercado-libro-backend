@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel(description = "User DTO for registering a new user", parent = UserDTO.class, value = "User")
+@ApiModel(description = "User DTO for registering a new user", parent = UserDTO.class, value = "UserRegister")
 public class UserRegisterDTO {
     @NotNull
     @Size(min = 2, max = 120)
