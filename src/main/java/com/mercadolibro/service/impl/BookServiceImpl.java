@@ -201,7 +201,7 @@ public class BookServiceImpl implements BookService {
 
         Page<Book> res = bookRepository.findByTitleOrDescriptionContaining(keyword, pageable);
         if (res.isEmpty()) {
-            throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
+            throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book"));
         }
         List<BookRespDTO> content = res.getContent().stream().map(book ->
                 mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
