@@ -162,7 +162,6 @@ public class BookControllerTest {
         String keyword = "Harry Potter";
         short page = 0;
 
-        // Configurar comportamiento simulado del servicio para devolver un PageDTO con contenido
         PageDTO<BookRespDTO> mockPageDTO = new PageDTO<>(List.of(new BookRespDTO()), 1, 1L, 0, 1);
         when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page))).thenReturn(mockPageDTO);
 
@@ -180,7 +179,6 @@ public class BookControllerTest {
         String keyword = "Harry Potter";
         short page = 0;
 
-        // Configurar comportamiento simulado del servicio para devolver un PageDTO vacío
         when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page)))
                 .thenThrow(new BookNotFoundException("Book not found"));
         
