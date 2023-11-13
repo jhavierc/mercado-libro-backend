@@ -10,6 +10,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -393,6 +397,23 @@ class UserServiceImplTest {
         assertFalse(code.isEmpty());
 
     }
+
+    @Test
+    void sendResetCode_shouldSendEmailWithCode() throws ResourceNotFoundException {
+        // Arrange
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        // Act
+        userService.sendResetCode(email);
+
+        // Assert
+        verify(emailService, times(1)).sendEmail(any(), any(), any(), any());
+
+    }
+
+
 
 
 }
