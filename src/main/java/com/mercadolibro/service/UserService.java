@@ -87,4 +87,28 @@ public interface UserService extends UserDetailsService {
      */
     PageDTO<UserDTO> find(UserQuery userQuery, Integer page, Integer size);
 
+    /**
+     * Generates a reset code for the user with the specified email address
+     * @param email
+     * @return
+     * @throws ResourceNotFoundException If no user with the specified email address exists.
+     */
+    String generateResetCode(String email) throws ResourceNotFoundException;
+
+    /**
+     * Generates a reset code for the user with the specified email address and sends it to the user's email address
+     * @param email
+     * @throws ResourceNotFoundException If no user with the specified email address exists.
+     */
+    void sendResetCode(String email) throws ResourceNotFoundException;
+
+    /**
+     * Resets the user's password with the specified reset code
+     * @param code The reset code
+     * @param newPassword The new password
+     * @throws ResourceNotFoundException If no reset code with the specified code exists.
+     */
+
+    void resetPassword(String code, String newPassword) throws ResourceNotFoundException;
+
 }
