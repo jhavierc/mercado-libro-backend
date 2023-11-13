@@ -23,6 +23,17 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: lihuelmujica@gmail.com
+    password: muwc vndh lhkt tpca
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 server:
   error:
     include-stacktrace: never
