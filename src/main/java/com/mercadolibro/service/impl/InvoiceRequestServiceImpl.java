@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.InvoiceRequestDTO;
 import com.mercadolibro.dto.InvoiceDTO;
 import com.mercadolibro.dto.InvoiceItemDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
@@ -11,9 +12,7 @@ import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,10 +34,10 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     public InvoiceRequestDTO findById(Long id) {
         // Invoice
-        Optional<Invoice> optionalInvoiceInfo = invoiceRepository.findById(id);
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(id);
         InvoiceDTO invoiceDTO = null;
-        if (optionalInvoiceInfo.isPresent()) {
-            invoiceDTO = mapper.convertValue(optionalInvoiceInfo, InvoiceDTO.class);
+        if (optionalInvoice.isPresent()) {
+            invoiceDTO = mapper.convertValue(optionalInvoice, InvoiceDTO.class);
         }
         // InvoiceItem
         List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(id);
@@ -73,15 +72,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     @Override
-    public List<InvoiceRequestDTO> findAll(int page, int size, Boolean sortAsc, String column) {
-        // Page
-        page = (page==0) ? 1 : page;
-        size = (size==0) ? 10 : size;
-        column = (column==null) ? "id" : column;
-        Sort sort = (sortAsc == true) ? Sort.by(Sort.Direction.ASC,column) : Sort.by(Sort.Direction.DESC, column);
-
+    public PageDTO<InvoiceRequestDTO> findAll(int page, int size) {
         // Invoice
-        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size,sort));
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
         List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
@@ -98,8 +91,16 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
             }
             invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
         }
-        return invoiceRequestDTOList;
+        // PageDTO
+        return new PageDTO<>(
+                invoiceRequestDTOList,
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
     }
+
 
     @Override
     public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
