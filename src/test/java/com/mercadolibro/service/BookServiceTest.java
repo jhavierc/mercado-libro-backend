@@ -621,7 +621,6 @@ public class BookServiceTest {
         short page = 0;
         Pageable pageable = PageRequest.of(page, 9);
 
-        // Configurar comportamiento simulado del repositorio
         List<Book> mockBooks = Arrays.asList(new Book(), new Book());
         Page<Book> mockPage = new PageImpl<>(mockBooks, pageable, mockBooks.size());
         when(bookRepository.findByTitleOrDescriptionContaining(eq(keyword), any(Pageable.class))).thenReturn(mockPage);
