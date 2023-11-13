@@ -24,10 +24,10 @@ spring:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: lihuelmujica@gmail.com
-    password: muwc vndh lhkt tpca
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
