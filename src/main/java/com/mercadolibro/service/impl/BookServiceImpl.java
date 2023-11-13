@@ -36,6 +36,7 @@ public class BookServiceImpl implements BookService {
     private final S3Service s3Service;
 
     public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
+    public static final String NOT_FOUND_ERROR_ALL_FORMAT = "Could not found %s.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
     public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload " +
             "rolled back successfully";
@@ -201,7 +202,7 @@ public class BookServiceImpl implements BookService {
 
         Page<Book> res = bookRepository.findByTitleOrDescriptionContaining(keyword, pageable);
         if (res.isEmpty()) {
-            throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book"));
+            throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_ALL_FORMAT, "book"));
         }
         List<BookRespDTO> content = res.getContent().stream().map(book ->
                 mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
