@@ -156,4 +156,37 @@ public class BookControllerTest {
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookController.delete(bookId));
         assertEquals(expectedErrorMessage, exception.getMessage());
     }
+        @Test
+    public void testSearchBooks() {
+        // GIVEN
+        String keyword = "Harry Potter";
+        short page = 0;
+
+        // Configurar comportamiento simulado del servicio para devolver un PageDTO con contenido
+        PageDTO<BookRespDTO> mockPageDTO = new PageDTO<>(List.of(new BookRespDTO()), 1, 1L, 0, 1);
+        when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page))).thenReturn(mockPageDTO);
+
+        // WHEN
+        ResponseEntity<PageDTO<BookRespDTO>> response = bookController.searchBooks(keyword, page);
+
+        // THEN
+        assertEquals(200, response.getStatusCodeValue()); // Verificar que la respuesta sea OK
+        assertEquals(mockPageDTO, response.getBody()); // Verificar que el cuerpo de la respuesta coincida con el PageDTO simulado
+    }
+
+    @Test
+    public void testSearchBooksEmpty() {
+        // GIVEN
+        String keyword = "Harry Potter";
+        short page = 0;
+
+        // Configurar comportamiento simulado del servicio para devolver un PageDTO vacío
+        when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page)))
+                .thenThrow(new BookNotFoundException("Book not found"));
+        
+        // WHEN & THEN
+        assertThrows(BookNotFoundException.class, () -> {
+            bookController.searchBooks(keyword, page);
+        });
+    }
 }
