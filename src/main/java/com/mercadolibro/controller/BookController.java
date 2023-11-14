@@ -189,7 +189,6 @@ public class BookController {
     @ApiResponses(
             value = {
                     @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 404, message = "No books to show"),
                     @ApiResponse(code = 400, message = "Page less than or equal to zero", response = Map.class)
             }
     )
