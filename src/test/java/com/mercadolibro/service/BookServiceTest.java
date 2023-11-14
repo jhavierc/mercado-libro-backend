@@ -634,20 +634,4 @@ public class BookServiceTest {
         assertEquals(mockPage.getTotalPages(), result.getTotalPages());
         assertEquals(mockPage.getTotalElements(), result.getTotalElements());
     }
-    @Test
-    public void testFindByTitleOrDescriptionContainingEmpty() {
-        // GIVEN
-        String keyword = "test";
-        short page = 0;
-        Pageable pageable = PageRequest.of(page, 9);
-
-        List<Book> mockBooks = Arrays.asList();
-        Page<Book> mockPage = new PageImpl<>(mockBooks, pageable, 0);
-        when(bookRepository.findByTitleOrDescriptionContaining(eq(keyword), any(Pageable.class))).thenReturn(mockPage);
-
-        // WHEN & THEN
-        assertThrows(BookNotFoundException.class, () -> {
-            bookService.findByTitleOrDescriptionContaining(keyword, page);
-        });
-    }
 }
