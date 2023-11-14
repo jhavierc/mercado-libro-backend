@@ -194,7 +194,7 @@ public class BookController {
     )
     public ResponseEntity<PageDTO<BookRespDTO>> searchBooks(
             @RequestParam
-            @Size(min = 3)
+            @Size(min = 1)
             @ApiParam(
                     name = "keyword",
                     type = "String",
