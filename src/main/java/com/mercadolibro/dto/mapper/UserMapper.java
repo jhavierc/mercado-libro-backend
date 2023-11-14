@@ -6,6 +6,8 @@ import com.mercadolibro.entity.AppUser;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
@@ -15,4 +17,5 @@ public interface UserMapper {
 
 
     UserDTO toUserDTO(AppUser appUser);
+    List<UserDTO> toUserDTOs(List<AppUser> appUsers);
 }

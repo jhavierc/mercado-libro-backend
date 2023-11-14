@@ -6,33 +6,41 @@ import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
+import com.mercadolibro.exception.CategoryNotFoundException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.impl.BookServiceImpl;
 import com.mercadolibro.service.impl.CategoryServiceImpl;
+
+import static org.mockito.Mockito.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
-import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_NOT_FOUND_ERROR_FORMAT;
+import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
-
+    @Mock
+    private S3Service s3Service;
     @Mock
     private CategoryRepository categoryRepository;
 
@@ -48,77 +56,399 @@ public class BookServiceTest {
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
+    @BeforeEach
+    public void setUp() {
+        objectMapper.findAndRegisterModules();
+    }
+
     @Test
+    @DisplayName("should save book")
     public void testSaveBook() {
-        Long bookId = 1L;
+        // GIVEN
+        String firstImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
+        String secondImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
-        Book mockRepositoryResponse = new Book();
-        mockRepositoryResponse.setId(bookId);
-        mockRepositoryResponse.setTitle("a title");
+        ArrayList<String> imageLinks = new ArrayList<>();
+        imageLinks.add(firstImageLink);
+        imageLinks.add(secondImageLink);
 
-        BookReqDTO input = new BookReqDTO();
-        input.setTitle("a title");
+        MockMultipartFile file1 = new MockMultipartFile("example-file-1", "example-file-1.jpg", "image/png", new byte[0]);
+        MockMultipartFile file2 = new MockMultipartFile("example-file-2", "example-file-2.jpg", "image/png", new byte[0]);
+        List<MultipartFile> files = Arrays.asList(file1, file2);
 
-        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
+        S3ObjectDTO s3ObjectDTO1 = new S3ObjectDTO("images/example-file-1.jpg", firstImageLink, "my-bucket-name");
+        S3ObjectDTO s3ObjectDTO2 = new S3ObjectDTO("images/example-file-2.jpg", secondImageLink, "my-bucket-name");
+        List<S3ObjectDTO> s3ObjectDTOS = Arrays.asList(s3ObjectDTO1, s3ObjectDTO2);
 
-        BookRespDTO res = bookService.save(input);
-        assertNotNull(res);
-        assertEquals(input.getTitle(), res.getTitle());
-        assertEquals(bookId, res.getId());
+        BookCategoryReqDTO category = BookCategoryReqDTO.builder()
+                .id(1L)
+                .build();
+        BookReqDTO book = BookReqDTO.builder()
+                .title("a title")
+                .isbn("0-7921-0519-2")
+                .images(files)
+                .categories(Set.of(category))
+                .build();
+
+        Book mockResponse = Book.builder()
+                .id(1L)
+                .title("a title")
+                .isbn("0-7921-0519-2")
+                .imageLinks(imageLinks)
+                .categories(Set.of(
+                        Category.builder()
+                                .id(1L)
+                                .build()))
+                .build();
+
+        // WHEN
+        when(categoryRepository.existsById(1L)).thenReturn(true);
+        when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockResponse);
+        when(s3Service.uploadFiles(anyList())).thenReturn(s3ObjectDTOS);
+
+        // THEN
+        BookRespDTO result = bookService.save(book);
+
+        assertNotNull(result);
+        assertEquals(result.getId(), 1L);
+        assertEquals("0-7921-0519-2", result.getIsbn());
+        assertNotNull(result.getCategories());
+        assertEquals("a title", result.getTitle());
+        assertEquals(imageLinks, result.getImageLinks());
+
+        verify(categoryRepository, times(1)).existsById(1L);
+        verify(bookRepository, times(1)).existsByIsbn(book.getIsbn());
     }
 
     @Test
+    @DisplayName("should throw CategoryNotFoundException when tries to save a book with a non existing category")
+    public void testDontSaveBookDueToCategory() {
+        // GIVEN
+        BookCategoryReqDTO category = BookCategoryReqDTO.builder()
+                .id(1L)
+                .build();
+        BookReqDTO book = BookReqDTO.builder()
+                .isbn("0-7921-0519-2")
+                .categories(Set.of(category))
+                .build();
+
+        // WHEN
+        when(categoryRepository.existsById(1L)).thenReturn(false);
+
+        // THEN
+        assertThrows(CategoryNotFoundException.class, () -> bookService.save(book));
+    }
+
+    @Test
+    @DisplayName("should throw BookAlreadyExistsException when tries to save a book with an existing ISBN")
+    public void testDontSaveBookDueToISBN() {
+        // GIVEN
+        BookCategoryReqDTO category = BookCategoryReqDTO.builder()
+                .id(1L)
+                .build();
+        BookReqDTO book = BookReqDTO.builder()
+                .isbn("0-7921-0519-2")
+                .categories(Set.of(category))
+                .build();
+
+        // WHEN
+        when(categoryRepository.existsById(1L)).thenReturn(true);
+        when(bookRepository.existsByIsbn("0-7921-0519-2")).thenReturn(true);
+
+        // THEN
+        assertThrows(BookAlreadyExistsException.class, () -> bookService.save(book));
+    }
+
+    @Test
+    @DisplayName("should find all books filtered by category")
     public void testFindAllByCategory() {
-        Long catID = 1L;
-        String catName = "rare category";
+        // GIVEN
+        String category = "rare category";
 
-        Category cat = new Category();
-        cat.setId(catID);
-        cat.setName(catName);
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .categories(Set.of(Category.builder()
+                                .name(category)
+                                .build()))
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.unpaged(), content.size());
 
-        Book a = new Book();
-        a.setTitle("great title");
-        a.setCategories(Set.of(cat));
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
 
-        Book b = new Book();
-        b.setTitle("boring title");
-        b.setCategories(Set.of(cat));
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                category,
+                null,
+                false,
+                null,
+                null,
+                (short) 1);
 
-        List<Book> mockRepositoryResponse = List.of(a, b);
+        List<BookRespDTO> books = result.getContent();
 
-        when(bookRepository.findAllByCategory(Mockito.any(String.class))).thenReturn(mockRepositoryResponse);
-
-        List<BookRespDTO> res = bookService.findAllByCategory(catName);
-        assertFalse(res.isEmpty());
-
-        Optional<CategoryRespDTO> resCategory = res.get(0).getCategories().stream()
-                .filter(category -> Objects.equals(category.getId(), catID)).findFirst();
-
-        assertFalse(resCategory.isEmpty());
-        assertEquals(resCategory.get().getId(), catID);
+        assertFalse(books.isEmpty());
+        assertTrue(books.get(0).getCategories().stream()
+                .anyMatch(c -> Objects.equals(c.getName(), category)));
     }
 
     @Test
+    @DisplayName("should find all books")
     public void testFindAll() {
-        Book a = new Book();
-        String aTitle = "great title";
-        a.setTitle(aTitle);
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .isbn("0-7921-0519-2")
+                        .build(),
+                Book.builder()
+                        .isbn("0-8261-7049-8")
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.unpaged(), content.size());
 
-        Book b = new Book();
-        String bTitle = "boring title";
-        b.setTitle(bTitle);
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
 
-        List<Book> mockRepositoryResponse = List.of(a, b);
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
+                null,
+                false,
+                null,
+                null,
+                (short) 1);
 
-        when(bookRepository.findAll()).thenReturn(mockRepositoryResponse);
+        List<BookRespDTO> books = result.getContent();
 
-        List<BookRespDTO> res = bookService.findAll();
-        assertFalse(res.isEmpty());
-        assertEquals(res.get(0).getTitle(), aTitle);
-        assertEquals(res.get(1).getTitle(), bTitle);
+        assertFalse(books.isEmpty());
+        assertEquals(2, books.size());
     }
 
     @Test
+    @DisplayName("should return an empty page when tries to find all and there are no books")
+    public void testFindNoBooks() {
+        // WHEN
+        Page<Book> mockResponse = new PageImpl<>(Collections.emptyList(), Pageable.ofSize(9), 0);
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                "random",
+                null,
+                false,
+                null,
+                null,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertTrue(books.isEmpty());
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getTotalPages());
+    }
+
+    @Test
+    @DisplayName("should find all books filtered by publisher")
+    public void testFindAllByPublisher() {
+        // GIVEN
+        String publisher = "annoying publisher";
+
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .publisher(publisher)
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
+                publisher,
+                false,
+                null,
+                null,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertFalse(books.isEmpty());
+        assertEquals(publisher, books.get(0).getPublisher());
+    }
+
+    @Test
+    @DisplayName("should find all books filtered by publisher and category")
+    public void testFindAllByPublisherAndCategory() {
+        // GIVEN
+        String publisher = "happy publisher";
+        String category = "sad category";
+
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .publisher(publisher)
+                        .categories(Set.of(Category.builder()
+                                .name(category)
+                                .build()))
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                category,
+                publisher,
+                false,
+                null,
+                null,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertFalse(books.isEmpty());
+        assertEquals(publisher, books.get(0).getPublisher());
+        assertTrue(books.get(0).getCategories().stream()
+                .anyMatch(c -> Objects.equals(c.getName(), category)));
+    }
+
+    @Test
+    @DisplayName("should find all books sorted ascendant")
+    public void testFindAllSortedAscendant() {
+        // GIVEN
+        String sort = "asc";
+
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .title("amusing title")
+                        .build(),
+                Book.builder()
+                        .title("sad title")
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(
+                content,
+                PageRequest.of(0, 9, Sort.by("title").ascending()),
+                content.size());
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                eq(PageRequest.of(0, 9, Sort.by("title").ascending()))))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
+                null,
+                false,
+                null,
+                sort,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertFalse(books.isEmpty());
+        assertEquals("amusing title", books.get(0).getTitle());
+        assertEquals("sad title", books.get(1).getTitle());
+    }
+
+    @Test
+    @DisplayName("should find all books sorted descendant")
+    public void testFindAllSortedDescendant() {
+        // GIVEN
+        String sort = "desc";
+
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .title("sad title")
+                        .build(),
+                Book.builder()
+                        .title("amusing title")
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(
+                content,
+                PageRequest.of(0, 9, Sort.by("title").ascending()),
+                content.size());
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                eq(PageRequest.of(0, 9, Sort.by("title").descending()))))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
+                null,
+                false,
+                null,
+                sort,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertFalse(books.isEmpty());
+        assertEquals("amusing title", books.get(1).getTitle());
+        assertEquals("sad title", books.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("should find all books filtered by releases")
+    public void testFindAllByReleases() {
+        // GIVEN
+        boolean releases = true;
+
+        // WHEN
+        List<Book> content = List.of(
+                Book.builder()
+                        .createdAt(LocalDateTime.now())
+                        .build()
+        );
+        Page<Book> mockResponse = new PageImpl<>(content, Pageable.ofSize(9), content.size());
+
+        when(bookRepository.findAll(
+                ArgumentMatchers.<Specification<Book>>any(),
+                ArgumentMatchers.<Pageable>any()))
+                .thenReturn(mockResponse);
+
+        // THEN
+        PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
+                null,
+                releases,
+                null,
+                null,
+                (short) 1);
+
+        List<BookRespDTO> books = result.getContent();
+
+        assertFalse(books.isEmpty());
+        assertEquals(LocalDateTime.now().getMonthValue(), books.get(0).getCreatedAt().getMonthValue());
+    }
+
+    @Test
+    @DisplayName("should update an existing book")
     void testUpdateExistingBook() {
         // Arrange
         Long bookId = 1L;
@@ -143,6 +473,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("should throw BookNotFoundException when tries to update a non existing book")
     void testUpdateNonExistingBook() {
         // Arrange
         Long bookId = 1L;
@@ -153,10 +484,11 @@ public class BookServiceTest {
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.update(bookId, input));
-        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
+        assertEquals(String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId), exception.getMessage());
     }
 
     @Test
+    @DisplayName("should throw BookAlreadyExistsException when tries to update an existing book")
     void testUpdateExistingBookISBN() {
         // Arrange
         Long bookId = 1L;
@@ -175,11 +507,22 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("should patch an existing book")
     void testPatchExistingBook() {
         // Arrange
         Long bookId = 1L;
         String title = "this title must not be overridden";
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
+
+        String imageURL1 = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
+        String imageURL2 = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
+        List<String> imagesToReplace = new ArrayList<>();
+
+        imagesToReplace.add(imageURL1);
+        imagesToReplace.add(imageURL2);
+
+        input.setImagesToReplaceURLs(imagesToReplace);
+        String imageLinks = imageURL1 + "," + imageURL2;
 
         Book existingBook = new Book();
         existingBook.setId(bookId);
@@ -191,6 +534,7 @@ public class BookServiceTest {
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
+        when(bookRepository.findImageLinksById(bookId)).thenReturn(imageLinks);
 
         // Act
         BookRespDTO result = bookService.patch(bookId, input);
@@ -202,28 +546,29 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("should throw BookNotFoundException when tries to update a non existing book")
     void testPatchNonExistingBook() {
         // Arrange
         Long bookId = 1L;
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
         // Act and Assert
         BookNotFoundException exception = assertThrows(BookNotFoundException.class,
                 () -> bookService.patch(bookId, input));
-        assertEquals(String.format(BOOK_NOT_FOUND_ERROR_FORMAT, bookId), exception.getMessage());
-        bookService = new BookServiceImpl(bookRepository, new ObjectMapper(), new ModelMapper());
+        assertEquals(String.format(NOT_FOUND_ERROR_FORMAT, "book", bookId), exception.getMessage());
     }
 
     @Test
+    @DisplayName("should throw BookAlreadyExistsException when tries to update an existing book")
     void testPatchExistingBookISBN() {
         // Arrange
         Long bookId = 1L;
         String actualBookIsbn = "978-0-261-10238-4";
         String alreadyExistingBookIsbn = "978-0-261-10238-4";
 
-        BookRespDTO input = new BookRespDTO();
+        BookReqPatchDTO input = new BookReqPatchDTO();
         input.setIsbn(alreadyExistingBookIsbn);
 
         Book existingBook = new Book();
@@ -240,11 +585,15 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("should delete an existing book")
     void testDeleteExistingBook() {
         // Arrange
         Long bookId = 1L;
+        String images = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg," +
+                "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
         doReturn(true).when(bookRepository).existsById(bookId);
+        when(bookRepository.findImageLinksById(bookId)).thenReturn(images);
         doNothing().when(bookRepository).deleteById(1L);
 
         // Act
@@ -255,6 +604,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @DisplayName("should throw BookNotFoundException when tries to delete a non existing book")
     void testDeleteNonExistingBook() {
         // Arrange
         Long bookId = 1L;
@@ -264,5 +614,4 @@ public class BookServiceTest {
         // Act and Assert
         assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
-
 }

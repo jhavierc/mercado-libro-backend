@@ -1,5 +1,6 @@
 package com.mercadolibro.service.impl;
 
+import com.mercadolibro.dto.UserUpdateDTO;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.dto.UserDTO;
@@ -9,6 +10,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -36,6 +42,12 @@ class UserServiceImplTest {
 
     @Spy
     private final UserMapper userMapper = UserMapper.INSTANCE;
+
+    @Mock
+    private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -120,4 +132,307 @@ class UserServiceImplTest {
         verify(userRepository, never()).save(any(AppUser.class));
         verify(userRoleRepository, atLeast(1)).findByDescription(users.get(0).getRoles().get(0).getDescription());
     }
+
+    @Test
+    void shouldFindUserByEmail() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        UserDTO userFound = userService.findByEmail(user.getEmail());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getName(), userFound.getName());
+        assertEquals(user.getLastName(), userFound.getLastName());
+        assertEquals(user.getEmail(), userFound.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userFound.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userFound.getId());
+        assertEquals(user.getStatus(), userFound.getStatus());
+        assertEquals(user.getDateCreated(), userFound.getDateCreated());
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void findUserByEmailShouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.findByEmail(user.getEmail()));
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void loadUserByUsernameShouldReturnUserDetails() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        UserDetails userFound = userService.loadUserByUsername(user.getEmail());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getEmail(), userFound.getUsername());
+        assertEquals(user.getPassword(), userFound.getPassword());
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void loadUserByUsernameShouldThrowUsernameNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(user.getEmail()));
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void findByIdShouldReturnUser() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        UserDTO userFound = userService.findById(user.getId());
+
+        // THEN
+        assertNotNull(userFound);
+        assertEquals(user.getName(), userFound.getName());
+        assertEquals(user.getLastName(), userFound.getLastName());
+        assertEquals(user.getEmail(), userFound.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userFound.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userFound.getId());
+        assertEquals(user.getStatus(), userFound.getStatus());
+        assertEquals(user.getDateCreated(), userFound.getDateCreated());
+        verify(userRepository, times(1)).findById(user.getId());
+    }
+
+    @Test
+    void findByIdShouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.findById(user.getId()));
+        verify(userRepository, times(1)).findById(user.getId());
+    }
+
+    @Test
+    void findAllRolesShouldReturnAllRoles() {
+        // GIVEN
+        AppUserRole role = users.get(0).getRoles().get(0);
+
+        //WHEN
+        when(userRoleRepository.findAll()).thenReturn(Arrays.asList(role));
+
+        List<AppUserRole> rolesFound = userService.findAllRoles();
+
+        // THEN
+        assertNotNull(rolesFound);
+        assertEquals(1, rolesFound.size());
+        assertEquals(role.getId(), rolesFound.get(0).getId());
+        assertEquals(role.getDescription(), rolesFound.get(0).getDescription());
+        assertEquals(role.getStatus(), rolesFound.get(0).getStatus());
+        verify(userRoleRepository, times(1)).findAll();
+    }
+
+    @Test
+    void findAllShouldReturnAllUsers() {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findAll()).thenReturn(users);
+
+        List<UserDTO> usersFound = userService.findAll();
+
+        // THEN
+        assertNotNull(usersFound);
+        assertEquals(1, usersFound.size());
+        assertEquals(user.getName(), usersFound.get(0).getName());
+        assertEquals(user.getLastName(), usersFound.get(0).getLastName());
+        assertEquals(user.getEmail(), usersFound.get(0).getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), usersFound.get(0).getRoles().get(0).getDescription());
+        assertEquals(user.getId(), usersFound.get(0).getId());
+        assertEquals(user.getStatus(), usersFound.get(0).getStatus());
+        assertEquals(user.getDateCreated(), usersFound.get(0).getDateCreated());
+        verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    void updateUserWithAllFieldsShouldReturnUser() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(user.getName() + "modified", user.getLastName() + "modified", "modified@email.com", "modifiedpassword", "ACTIVE",
+                Arrays.asList(new AppUserRole(1, "ADMIN", "ACTIVE")));
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRoleRepository.findByDescription("ADMIN")).thenReturn(
+                Optional.of(new AppUserRole(1, "ADMIN", "ACTIVE")));
+        UserDTO userUpdated = userService.update(userUpdateDTO, user.getId());
+
+        // THEN
+        assertNotNull(userUpdated);
+        assertEquals(user.getName(), userUpdated.getName());
+        assertEquals(user.getLastName(), userUpdated.getLastName());
+        assertEquals(user.getEmail(), userUpdated.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userUpdated.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userUpdated.getId());
+        assertEquals(user.getStatus(), userUpdated.getStatus());
+        assertEquals(user.getDateCreated(), userUpdated.getDateCreated());
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userRepository, times(1)).save(any(AppUser.class));
+    }
+
+    @Test
+    void updateUserWithSomeFieldsShouldReturnUser() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(user.getName() + "modified", user.getLastName() + "modified", null, null, null,
+                null);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        UserDTO userUpdated = userService.update(userUpdateDTO, user.getId());
+
+        // THEN
+        assertNotNull(userUpdated);
+        assertEquals(user.getName(), userUpdated.getName());
+        assertEquals(user.getLastName(), userUpdated.getLastName());
+        assertEquals(user.getEmail(), userUpdated.getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), userUpdated.getRoles().get(0).getDescription());
+        assertEquals(user.getId(), userUpdated.getId());
+        assertEquals(user.getStatus(), userUpdated.getStatus());
+        assertEquals(user.getDateCreated(), userUpdated.getDateCreated());
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userRepository, times(1)).save(any(AppUser.class));
+    }
+
+    @Test
+    void updateUserShouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(user.getName() + "modified", user.getLastName() + "modified", null, null, null,
+                null);
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.update(userUpdateDTO, user.getId()));
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userRepository, never()).save(any(AppUser.class));
+    }
+
+    @Test
+    void updateUserShouldThrowResourceNotFoundExceptionWhenRoleDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AppUser user = users.get(0);
+        UserUpdateDTO userUpdateDTO = new UserUpdateDTO(user.getName() + "modified", user.getLastName() + "modified", null, null, null,
+                Arrays.asList(new AppUserRole(1, "ADMIN", "ACTIVE")));
+
+        //WHEN
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRoleRepository.findByDescription("ADMIN")).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> userService.update(userUpdateDTO, user.getId()));
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userRepository, never()).save(any(AppUser.class));
+        verify(userRoleRepository, atLeast(1)).findByDescription("ADMIN");
+    }
+
+    @Test
+    void findShouldReturnAllUsers() {
+        // GIVEN
+        AppUser user = users.get(0);
+
+        //WHEN
+        when(userRepository.findAll()).thenReturn(users);
+
+        List<UserDTO> usersFound = userService.findAll();
+
+        // THEN
+        assertNotNull(usersFound);
+        assertEquals(1, usersFound.size());
+        assertEquals(user.getName(), usersFound.get(0).getName());
+        assertEquals(user.getLastName(), usersFound.get(0).getLastName());
+        assertEquals(user.getEmail(), usersFound.get(0).getEmail());
+        assertEquals(user.getRoles().get(0).getDescription(), usersFound.get(0).getRoles().get(0).getDescription());
+        assertEquals(user.getId(), usersFound.get(0).getId());
+        assertEquals(user.getStatus(), usersFound.get(0).getStatus());
+        assertEquals(user.getDateCreated(), usersFound.get(0).getDateCreated());
+        verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    void generateResetCode_shouldGenerateCode() {
+        // GIVEN
+        String email = "test@example.com";
+
+        // WHEN
+        String code = userService.generateResetCode(email);
+
+        // THEN
+        assertNotNull(code);
+        assertFalse(code.isEmpty());
+
+    }
+
+    @Test
+    void sendResetCode_shouldSendEmailWithCode() throws ResourceNotFoundException {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+
+        // WHEN
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        userService.sendResetCode(email);
+
+        // THEN
+        verify(emailService, times(1)).sendEmail(any(), any(), any(), any());
+
+    }
+
+    @Test
+    void resetPasswordShouldResetPassword() throws ResourceNotFoundException {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        String newPassword = "newPassword";
+
+        // When
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        String code = userService.generateResetCode(email);
+
+       userService.resetPassword(code, newPassword);
+
+        // Then
+        verify(userRepository, times(1)).save(any(AppUser.class));
+
+
+    }
+
+
+
+
 }
