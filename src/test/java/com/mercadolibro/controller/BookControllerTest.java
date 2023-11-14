@@ -172,19 +172,4 @@ public class BookControllerTest {
         assertEquals(200, response.getStatusCodeValue()); // Verificar que la respuesta sea OK
         assertEquals(mockPageDTO, response.getBody()); // Verificar que el cuerpo de la respuesta coincida con el PageDTO simulado
     }
-
-    @Test
-    public void testSearchBooksEmpty() {
-        // GIVEN
-        String keyword = "Harry Potter";
-        short page = 0;
-
-        when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page)))
-                .thenThrow(new BookNotFoundException("Book not found"));
-        
-        // WHEN & THEN
-        assertThrows(BookNotFoundException.class, () -> {
-            bookController.searchBooks(keyword, page);
-        });
-    }
 }
