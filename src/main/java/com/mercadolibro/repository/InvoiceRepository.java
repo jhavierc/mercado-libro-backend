@@ -15,4 +15,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     Page<Invoice> findAll(Pageable pageable);
 
+    @Query(value = "SELECT * FROM invoice WHERE user_id = ?1",
+            countQuery = "SELECT count(*) FROM invoice WHERE user_id = ?1",
+            nativeQuery = true)
+    Page<Invoice> findByUserId(Long id, Pageable pageable);
+
 }

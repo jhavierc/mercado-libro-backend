@@ -1,5 +1,8 @@
 package com.mercadolibro.repository;
 
+import com.mercadolibro.dto.BookRespDTO;
+import com.mercadolibro.entity.Book;
+import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,5 +21,11 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
     Long findLastInsertedId();
 
     Page<InvoiceItem> findAll(Pageable pageable);
+
+    @Query(value = "SELECT * FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            nativeQuery = true)
+    List<InvoiceItem> findBestSellers();
+
 
 }

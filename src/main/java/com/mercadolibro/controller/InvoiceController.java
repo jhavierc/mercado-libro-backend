@@ -1,7 +1,9 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.InvoiceRequestDTO;
 import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +34,19 @@ public class InvoiceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<InvoiceRequestDTO>> findAll() {
-        return ResponseEntity.ok(invoiceRequestService.findAll());
-    }
-
-
-    @GetMapping
     public ResponseEntity<PageDTO<InvoiceRequestDTO>> findAll(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.findAll(page, size));
     }
+
+    @GetMapping("/userid/{userId}")
+    public ResponseEntity<PageDTO<InvoiceRequestDTO>> findByUserId(@PathVariable Long userId , @RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.findByUserId(userId, page, size));
+    }
+
+    @GetMapping("/bestsellers")
+    public ResponseEntity<List<BookRespDTO>> findBestSellers() {
+        return ResponseEntity.ok(invoiceRequestService.findBestSellers());
+    }
+
 
 }
