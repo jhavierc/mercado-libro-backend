@@ -1,5 +1,6 @@
 package com.mercadolibro.service;
 
+import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.InvoiceRequestDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.InvoiceRequest;
@@ -13,7 +14,8 @@ import java.util.List;
 public interface InvoiceRequestService {
 
     InvoiceRequestDTO findById(Long id);
-    List<InvoiceRequestDTO> findAll();
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
     PageDTO<InvoiceRequestDTO> findAll(int page, int size);
+    PageDTO<InvoiceRequestDTO> findByUserId(Long userId, int page, int size);
+    List<BookRespDTO> findBestSellers();
 }
