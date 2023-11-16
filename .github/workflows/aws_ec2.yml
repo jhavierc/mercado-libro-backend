@@ -26,6 +26,12 @@ jobs:
         DB_PORT: ${{ secrets.DB_PORT }}
         DB_NAME: ${{ secrets.DB_NAME }}
         SERVER_PORT: ${{ secrets.SERVER_PORT }}
+        AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
+        AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+        MAIL_HOST: ${{ secrets.MAIL_HOST }}
+        MAIL_PORT: ${{ secrets.MAIL_PORT }}
+        MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+        MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
 
     - name: Copiar archivo JAR a instancia EC2 2
       uses: appleboy/scp-action@master
@@ -50,6 +56,12 @@ jobs:
           export DB_PORT=${{ secrets.DB_PORT }} &&
           export DB_NAME=${{ secrets.DB_NAME }} &&
           export SERVER_PORT=${{ secrets.SERVER_PORT }} &&
+          export AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }} &&
+          export AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }} &&
+          export MAIL_HOST=${{ secrets.MAIL_HOST }} &&
+          export MAIL_PORT=${{ secrets.MAIL_PORT }} &&
+          export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} &&
+          export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} &&
           echo "DB_PASSWORD=$DB_PASSWORD" >> ~/.bashrc &&
           echo "DB_USERNAME=$DB_USERNAME" >> ~/.bashrc &&
           echo "DB_HOST=$DB_HOST" >> ~/.bashrc &&

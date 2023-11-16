@@ -10,6 +10,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,12 @@ class UserServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
 
+<<<<<<< HEAD
+=======
+    @Mock
+    private EmailService emailService;
+
+>>>>>>> main
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -380,5 +387,58 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).findAll();
     }
 
+<<<<<<< HEAD
+=======
+    @Test
+    void generateResetCode_shouldGenerateCode() {
+        // GIVEN
+        String email = "test@example.com";
+
+        // WHEN
+        String code = userService.generateResetCode(email);
+
+        // THEN
+        assertNotNull(code);
+        assertFalse(code.isEmpty());
+
+    }
+
+    @Test
+    void sendResetCode_shouldSendEmailWithCode() throws ResourceNotFoundException {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+
+        // WHEN
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        userService.sendResetCode(email);
+
+        // THEN
+        verify(emailService, times(1)).sendEmail(any(), any(), any(), any());
+
+    }
+
+    @Test
+    void resetPasswordShouldResetPassword() throws ResourceNotFoundException {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        String newPassword = "newPassword";
+
+        // When
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        String code = userService.generateResetCode(email);
+
+       userService.resetPassword(code, newPassword);
+
+        // Then
+        verify(userRepository, times(1)).save(any(AppUser.class));
+
+
+    }
+
+
+
+>>>>>>> main
 
 }

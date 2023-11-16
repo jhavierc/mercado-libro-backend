@@ -27,16 +27,16 @@ public interface UserService extends UserDetailsService {
     UserDTO create(UserRegisterDTO userRegisterDTO, List<String> roles) throws ResourceAlreadyExistsException, ResourceNotFoundException;
 
     /**
-    * Creates a new user based on the provided UserRegistrationDTO.
-    *
-    * This method creates a new user account by taking the user's registration data in the form of a UserRegistrationDTO
-    * the roles are assigned by default.
-    * To configure default roles you should set the property "app.user.default-roles" in the application.yml file.
-    *
-    * @param userRegisterDTO containing the user's registration information.
-    * @return A UserDTO representing the newly created user, including their unique identifier and associated information.
-    * @throws ResourceAlreadyExistsException If a user with the same identifier or unique constraint already exists.
-    * @throws ResourceNotFoundException If one or more roles provided do not exist in the system.
+     * Creates a new user based on the provided UserRegistrationDTO.
+     *
+     * This method creates a new user account by taking the user's registration data in the form of a UserRegistrationDTO
+     * the roles are assigned by default.
+     * To configure default roles you should set the property "app.user.default-roles" in the application.yml file.
+     *
+     * @param userRegisterDTO containing the user's registration information.
+     * @return A UserDTO representing the newly created user, including their unique identifier and associated information.
+     * @throws ResourceAlreadyExistsException If a user with the same identifier or unique constraint already exists.
+     * @throws ResourceNotFoundException If one or more roles provided do not exist in the system.
      */
     UserDTO create(UserRegisterDTO userRegisterDTO) throws ResourceAlreadyExistsException, ResourceNotFoundException;
 
@@ -86,5 +86,29 @@ public interface UserService extends UserDetailsService {
      * @return A page of users
      */
     PageDTO<UserDTO> find(UserQuery userQuery, Integer page, Integer size);
+
+    /**
+     * Generates a reset code for the user with the specified email address
+     * @param email
+     * @return
+     * @throws ResourceNotFoundException If no user with the specified email address exists.
+     */
+    String generateResetCode(String email) throws ResourceNotFoundException;
+
+    /**
+     * Generates a reset code for the user with the specified email address and sends it to the user's email address
+     * @param email
+     * @throws ResourceNotFoundException If no user with the specified email address exists.
+     */
+    void sendResetCode(String email) throws ResourceNotFoundException;
+
+    /**
+     * Resets the user's password with the specified reset code
+     * @param code The reset code
+     * @param newPassword The new password
+     * @throws ResourceNotFoundException If no reset code with the specified code exists.
+     */
+
+    void resetPassword(String code, String newPassword) throws ResourceNotFoundException;
 
 }

@@ -27,5 +27,4 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
             nativeQuery = true)
     List<InvoiceItem> findBestSellers();
 
-
 }
