@@ -15,12 +15,9 @@ import java.util.*;
 
 @Service
 public class ImageServiceImpl implements ImageService {
-
     private final ImageRepository imageRepository;
     private final S3Service s3Service;
-
     public static final String IMAGES_TO_DELETE_NOT_FOUND = "Some images to delete could not be found.";
-
 
     @Autowired
     public ImageServiceImpl(ImageRepository imageRepository, S3Service s3Service) {
@@ -36,8 +33,7 @@ public class ImageServiceImpl implements ImageService {
         image.setUrl(uploadedObject.getUrl());
         return imageRepository.save(image);
     }
-
-
+    
     @Override
     public List<Image> updateAll(List<Long> existingIds, List<MultipartFile> newFiles) {
         List<Image> updatedImages = new ArrayList<>();
