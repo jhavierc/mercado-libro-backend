@@ -151,8 +151,8 @@ public class BookServiceImpl implements BookService {
             List<MultipartFile> imagesToAdd = bookReqPatchDTO.getImages();
             List<Long> imagesToDelete = bookReqPatchDTO.getRemoveImagesIDs();
 
-            int finalImageSize = optionalBook.get().getImages().size() + imagesToDelete.size() - imagesToDelete.size();
-            if (finalImageSize < 1 || finalImageSize > 5 && !imagesToAdd.isEmpty() && !imagesToDelete.isEmpty()){
+            int finalImageSize = optionalBook.get().getImages().size() + imagesToAdd.size() - imagesToDelete.size();
+            if (finalImageSize < 1 || finalImageSize > 5){
                 throw new BookImageLimitException(BOOK_IMAGE_LIMIT);
             }
 
