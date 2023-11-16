@@ -68,6 +68,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public BookRespDTO save(BookReqDTO bookReqDTO) {
         bookReqDTO.getCategories().forEach(category -> {
             Long id = category.getId();
