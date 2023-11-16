@@ -459,15 +459,33 @@ public class BookServiceTest {
     @DisplayName("should update an existing book")
     void testUpdateExistingBook() {
         // Arrange
+        MockMultipartFile firstFile = new MockMultipartFile("data", "filename-1.txt", "text/plain", "some xml".getBytes());
+        MockMultipartFile secondFile = new MockMultipartFile("data", "filename-2.txt", "text/plain", "some xml".getBytes());
+        List<MultipartFile> files = Arrays.asList(firstFile, secondFile);
+
         Long bookId = 1L;
         BookReqDTO input = new BookReqDTO();
         input.setLanguage("english");
+        input.setImages(files);
 
         Book mockRepositoryResponse = new Book();
         mockRepositoryResponse.setId(bookId);
         mockRepositoryResponse.setLanguage("english");
 
+        Set<Image> images = new HashSet<>();
+        Image image1 = new Image();
+        image1.setId(1L);
+
+        images.add(image1);
+
+        Book oldBook = new Book();
+        oldBook.setImages(images);
+
+        List<Image> imageList = new ArrayList<>(images);
+
         when(bookRepository.existsById(bookId)).thenReturn(true);
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(oldBook));
+        when(imageService.updateAll(anyList(), anyList())).thenReturn(imageList);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
