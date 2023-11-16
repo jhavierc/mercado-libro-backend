@@ -3,10 +3,7 @@ package com.mercadolibro.config.resolver;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.AuthorDTO;
-import com.mercadolibro.dto.BookCategoryReqDTO;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookReqPatchDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.dto.annotation.BookRequest;
 import com.mercadolibro.exception.UnsupportedParameterTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class BookArgumentResolver implements HandlerMethodArgumentResolver {
@@ -79,9 +73,9 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
                         List<BookCategoryReqDTO> bookCategoryReqDTOS = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, BookCategoryReqDTO.class));
                         simpleAttributes.put("categories", bookCategoryReqDTOS);
                         break;
-                    case "images_to_replace_urls[]":
-                        List<String> imageToReplaceURLs = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, String.class));
-                        simpleAttributes.put("images_to_replace_urls", imageToReplaceURLs);
+                    case "remove_images_ids[]":
+                        List<Long> imagesToDelete = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, Long.class));
+                        simpleAttributes.put("remove_images_ids", imagesToDelete);
                         break;
                     case "authors[]":
                         List<AuthorDTO> authors = mapper.readValue(Arrays.toString(values), mapper.getTypeFactory().constructCollectionType(List.class, AuthorDTO.class));
@@ -109,7 +103,9 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
             StandardMultipartHttpServletRequest multipartRequest = (StandardMultipartHttpServletRequest) httpServletRequest;
 
             List<MultipartFile> files = multipartRequest.getMultiFileMap().get("images[]");
-            bookReqPatchDTO.setImages(files);
+            if (files != null) {
+                bookReqPatchDTO.getImages().addAll(files);
+            }
         }
     }
 }

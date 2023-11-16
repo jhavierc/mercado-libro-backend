@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
+import com.mercadolibro.entity.Image;
 import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
 import com.mercadolibro.service.BookService;
-import com.mercadolibro.service.S3Service;
-import com.mercadolibro.util.S3Util;
+import com.mercadolibro.service.ImageService;
 import com.mercadolibro.service.specification.BookSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
@@ -19,35 +19,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.List;
+import javax.transaction.Transactional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
+    private final ImageService imageService;
     private final ObjectMapper mapper;
     private final ModelMapper modelMapper;
-    private final S3Service s3Service;
 
     public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
     public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload " +
             "rolled back successfully";
-    public static final String FILE_NOT_FOUND_MESSAGE = "The file associated with URL: %s does not exist.";
-
+    public static final String BOOK_IMAGE_LIMIT = "The book cannot have less than 1 images or more than 5 images";
 
     @Autowired
     public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository,
-                           ObjectMapper mapper, ModelMapper modelMapper, S3Service s3Service) {
+                           ImageService imageService, ObjectMapper mapper, ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
+        this.imageService = imageService;
         this.mapper = mapper;
         this.modelMapper = modelMapper;
-        this.s3Service = s3Service;
     }
 
     @Override
@@ -80,53 +77,66 @@ public class BookServiceImpl implements BookService {
         });
 
         if (!bookRepository.existsByIsbn(bookReqDTO.getIsbn())) {
-            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
-            try {
-                Book mappedBook = mapper.convertValue(bookReqDTO, Book.class);
-                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
+            List<Image> savedImages = new ArrayList<>();
+            List<MultipartFile> files = bookReqDTO.getImages();
 
-                Book saved = bookRepository.save(mappedBook);
-                return mapper.convertValue(saved, BookRespDTO.class);
+            Book mappedBook = mapper.convertValue(bookReqDTO, Book.class);
+
+            try {
+                files.forEach(file -> {
+                    Image image = imageService.save(file);
+                    image.setBook(mappedBook);
+                    savedImages.add(image);
+                });
             } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs); // TODO: check if a can do a fallback method instead of repeating rollback with try catch
+                List<Long> imageIds = savedImages.stream().map(Image::getId).collect(Collectors.toList());
+                imageService.deleteAll(imageIds);
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
+
+            mappedBook.setImages(new HashSet<>(savedImages));
+
+            Book savedBook = bookRepository.save(mappedBook);
+            return mapper.convertValue(savedBook, BookRespDTO.class);
+
         }
         throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
     }
 
     @Override
-    public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
+    @Transactional
+    public BookRespDTO update(Long id, BookReqDTO bookReqDTO) {
         if (bookRepository.existsById(id)) {
             if (bookRepository.existsByIsbnAndIdNot(bookReqDTO.getIsbn(), id)) {
-                throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT,
-                        bookReqDTO.getIsbn()));
+                throw new BookAlreadyExistsException(
+                        String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqDTO.getIsbn()));
             }
-            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
-            Book mappedBook;
 
-            try {
-                mappedBook = mapper.convertValue(bookReqDTO, Book.class);
-                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
-                mappedBook.setId(id);
+            Book existingBook = bookRepository.findById(id).get();
+            List<Long> existingImageIds = existingBook.getImages().stream()
+                    .map(Image::getId)
+                    .collect(Collectors.toList());
 
-                Book updated = bookRepository.save(mappedBook);
+            List<Image> updatedImages = imageService.updateAll(existingImageIds, bookReqDTO.getImages());
 
-                // TODO: At this point, we need to remove old images. However, due to the current backend architecture
-                //  and database structure, the logic for this task would be ugly. Creating an images entity
-                //  would be necessary to resolve these issues.
+            Book mappedBook = mapper.convertValue(bookReqDTO, Book.class);
 
-                return mapper.convertValue(updated, BookRespDTO.class);
-            } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs);
-                throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
-            }
+            mappedBook.setId(id);
+            mappedBook.setImages(new HashSet<>(updatedImages));
+            updatedImages.forEach(image -> {
+                image.setBook(mappedBook);
+            });
+
+            Book updatedBook = bookRepository.save(mappedBook);
+
+            return mapper.convertValue(updatedBook, BookRespDTO.class);
         }
 
         throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
 
     @Override
+    @Transactional
     public BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         modelMapper.getConfiguration().setCollectionsMergeEnabled(false);
@@ -137,23 +147,36 @@ public class BookServiceImpl implements BookService {
                 throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqPatchDTO.getIsbn()));
             }
 
-            List<MultipartFile> imagesToUpload = bookReqPatchDTO.getImages();
-            List<String> imageURLs = bookReqPatchDTO.getImagesToReplaceURLs();
+            List<MultipartFile> imagesToAdd = bookReqPatchDTO.getImages();
+            List<Long> imagesToDelete = bookReqPatchDTO.getRemoveImagesIDs();
 
-            String existingImageLinks = bookRepository.findImageLinksById(id);
-            List<String> splitLinks = List.of(existingImageLinks.split(","));
-            for (String URL : imageURLs) {
-                if (!splitLinks.contains(URL)) {
-                    throw new BookImageKeyDoesNotExistException(String.format(FILE_NOT_FOUND_MESSAGE, URL));
-                }
+            int finalImageSize = optionalBook.get().getImages().size() + imagesToDelete.size() - imagesToDelete.size();
+            if (finalImageSize < 1 || finalImageSize > 5 && !imagesToAdd.isEmpty() && !imagesToDelete.isEmpty()){
+                throw new BookImageLimitException(BOOK_IMAGE_LIMIT);
             }
 
-            s3Service.replaceFilesByURLs(imagesToUpload, imageURLs); // I do not replace new image links in the database because them stays with the same key/url
+            List<Image> savedImages = new ArrayList<>();
 
-            HashSet<Category> categoriesOnlyWithID = bookReqPatchDTO.getCategories().stream()
-                    .map(categoryDTO -> mapper.convertValue(categoryDTO, Category.class))
-                    .collect(Collectors.toCollection(HashSet::new));
-            optionalBook.get().setCategories(categoriesOnlyWithID);
+            if (!imagesToDelete.isEmpty()) {
+                imageService.deleteAll(bookReqPatchDTO.getRemoveImagesIDs());
+            }
+
+            if (!imagesToAdd.isEmpty()) {
+                imagesToAdd.forEach(file -> {
+                    Image image = imageService.save(file);
+                    image.setBook(optionalBook.get());
+                    savedImages.add(image);
+                });
+
+                optionalBook.get().setImages(new HashSet<>(savedImages));
+            }
+
+            if (bookReqPatchDTO.getCategories() != null){
+                HashSet<Category> categoriesOnlyWithID = bookReqPatchDTO.getCategories().stream()
+                        .map(categoryDTO -> mapper.convertValue(categoryDTO, Category.class))
+                        .collect(Collectors.toCollection(HashSet::new));
+                optionalBook.get().setCategories(categoriesOnlyWithID);
+            }
 
             modelMapper.map(bookReqPatchDTO, optionalBook.get());
 
@@ -176,16 +199,12 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void delete(Long id) {
-        if (bookRepository.existsById(id)) {
-            String imageLinks = bookRepository.findImageLinksById(id);
-            String[] splitLinks = imageLinks.split(",");
+        Optional<Book> existingBook = bookRepository.findById(id);
+        if (existingBook.isPresent()) {
+            imageService.deleteAll(existingBook.get().getImages().stream()
+                    .map(Image::getId)
+                    .collect(Collectors.toList()));
 
-            List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
-            for (String link : splitLinks) {
-                s3ObjectDTOS.add(S3Util.parseS3Url(link));
-            }
-
-            s3Service.deleteFiles(s3ObjectDTOS);
             bookRepository.deleteById(id);
         } else {
             throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));

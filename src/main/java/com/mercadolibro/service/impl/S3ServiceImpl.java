@@ -51,7 +51,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public List<S3ObjectDTO> replaceFilesByURLs(List<MultipartFile> multipartFiles, List<String> fileURLs) { // TODO: improve image replacement order handling, actually we are trusting the frontend to send the correct order
+    public List<S3ObjectDTO> replaceFilesByURLs(List<MultipartFile> multipartFiles, List<String> fileURLs) {
         if (multipartFiles.size() != fileURLs.size()) {
             throw new S3Exception(INVALID_URLS_COUNT_ERROR, HttpStatus.BAD_REQUEST.value());
         }
