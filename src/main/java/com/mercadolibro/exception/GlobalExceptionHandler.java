@@ -139,8 +139,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnsupportedParameterTypeException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnsupportedParameterTypeException(UnsupportedParameterTypeException e) {
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleImageNotFoundException(ImageNotFoundException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(BookImageLimitException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBookImageLimitException(BookImageLimitException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 }

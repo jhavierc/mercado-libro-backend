@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import com.mercadolibro.dto.TestDTO;
 import com.mercadolibro.service.TestService;
-import org.springframework.stereotype.Service;
 
 public class TestServiceImpl implements TestService{
 

@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -58,10 +57,6 @@ public class Book {
     @Column(name = "ratings_count")
     private Short ratingsCount;
 
-    @JsonProperty("image_links")
-    @Column(name = "image_links", length = 1000)
-    private ArrayList<String> imageLinks;
-
     @Column
     private String language;
 
@@ -86,6 +81,9 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "book")
+    private Set<Image> images;
 
     @Getter
     @Setter
