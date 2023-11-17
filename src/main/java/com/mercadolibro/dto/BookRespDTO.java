@@ -3,6 +3,7 @@ package com.mercadolibro.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
+import com.mercadolibro.entity.Image;
 import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +14,6 @@ import org.hibernate.annotations.TypeDef;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -60,10 +60,8 @@ public class BookRespDTO {
     @ApiModelProperty(value = "Ratings count of the book", example = "4")
     private Short ratingsCount;
 
-    @JsonProperty("image_links")
-    @ApiModelProperty(value = "Image links of the book", example =
-            "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
-    private ArrayList<String> imageLinks;
+    @ApiModelProperty(value = "Images of the book", example = "[{'id': '1', 'url': 'https://example.com/file.jpg'}]")
+    private Set<Image> images;
 
     @ApiModelProperty(value = "Language of the book", example = "ES")
     private String language;
