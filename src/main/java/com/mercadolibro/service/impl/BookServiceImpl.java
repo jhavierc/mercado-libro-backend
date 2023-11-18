@@ -54,10 +54,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+    public PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                         String selection, String sort, short page) {
 
-        Specification<Book> spec = buildSpecification(category, publisher, releases);
+        Specification<Book> spec = buildSpecification(keyword, category, publisher, releases);
         Pageable pageable = buildPageable(sort, selection, page);
 
         Page<Book> res = bookRepository.findAll(spec, pageable);
@@ -195,23 +195,6 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    @Override
-    public PageDTO<BookRespDTO> findByTitleOrDescriptionContaining(String keyword,short page) {
-        int size = 9; // Set the page size to 9
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<Book> res = bookRepository.findByTitleOrDescriptionContaining(keyword, pageable);
-        List<BookRespDTO> content = res.getContent().stream().map(book ->
-                mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
-        return new PageDTO<>(
-                content,
-                res.getTotalPages(),
-                res.getTotalElements(),
-                res.getNumber(),
-                res.getSize()
-        );
-    }
-
     private Pageable buildPageable(String sort, String selection, short page) {
         List<Sort.Order> orders = new ArrayList<>();
 
@@ -235,8 +218,12 @@ public class BookServiceImpl implements BookService {
         return PageRequest.of(page, 9, sorted);
     }
 
-    private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
+    private Specification<Book> buildSpecification(String keyword, String category, String publisher, boolean releases) {
         Specification<Book> spec = Specification.where(null);
+
+        if (keyword != null) {
+            spec= spec.and(BookSpecification.titleOrAuthorOrPublisherContainingSpec(keyword));
+        }
 
         if (category != null) {
             spec = spec.and(BookSpecification.categorySpec(category));

@@ -61,42 +61,47 @@ public class BookController {
     )
     public ResponseEntity<PageDTO<BookRespDTO>> findAll(
             @RequestParam(required = false)
+            @Size(min = 1)
+            @ApiParam(
+                    name = "keyword",
+                    type = "String",
+                    value = "keyword to search in title, description, authors or publisher",
+                    example = "Harry Potter")
+                    String keyword,
+
+            @RequestParam(required = false)
             @Size(min = 3)
             @ApiParam(
-                    name =  "category",
+                    name = "category",
                     type = "String",
                     value = "category by which it is filtered",
-                    example = "Fiction",
-                    required = false)
+                    example = "Fiction")
                     String category,
 
             @RequestParam(required = false)
             @Size(min = 3)
             @ApiParam(
-                    name =  "publisher",
+                    name = "publisher",
                     type = "String",
                     value = "publisher by which it is filtered",
-                    example = "HarperCollins",
-                    required = false)
+                    example = "HarperCollins")
                     String publisher,
 
             @RequestParam(required = false)
             @ApiParam(
-                    name =  "releases",
+                    name = "releases",
                     type = "boolean",
                     value = "to obtain latest releases",
-                    example = "true",
-                    required = false)
+                    example = "true")
                     boolean releases,
 
             @RequestParam(required = false)
             @Size(min = 3)
             @ApiParam(
-                    name =  "selection",
+                    name = "selection",
                     type = "String",
                     value = "selection type",
                     example = "newer",
-                    required = false,
                     allowableValues = "newer,older")
             @Pattern(regexp = "newer|older", message = "selection value must be 'newer' or 'older'")
                     String selection,
@@ -104,11 +109,10 @@ public class BookController {
             @RequestParam(required = false)
             @Size(min = 3)
             @ApiParam(
-                    name =  "sort",
+                    name = "sort",
                     type = "String",
                     value = "sort type",
                     example = "asc",
-                    required = false,
                     allowableValues = "asc,desc")
             @Pattern(regexp = "asc|desc", message = "sort value must be 'asc' or 'desc'")
                     String sort,
@@ -123,7 +127,7 @@ public class BookController {
                     required = true)
                     short page
     ) {
-        return ResponseEntity.ok(bookService.findAll(category, publisher, releases, selection, sort, page));
+        return ResponseEntity.ok(bookService.findAll(keyword, category, publisher, releases, selection, sort, page));
     }
 
     @GetMapping("/{id}")
@@ -181,35 +185,5 @@ public class BookController {
     )
     public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @BookRequest @Valid BookReqPatchDTO bookReqPatchDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqPatchDTO));
-    }
-
-    @GetMapping("/searchbar")
-    @ApiOperation(value = "Get books", notes = "Returns books, searching in title, description, authors or publisher")
-    @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 200, message = "Books found successfully", response = BookRespDTO.class),
-                    @ApiResponse(code = 400, message = "Page less than or equal to zero", response = Map.class)
-            }
-    )
-    public ResponseEntity<PageDTO<BookRespDTO>> searchBooks(
-            @RequestParam
-            @ApiParam(
-                    name = "keyword",
-                    type = "String",
-                    value = "keyword to search in title, description, authors or publisher",
-                    example = "Harry Potter",
-                    required = false)
-            String keyword,
-            @RequestParam
-            @PositiveOrZero
-            @ApiParam(
-                    name = "page",
-                    type = "short",
-                    value = "page number (starts at zero)",
-                    example = "0",
-                    required = true)
-            short page) {
-        return ResponseEntity.ok(bookService.findByTitleOrDescriptionContaining(keyword, page));
     }
 }

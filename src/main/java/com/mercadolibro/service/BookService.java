@@ -47,7 +47,7 @@ public interface BookService {
      * @return A list of BookRespDTO containing books, whether filtered, sorted, or all.
      * @throws NoBooksToShowException If no books are found.
      */
-    PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+    PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                  String sort, String selection, short page);
 
     /**
@@ -75,12 +75,4 @@ public interface BookService {
      * @throws BookNotFoundException If the book with the specified ID is not found.
      */
     void delete(Long id);
-
-    /**
-     * Finds books by a keyword within their title or description.
-     *
-     * @param keyword The keyword to search for in titles or descriptions.
-     * @return A page of books containing the keyword in the title or description.
-     */
-    PageDTO<BookRespDTO> findByTitleOrDescriptionContaining (String keyword,short page);
 }

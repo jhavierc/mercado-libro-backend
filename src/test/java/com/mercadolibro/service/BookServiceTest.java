@@ -182,6 +182,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 category,
                 null,
                 false,
@@ -219,6 +220,7 @@ public class BookServiceTest {
         PageDTO<BookRespDTO> result = bookService.findAll(
                 null,
                 null,
+                null,
                 false,
                 null,
                 null,
@@ -243,6 +245,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 "random",
                 null,
                 false,
@@ -278,6 +281,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 null,
                 publisher,
                 false,
@@ -316,6 +320,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 category,
                 publisher,
                 false,
@@ -360,6 +365,7 @@ public class BookServiceTest {
         PageDTO<BookRespDTO> result = bookService.findAll(
                 null,
                 null,
+                null,
                 false,
                 null,
                 sort,
@@ -389,7 +395,7 @@ public class BookServiceTest {
         );
         Page<Book> mockResponse = new PageImpl<>(
                 content,
-                PageRequest.of(0, 9, Sort.by("title").ascending()),
+                PageRequest.of(0, 9, Sort.by("title").descending()),
                 content.size());
 
         when(bookRepository.findAll(
@@ -399,6 +405,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 null,
                 null,
                 false,
@@ -434,6 +441,7 @@ public class BookServiceTest {
 
         // THEN
         PageDTO<BookRespDTO> result = bookService.findAll(
+                null,
                 null,
                 null,
                 releases,
@@ -614,6 +622,7 @@ public class BookServiceTest {
         // Act and Assert
         assertThrows(BookNotFoundException.class, () -> bookService.delete(bookId));
     }
+
     @Test
     public void testFindByTitleOrDescriptionContaining() {
         // GIVEN
@@ -623,10 +632,15 @@ public class BookServiceTest {
 
         List<Book> mockBooks = Arrays.asList(new Book(), new Book());
         Page<Book> mockPage = new PageImpl<>(mockBooks, pageable, mockBooks.size());
-        when(bookRepository.findByTitleOrDescriptionContaining(eq(keyword), any(Pageable.class))).thenReturn(mockPage);
+
+        when(bookRepository.findAll(
+                any(Specification.class),
+                any(Pageable.class)))
+                .thenReturn(mockPage);
 
         // WHEN
-        PageDTO<BookRespDTO> result = bookService.findByTitleOrDescriptionContaining(keyword, page);
+        PageDTO<BookRespDTO> result = bookService.findAll(keyword, null, null, false,
+                null, null, page);
 
         // THEN
         assertNotNull(result);

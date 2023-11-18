@@ -1,6 +1,7 @@
 package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.BookReqPatchDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.dto.BookReqDTO;
@@ -8,12 +9,15 @@ import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
 import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
@@ -156,17 +160,25 @@ public class BookControllerTest {
         BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> bookController.delete(bookId));
         assertEquals(expectedErrorMessage, exception.getMessage());
     }
-        @Test
+
+    @Test
     public void testSearchBooks() {
         // GIVEN
         String keyword = "Harry Potter";
         short page = 0;
 
         PageDTO<BookRespDTO> mockPageDTO = new PageDTO<>(List.of(new BookRespDTO()), 1, 1L, 0, 1);
-        when(bookService.findByTitleOrDescriptionContaining(eq(keyword), eq(page))).thenReturn(mockPageDTO);
+        when(bookService.findAll(eq(keyword),
+                ArgumentMatchers.any(String.class),
+                ArgumentMatchers.any(String.class),
+                ArgumentMatchers.any(Boolean.class),
+                ArgumentMatchers.any(String.class),
+                ArgumentMatchers.any(String.class),
+                eq(page))).thenReturn(mockPageDTO);
 
         // WHEN
-        ResponseEntity<PageDTO<BookRespDTO>> response = bookController.searchBooks(keyword, page);
+        ResponseEntity<PageDTO<BookRespDTO>> response = bookController.findAll(keyword, null, null,
+                false, null, null, page);
 
         // THEN
         assertEquals(200, response.getStatusCodeValue()); // Verificar que la respuesta sea OK
