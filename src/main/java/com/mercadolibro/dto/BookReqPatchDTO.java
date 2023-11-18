@@ -1,6 +1,5 @@
 package com.mercadolibro.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
@@ -21,6 +20,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -71,15 +71,12 @@ public class BookReqPatchDTO {
     @ApiModelProperty(value = "Ratings count of the book", example = "4")
     private Short ratingsCount;
 
-    @Size(min = 1, max = 5)
-    @JsonIgnore
-    @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
-    private List<MultipartFile> images;
+    @ApiModelProperty(value = "Upload at least 1 and at most 5 files of the images.", example = "[\"images[]\"=\"file1.jpg\", \"images[]\"=\"file2.jpg\"]")
+    private List<MultipartFile> images = new ArrayList<>();
 
-    @Size(min = 1, max = 5)
-    @JsonProperty("images_to_replace_urls")
-    @ApiModelProperty(value = "Select at least 1 and at most 5 URLs of the images to replace.", example = "[\"https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg\", \"https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg\"]")
-    private List<String> imagesToReplaceURLs;
+    @JsonProperty("remove_images_ids")
+    @ApiModelProperty(value = "Select at least 1 and at most 5 IDs of the images to delete.", example = "[\"id\": 1, \"id\": 2]")
+    private List<Long> removeImagesIDs = new ArrayList<>();
 
     @ApiModelProperty(value = "Language of the book", example = "ES")
     private String language;
