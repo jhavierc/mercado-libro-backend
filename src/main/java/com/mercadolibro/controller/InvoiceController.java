@@ -5,8 +5,13 @@ import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.dto.PaymentReqDTO;
 import com.mercadolibro.dto.PaymentRespDTO;
 import com.mercadolibro.entity.InvoiceRequest;
+import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.service.InvoiceRequestService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +32,17 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceRequestService.save(invoiceRequest));
     }
 
+    @ApiOperation(value = "Process a payment for a specific invoice")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Payment processed successfully"),
+            @ApiResponse(code = 400, message = "Invalid request"),
+            @ApiResponse(code = 404, message = "Invoice not found"),
+            @ApiResponse(code = 409, message = "Bad payment status", response = InvoicePaymentException.class),
+            @ApiResponse(code = 500, message = "Internal server error")
+    })
     @PostMapping("/{id}/payment")
     public ResponseEntity<PaymentRespDTO> processPayment(@PathVariable UUID id, @RequestBody @Valid PaymentReqDTO paymentReqDTO) {
-        return ResponseEntity.ok(invoiceRequestService.processPayment(id, paymentReqDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(invoiceRequestService.processPayment(id, paymentReqDTO));
     }
 
     @GetMapping("/{id}")

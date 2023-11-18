@@ -31,5 +31,5 @@ public class InvoiceDTO {
     @JsonProperty("account_number")
     private String accountNumber;
 
-
+    private Boolean paid;
 }

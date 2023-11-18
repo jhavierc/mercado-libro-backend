@@ -15,7 +15,7 @@ public class InvoiceItemDTO {
     private Long id;
 
     @JsonProperty("book_id")
-    private int bookId;
+    private Long bookId;
 
     @JsonProperty("unit_price")
     private double unitPrice;
