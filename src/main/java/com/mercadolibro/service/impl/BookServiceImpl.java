@@ -20,7 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +37,7 @@ public class BookServiceImpl implements BookService {
     private final ModelMapper modelMapper;
 
     public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
+    public static final String NOT_FOUND_ERROR_ALL_FORMAT = "Could not found %s.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
     public static final String SAVING_BOOK_ERROR_FORMAT = "There was an error saving the book, image upload " +
             "rolled back successfully";
@@ -48,10 +54,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+    public PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                         String selection, String sort, short page) {
 
-        Specification<Book> spec = buildSpecification(category, publisher, releases);
+        Specification<Book> spec = buildSpecification(keyword, category, publisher, releases);
         Pageable pageable = buildPageable(sort, selection, page);
 
         Page<Book> res = bookRepository.findAll(spec, pageable);
@@ -235,8 +241,12 @@ public class BookServiceImpl implements BookService {
         return PageRequest.of(page, 9, sorted);
     }
 
-    private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
+    private Specification<Book> buildSpecification(String keyword, String category, String publisher, boolean releases) {
         Specification<Book> spec = Specification.where(null);
+
+        if (keyword != null) {
+            spec= spec.and(BookSpecification.titleOrAuthorOrPublisherContainingSpec(keyword));
+        }
 
         if (category != null) {
             spec = spec.and(BookSpecification.categorySpec(category));
