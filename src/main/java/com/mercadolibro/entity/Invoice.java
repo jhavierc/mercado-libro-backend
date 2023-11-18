@@ -20,6 +20,8 @@ import java.util.UUID;
 public class Invoice {
     @Id
     @GeneratedValue
+    @Column(columnDefinition = "VARCHAR(36)")
+    @Type(type="uuid-char")
     private UUID id;
 
     @JsonProperty("date_created")
