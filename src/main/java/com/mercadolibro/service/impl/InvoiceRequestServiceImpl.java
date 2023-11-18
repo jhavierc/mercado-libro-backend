@@ -1,23 +1,28 @@
 package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.dto.InvoiceDTO;
-import com.mercadolibro.dto.InvoiceItemDTO;
-import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
 import com.mercadolibro.service.InvoiceRequestService;
+import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
+import com.mercadopago.core.MPRequestOptions;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.payment.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class InvoiceRequestServiceImpl implements InvoiceRequestService {
@@ -31,8 +36,11 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Autowired
     ObjectMapper mapper;
 
+    @Autowired
+    String mercadoPagoAccessToken;
+
     @Override
-    public InvoiceRequestDTO findById(Long id) {
+    public InvoiceRequestDTO findById(UUID id) {
         // Invoice
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(id);
         InvoiceDTO invoiceDTO = null;
@@ -99,6 +107,46 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
                 invoicePage.getNumber(),
                 invoicePage.getSize()
         );
+    }
+
+    @Override
+    public PaymentRespDTO processPayment(UUID invoiceId, PaymentReqDTO paymentReqDTO) {
+        try {
+            MercadoPagoConfig.setAccessToken(mercadoPagoAccessToken);
+
+            Map<String, String> customHeaders = new HashMap<>();
+            customHeaders.put("x-idempotency-key", invoiceId.toString());
+
+            MPRequestOptions requestOptions = MPRequestOptions.builder()
+                    .customHeaders(customHeaders)
+                    .build();
+
+            PaymentClient client = new PaymentClient();
+
+            PaymentCreateRequest paymentCreateRequest =
+                    PaymentCreateRequest.builder()
+                            .transactionAmount(paymentReqDTO.getTransactionAmount())
+                            .token(paymentReqDTO.getToken())
+                            .description(paymentReqDTO.getDescription())
+                            .installments(paymentReqDTO.getInstallments())
+                            .paymentMethodId(paymentReqDTO.getPaymentMethodId())
+                            .payer(
+                                    PaymentPayerRequest.builder()
+                                            .email(paymentReqDTO.getPayer().getEmail())
+                                            .firstName(paymentReqDTO.getPayer().getFirstName())
+                                            .identification(
+                                                    IdentificationRequest.builder()
+                                                            .type(paymentReqDTO.getPayer().getIdentification().getType())
+                                                            .number(paymentReqDTO.getPayer().getIdentification().getNumber())
+                                                            .build())
+                                            .build())
+                            .build();
+
+            Payment payment = client.create(paymentCreateRequest, requestOptions);
+            return mapper.convertValue(payment, PaymentRespDTO.class);
+        } catch (MPException | MPApiException e) {
+            throw new InvoicePaymentException(e.getMessage());
+        }
     }
 
 

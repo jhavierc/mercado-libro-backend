@@ -1,6 +1,7 @@
 package com.mercadolibro.exception;
 
 import com.mercadolibro.dto.ErrorResponseDTO;
+import com.mercadopago.exceptions.MPException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -156,5 +157,12 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), HttpStatus.CONFLICT.value());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvoicePaymentException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvoicePaymentException(InvoicePaymentException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), e.getCode());
+
+        return ResponseEntity.status(e.getCode()).body(errorResponse);
     }
 }

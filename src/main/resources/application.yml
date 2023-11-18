@@ -6,6 +6,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:secret}
     expiration: ${JWT_EXPIRATION:86400}
+  mercadopago:
+    access-token: ${MERCADOPAGO_ACCESS_TOKEN}
 
 spring:
   jpa:
@@ -20,7 +22,7 @@ spring:
   datasource:
     password: ${DB_PASSWORD:root}
     username: ${DB_USERNAME:root}
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:booksdb}?autoReconnect=true&useSSL=false
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:booksdb}?autoReconnect=true&useSSL=false&characterEncoding=UTF-8
     driver-class-name: com.mysql.cj.jdbc.Driver
   mvc:
     pathmatch:

@@ -17,4 +17,5 @@ public interface InvoiceRequestService {
     List<InvoiceRequestDTO> findAll();
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
     PageDTO<InvoiceRequestDTO> findAll(int page, int size);
+    PaymentRespDTO processPayment(UUID invoiceId, PaymentReqDTO paymentReqDTO);
 }
