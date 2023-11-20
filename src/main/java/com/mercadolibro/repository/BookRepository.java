@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book> {
-    @Query("SELECT b.imageLinks FROM Book b WHERE b.id = :id")
-    String findImageLinksById(@Param("id") Long id);
+    //@Query("SELECT b.imageLinks FROM Book b WHERE b.id = :id")
+    //String findImageLinksById(@Param("id") Long id);
 
     boolean existsByIsbn(String isbn);
 

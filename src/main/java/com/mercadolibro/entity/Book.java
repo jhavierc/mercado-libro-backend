@@ -58,10 +58,6 @@ public class Book {
     @Column(name = "ratings_count")
     private Short ratingsCount;
 
-    @JsonProperty("image_links")
-    @Column(name = "image_links", length = 1000)
-    private ArrayList<String> imageLinks;
-
     @Column
     private String language;
 
