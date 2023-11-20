@@ -2,17 +2,15 @@ package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.BookRespDTO;
 import com.mercadolibro.dto.InvoiceRequestDTO;
+import com.mercadolibro.dto.MonthlySaleDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -45,6 +43,11 @@ public class InvoiceController {
     @GetMapping("/bestsellers")
     public ResponseEntity<List<BookRespDTO>> findBestSellers() {
         return ResponseEntity.ok(invoiceRequestService.findBestSellers());
+    }
+
+    @GetMapping("/monthlysales")
+    public ResponseEntity<PageDTO<MonthlySaleDTO>> getMonthlySales(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.getMonthlySales(page, size));
     }
 
 }

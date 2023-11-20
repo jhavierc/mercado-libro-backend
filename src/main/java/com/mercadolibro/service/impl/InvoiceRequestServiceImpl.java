@@ -120,6 +120,17 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         return bookRespDTOPageDTO;
     }
 
+    public PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size) {
+        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page-1,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
 
 
 }
