@@ -87,7 +87,7 @@ public class BookServiceTest {
                 .title("a title")
                 .isbn("0-7921-0519-2")
                 //.images(files)
-                .categories(Set.of(category))
+                //.categories(Set.of(category))
                 .build();
 
         Book mockResponse = Book.builder()
@@ -129,7 +129,7 @@ public class BookServiceTest {
                 .build();
         BookReqDTO book = BookReqDTO.builder()
                 .isbn("0-7921-0519-2")
-                .categories(Set.of(category))
+                //.categories(Set.of(category))
                 .build();
 
         // WHEN
@@ -148,7 +148,7 @@ public class BookServiceTest {
                 .build();
         BookReqDTO book = BookReqDTO.builder()
                 .isbn("0-7921-0519-2")
-                .categories(Set.of(category))
+                //.categories(Set.of(category))
                 .build();
 
         // WHEN
