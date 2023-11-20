@@ -86,7 +86,7 @@ public class BookServiceTest {
         BookReqDTO book = BookReqDTO.builder()
                 .title("a title")
                 .isbn("0-7921-0519-2")
-                .images(files)
+                //.images(files)
                 .categories(Set.of(category))
                 .build();
 
@@ -94,7 +94,7 @@ public class BookServiceTest {
                 .id(1L)
                 .title("a title")
                 .isbn("0-7921-0519-2")
-                .imageLinks(imageLinks)
+                //.imageLinks(imageLinks)
                 .categories(Set.of(
                         Category.builder()
                                 .id(1L)
@@ -534,7 +534,7 @@ public class BookServiceTest {
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
-        when(bookRepository.findImageLinksById(bookId)).thenReturn(imageLinks);
+        //when(bookRepository.findImageLinksById(bookId)).thenReturn(imageLinks);
 
         // Act
         BookRespDTO result = bookService.patch(bookId, input);
@@ -593,7 +593,7 @@ public class BookServiceTest {
                 "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
 
         doReturn(true).when(bookRepository).existsById(bookId);
-        when(bookRepository.findImageLinksById(bookId)).thenReturn(images);
+        //when(bookRepository.findImageLinksById(bookId)).thenReturn(images);
         doNothing().when(bookRepository).deleteById(1L);
 
         // Act

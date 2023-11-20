@@ -46,7 +46,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> save(@BookRequest @Valid BookReqDTO book) {
+    public ResponseEntity<BookRespDTO> save(@RequestBody  @Valid BookReqDTO book) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.save(book));
     }
 
@@ -165,7 +165,7 @@ public class BookController {
                     @ApiResponse(code = 409, message = "Book already exists"),
             }
     )
-    public ResponseEntity<BookRespDTO> update(@PathVariable @Positive Long id, @BookRequest @Valid BookReqDTO bookReqDTO) {
+    public ResponseEntity<BookRespDTO> update(@PathVariable @Positive Long id, @RequestBody BookReqDTO bookReqDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.update(id, bookReqDTO));
     }
 

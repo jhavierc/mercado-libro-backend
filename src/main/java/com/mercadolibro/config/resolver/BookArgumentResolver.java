@@ -100,7 +100,7 @@ public class BookArgumentResolver implements HandlerMethodArgumentResolver {
             StandardMultipartHttpServletRequest multipartRequest = (StandardMultipartHttpServletRequest) httpServletRequest;
 
             List<MultipartFile> files = multipartRequest.getMultiFileMap().get("images[]");
-            bookReqDTO.setImages(files);
+            //bookReqDTO.setImages(files);
         }
     }
 
