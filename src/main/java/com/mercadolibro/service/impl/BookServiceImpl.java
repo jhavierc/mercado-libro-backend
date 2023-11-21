@@ -166,6 +166,7 @@ public class BookServiceImpl implements BookService {
         if (searched.isPresent()) {
             BookRespDTO bookRespDTO = mapper.convertValue(searched.get(), BookRespDTO.class);
             bookRespDTO.setImageLinks(getImagesByBookID(bookRespDTO.getId()));
+            return bookRespDTO;
         }
         throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
