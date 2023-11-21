@@ -1,9 +1,6 @@
 package com.mercadolibro.controller;
 
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.dto.MonthlySaleDTO;
-import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +45,11 @@ public class InvoiceController {
     @GetMapping("/monthlysales")
     public ResponseEntity<PageDTO<MonthlySaleDTO>> getMonthlySales(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.getMonthlySales(page, size));
+    }
+
+    @GetMapping("/salesbycategory")
+    public ResponseEntity<PageDTO<CategorySalesDTO>> getSalesByCategory(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
 
 }

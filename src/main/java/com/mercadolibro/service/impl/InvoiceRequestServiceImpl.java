@@ -131,6 +131,17 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         );
     }
 
+    public PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size) {
+        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page-1,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
 
 
 }
