@@ -65,4 +65,30 @@ public class BookSpecification {
             );
         };
     }
+
+    /**
+     * Builds a specification that filters based on the keyword by title, author, or publisher.
+     *
+     * @param keyword The keyword by which it is filtering.
+     * @return a Specification object used to build a condition that filters the results of a query.
+     */
+    public static Specification<Book> titleOrAuthorOrPublisherContainingSpec(String keyword) {
+        String[] keywords = keyword.toLowerCase().split("\\s+");
+
+        return (root, query, criteriaBuilder) -> {
+            Predicate predicate = criteriaBuilder.isFalse(criteriaBuilder.literal(false));
+
+            for (String kw : keywords) {
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + kw + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("authors")), "%" + kw + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("publisher")), "%" + kw + "%")
+                        )
+                );
+            }
+            return predicate;
+        };
+    }
 }

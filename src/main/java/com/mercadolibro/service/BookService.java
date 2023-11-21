@@ -47,7 +47,7 @@ public interface BookService {
      * @return A list of BookRespDTO containing books, whether filtered, sorted, or all.
      * @throws NoBooksToShowException If no books are found.
      */
-    PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+    PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                  String sort, String selection, short page);
 
     /**

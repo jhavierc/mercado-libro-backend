@@ -6,6 +6,22 @@ app:
   jwt:
     secret: ${JWT_SECRET:secret}
     expiration: ${JWT_EXPIRATION:86400}
+  oauth:
+    providers:
+      google:
+        authorization-endpoint: ${OAUTH_GOOGLE_AUTHORIZATION_ENDPOINT:https://accounts.google.com/o/oauth2/v2/auth}
+        token-endpoint: ${OAUTH_GOOGLE_TOKEN_ENDPOINT:https://oauth2.googleapis.com/token}
+        client-id: ${OAUTH_GOOGLE_CLIENT_ID}
+        client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
+        redirect-uri: ${OAUTH_REDIRECT_URI:https://oauthdebugger.com/debug}
+        scope: ${OAUTH_SCOPE:openid profile email}
+      facebook:
+        authorization-endpoint: ${OAUTH_FACEBOOK_AUTHORIZATION_ENDPOINT:https://www.facebook.com/v18.0/dialog/oauth}
+        token-endpoint: ${OAUTH_FACEBOOK_TOKEN_ENDPOINT:https://graph.facebook.com/v11.0/oauth/access_token}
+        client-id: ${OAUTH_FACEBOOK_CLIENT_ID}
+        client-secret: ${OAUTH_FACEBOOK_CLIENT_SECRET}
+        redirect-uri: ${OAUTH_REDIRECT_URI:https://oauthdebugger.com/debug}
+        scope: ${OAUTH_SCOPE:openid}
 
 spring:
   jpa:
