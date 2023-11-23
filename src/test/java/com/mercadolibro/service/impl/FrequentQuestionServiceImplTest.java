@@ -118,4 +118,14 @@ class FrequentQuestionServiceImplTest {
         assertTrue(true);
     }
 
+    @Test
+    void deleteShouldThrowResourceNotFoundException() {
+        // Given
+        Integer id = 1;
+        // When
+        when(frequentQuestionRepository.findById(id)).thenReturn(Optional.empty());
+        // Then
+        assertThrows(ResourceNotFoundException.class, () -> frequentQuestionService.delete(id));
+    }
+
 }
