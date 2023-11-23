@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +127,17 @@ class FrequentQuestionServiceImplTest {
         when(frequentQuestionRepository.findById(id)).thenReturn(Optional.empty());
         // Then
         assertThrows(ResourceNotFoundException.class, () -> frequentQuestionService.delete(id));
+    }
+
+    @Test
+    void shouldGetAll() {
+        // Given
+        List<FrequentQuestion> frequentQuestions = this.frequentQuestions;
+        // When
+        when(frequentQuestionRepository.findAll(any(Sort.class))).thenReturn(frequentQuestions);
+        List<FrequentQuestion> frequentQuestionsFound = frequentQuestionService.getAll();
+        // Then
+        assertEquals(frequentQuestions, frequentQuestionsFound);
     }
 
 }
