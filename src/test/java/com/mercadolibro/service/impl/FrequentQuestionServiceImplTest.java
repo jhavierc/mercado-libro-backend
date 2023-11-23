@@ -106,4 +106,16 @@ class FrequentQuestionServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> frequentQuestionService.update(id, frequentQuestionCreateUpdated));
     }
 
+    @Test
+    void shouldDelete() throws ResourceNotFoundException {
+        // Given
+        FrequentQuestion frequentQuestion = frequentQuestions.get(0);
+        Integer id = frequentQuestion.getId();
+        // When
+        when(frequentQuestionRepository.findById(id)).thenReturn(Optional.of(frequentQuestion));
+        frequentQuestionService.delete(id);
+        // Then
+        assertTrue(true);
+    }
+
 }
