@@ -93,4 +93,17 @@ class FrequentQuestionServiceImplTest {
         assertEquals(frequentQuestionCreateUpdated.getQuestion(), frequentQuestionUpdate.getQuestion());
     }
 
+    @Test
+    void updateShouldThrowResourceNotFoundException() {
+        // Given
+        Integer id = 1;
+        FrequentQuestionCreateDTO frequentQuestionCreateUpdated = new FrequentQuestionCreateDTO("Pregunta 1", "Respuesta 1", 1);
+
+        // When
+        when(frequentQuestionRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Then
+        assertThrows(ResourceNotFoundException.class, () -> frequentQuestionService.update(id, frequentQuestionCreateUpdated));
+    }
+
 }
