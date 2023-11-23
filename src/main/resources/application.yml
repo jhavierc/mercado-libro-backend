@@ -26,7 +26,7 @@ app:
 spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5Dialect
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: ${HIBERNATE_DDL_AUTO:update}
   application:
