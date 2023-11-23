@@ -19,5 +19,9 @@ public interface InvoiceRequestService {
     PageDTO<InvoiceRequestDTO> findAll(int page, int size);
     PageDTO<InvoiceRequestDTO> findByUserId(Long userId, int page, int size);
     List<BookRespDTO> findBestSellers();
+    Double findTotalBooksPriceSell();
+    Double calculateAverageTotalPriceByTotalInvoices();
+    Integer calculateTotalQuantityOfBooksSell();
+    Double calculateAverageQuantityOfBooksSellByTotalInvoices();
 
 }
