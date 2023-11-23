@@ -48,5 +48,28 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceRequestService.findBestSellers());
     }
 
+        @GetMapping("/totalpriceofsell")
+    public ResponseEntity<Double> findTotalBooksPriceSell() {
+        Double result = invoiceRequestService.findTotalBooksPriceSell();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/averageprice")
+    public ResponseEntity<Double> calculateAverageTotalPrice() {
+        Double result = invoiceRequestService.calculateAverageTotalPriceByTotalInvoices();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/totalquantity")
+    public ResponseEntity<Integer> calculateTotalQuantity() {
+        Integer result = invoiceRequestService.calculateTotalQuantityOfBooksSell();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/averagequantity")
+    public ResponseEntity<Double> calculateAverageQuantity() {
+        Double result = invoiceRequestService.calculateAverageQuantityOfBooksSellByTotalInvoices();
+        return ResponseEntity.ok(result);
+    }
 
 }
