@@ -42,4 +42,28 @@ public class Invoice {
     @Column(name = "account_number")
     private String accountNumber;
 
+    private String  address;
+
+    private String deadline;
+
+    @JsonProperty("cardholder")
+    @Column(name = "cardholder")
+    private String cardHolder;
+
+    @JsonProperty("expiration_date")
+    @Column(name = "expiration_date")
+    private String expirationDate;
+
+    private Long dni;
+
+    @JsonProperty("document_type")
+    @Column(name = "document_type")
+    private String documentType;
+
+    @JsonProperty("card_number")
+    @Column(name = "card_number")
+    private String cardNumber;
+
+    private String notes;
+
 }
