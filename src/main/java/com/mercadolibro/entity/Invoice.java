@@ -42,4 +42,24 @@ public class Invoice {
     @Column(name = "account_number")
     private String accountNumber;
 
+    private String  address;
+
+    private String deadline;
+
+    @Column(name = "cardholder")
+    private String cardHolder;
+
+    @Column(name = "expiration_date")
+    private String expirationDate;
+
+    private Long dni;
+
+    @Column(name = "document_type")
+    private String documentType;
+
+    @Column(name = "card_number")
+    private String cardNumber;
+
+    private String notes;
+
 }
