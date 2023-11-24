@@ -17,8 +17,7 @@ import java.time.LocalDate;
 public class Invoice {
 
     @Id
-    @SequenceGenerator(name = "invoice_sequence", sequenceName = "invoice_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoice_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @JsonProperty("date_created")
