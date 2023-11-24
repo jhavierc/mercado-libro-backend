@@ -1,6 +1,7 @@
 package com.mercadolibro.service;
 
 import com.mercadolibro.dto.InvoiceRequestDTO;
+import com.mercadolibro.dto.InvoiceSearchDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.InvoiceRequest;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface InvoiceRequestService {
 
     InvoiceRequestDTO findById(Long id);
-    List<InvoiceRequestDTO> findAll();
+    List<InvoiceSearchDTO> findAll();
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
-    PageDTO<InvoiceRequestDTO> findAll(int page, int size);
+    PageDTO<InvoiceSearchDTO> findAll(int page, int size);
 }

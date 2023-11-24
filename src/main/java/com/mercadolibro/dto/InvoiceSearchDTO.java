@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
-public class InvoiceDTO {
+public class InvoiceSearchDTO {
 
     @JsonProperty("id")
     private Long id;
@@ -22,9 +22,6 @@ public class InvoiceDTO {
 
     @JsonProperty("tax")
     private double tax;
-
-    @JsonProperty("user_id")
-    private int userId;
 
     @JsonProperty("bank")
     private String bank;
@@ -56,4 +53,9 @@ public class InvoiceDTO {
     @JsonProperty("notes")
     private String notes;
 
+    @JsonProperty("client")
+    private ClientDTO clientDTO;
+
+    @JsonProperty("invoice_item")
+    private List<InvoiceItemSearchDTO> listInvoiceItems;
 }
