@@ -22,10 +22,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST })
+@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,
+        RequestMethod.DELETE, RequestMethod.PUT})
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
@@ -70,8 +73,8 @@ public class AuthController {
             value = "Get the URL to redirect the user to in order to start the OAuth2 flow",
             notes = "Returns the URL to redirect the user to"
     )
-    public ResponseEntity<String> loginUrl(@ApiParam(name = "provider", value = "Supported google or facebook", required = true, defaultValue = "google") @PathVariable String provider) throws ResourceNotFoundException {
-        return ResponseEntity.ok(oauthService.loginUrl(provider));
+    public void loginUrl(@ApiParam(name = "provider", value = "Supported google or facebook", required = true, defaultValue = "google") @PathVariable String provider, HttpServletResponse response) throws ResourceNotFoundException, IOException {
+        response.sendRedirect(oauthService.loginUrl(provider));
     }
 
     @PostMapping("/oauth/{provider}")
