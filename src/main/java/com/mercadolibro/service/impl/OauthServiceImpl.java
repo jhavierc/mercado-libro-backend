@@ -49,6 +49,7 @@ public class OauthServiceImpl implements OauthService {
                 .queryParam("client_secret", oauthProviders.get(provider).getClientSecret())
                 .queryParam("redirect_uri", oauthProviders.get(provider).getRedirectUri())
                 .queryParam("grant_type", "authorization_code")
+                .queryParam("state", provider)
                 .build(true);
 
         HttpHeaders headers = new HttpHeaders();
@@ -97,7 +98,8 @@ public class OauthServiceImpl implements OauthService {
                 "?client_id=" + oauthProviders.get(provider).getClientId() +
                 "&redirect_uri=" + oauthProviders.get(provider).getRedirectUri() +
                 "&response_type=code" +
+                "&state=" + provider +
                 "&scope=" + oauthProviders.get(provider).getScope().replace(" ", "%20") +
-                "&response_mode=form_post";
+                "&response_mode=query";
     }
 }
