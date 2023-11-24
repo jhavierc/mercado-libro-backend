@@ -194,7 +194,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Sort sorted = Sort.by(orders);
-        return PageRequest.of(page, 9, sorted);
+        return PageRequest.of(page, 8, sorted);
     }
 
     private Specification<Book> buildSpecification(String keyword, String category, String publisher, boolean releases) {

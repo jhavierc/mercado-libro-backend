@@ -109,5 +109,5 @@ public class BookReqDTO {
     @NotNull
     @ApiModelProperty(value = "JSON with the IDs of categories of the book", required = true,
             example = "[{\"id\": 1}]")
-    private List<CategoryReqDTO> categories;
+    private List<BookCategoryReqDTO> categories;
 }
