@@ -1,13 +1,12 @@
 package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.dto.InvoiceDTO;
-import com.mercadolibro.dto.InvoiceItemDTO;
-import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.dto.*;
+import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
 import com.mercadolibro.service.InvoiceRequestService;
@@ -27,6 +26,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Autowired
     InvoiceItemRepository invoiceItemRepository;
+
+    @Autowired
+    BookRepository bookRepository;
 
     @Autowired
     ObjectMapper mapper;
@@ -50,50 +52,36 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     @Override
-    public List<InvoiceRequestDTO> findAll() {
+    public List<InvoiceSearchDTO> findAll() {
         // Invoice
         List<Invoice> invoiceList = invoiceRepository.findAll();
-        List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
-            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
         }
-        // InvoiceRequest
-        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
-        for (InvoiceDTO invoiceDTO : invoiceDTOList) {
-            // InvoiceItem
-            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
-            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
-            for (InvoiceItem invoiceItem: invoiceItemList) {
-                invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
-            }
-            invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
+
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
         }
-        return invoiceRequestDTOList;
+        return invoiceDTOList;
     }
 
     @Override
-    public PageDTO<InvoiceRequestDTO> findAll(int page, int size) {
+    public PageDTO<InvoiceSearchDTO> findAll(int page, int size) {
         // Invoice
         Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
         List<Invoice> invoiceList = invoicePage.getContent();
-        List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
-            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
         }
-        // InvoiceRequest
-        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
-        for (InvoiceDTO invoiceDTO : invoiceDTOList) {
-            // InvoiceItem
-            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
-            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
-            for (InvoiceItem invoiceItem: invoiceItemList) {
-                invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
-            }
-            invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
+
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
         }
         // PageDTO
         return new PageDTO<>(
-                invoiceRequestDTOList,
+                invoiceDTOList,
                 invoicePage.getTotalPages(),
                 invoicePage.getTotalElements(),
                 invoicePage.getNumber(),
@@ -116,6 +104,19 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
         // InvoiceRequest
         return new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
+    }
+
+    private List<InvoiceItemSearchDTO> getListItems(Long invoiceID){
+        // InvoiceItem
+        List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);
+        List<InvoiceItemSearchDTO> invoiceItemDTOList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceItemList) {
+            InvoiceItemSearchDTO invoiceItemSearchDTO = mapper.convertValue(invoiceItem, InvoiceItemSearchDTO.class);
+            Optional<Book> optionalBook = bookRepository.findById(invoiceItem.getBookId());
+            optionalBook.ifPresent(book -> invoiceItemSearchDTO.setBookDTO(mapper.convertValue(book, BookDTO.class)));
+            invoiceItemDTOList.add(invoiceItemSearchDTO);
+        }
+        return invoiceItemDTOList;
     }
 
 

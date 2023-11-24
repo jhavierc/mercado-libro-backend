@@ -1,6 +1,7 @@
 package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.InvoiceRequestDTO;
+import com.mercadolibro.dto.InvoiceSearchDTO;
 import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
@@ -29,13 +30,13 @@ public class InvoiceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<InvoiceRequestDTO>> findAll() {
+    public ResponseEntity<List<InvoiceSearchDTO>> findAll() {
         return ResponseEntity.ok(invoiceRequestService.findAll());
     }
 
 
     @GetMapping
-    public ResponseEntity<PageDTO<InvoiceRequestDTO>> findAll(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<PageDTO<InvoiceSearchDTO>> findAll(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.findAll(page, size));
     }
 
