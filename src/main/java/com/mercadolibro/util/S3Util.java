@@ -110,18 +110,6 @@ public class S3Util {
     }
 
     /**
-     * Converts a list of S3ObjectDTO objects to a list of URLs.
-     *
-     * @param s3ObjectDTOList List of S3ObjectDTO objects.
-     * @return ArrayList of URLs extracted from the list of S3ObjectDTO objects.
-     */
-    public static ArrayList<String> getS3ObjectsUrls(List<S3ObjectDTO> s3ObjectDTOList) {
-        return s3ObjectDTOList.stream()
-                .map(S3ObjectDTO::getUrl)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
      * Parses an S3 URL and extracts the bucket and key parts.
      *
      * @param s3Url The S3 URL to be parsed.

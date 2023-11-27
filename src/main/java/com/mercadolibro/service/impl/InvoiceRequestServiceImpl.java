@@ -2,9 +2,11 @@ package com.mercadolibro.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
+import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
 import com.mercadolibro.service.InvoiceRequestService;
@@ -24,6 +26,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Autowired
     InvoiceItemRepository invoiceItemRepository;
+
+    @Autowired
+    BookRepository bookRepository;
 
     @Autowired
     ObjectMapper mapper;
@@ -65,11 +70,6 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         return new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList);
     }
 
-    public PageDTO<InvoiceRequestDTO> findAll(int page, int size) {
-        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
-        return invoicePage_to_PageDTO(invoicePage);
-    }
-
     public PageDTO<InvoiceRequestDTO> findByUserId(Long userId, int page, int size) {
         Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page-1,size));
         return invoicePage_to_PageDTO(invoicePage);
@@ -96,6 +96,44 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         // PageDTO
         return new PageDTO<>(
                 invoiceRequestDTOList,
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
+    @Override
+    public List<InvoiceSearchDTO> findAll() {
+        // Invoice
+        List<Invoice> invoiceList = invoiceRepository.findAll();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
+        for (Invoice invoice : invoiceList) {
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
+        }
+
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
+        }
+        return invoiceDTOList;
+    }
+
+    @Override
+    public PageDTO<InvoiceSearchDTO> findAll(int page, int size) {
+        // Invoice
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
+        List<Invoice> invoiceList = invoicePage.getContent();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
+        for (Invoice invoice : invoiceList) {
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
+        }
+
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
+        }
+        // PageDTO
+        return new PageDTO<>(
+                invoiceDTOList,
                 invoicePage.getTotalPages(),
                 invoicePage.getTotalElements(),
                 invoicePage.getNumber(),
@@ -140,6 +178,19 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
                 invoicePage.getNumber(),
                 invoicePage.getSize()
         );
+    }
+
+    private List<InvoiceItemSearchDTO> getListItems(Long invoiceID){
+        // InvoiceItem
+        List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);
+        List<InvoiceItemSearchDTO> invoiceItemDTOList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceItemList) {
+            InvoiceItemSearchDTO invoiceItemSearchDTO = mapper.convertValue(invoiceItem, InvoiceItemSearchDTO.class);
+            Optional<Book> optionalBook = bookRepository.findById(invoiceItem.getBookId());
+            optionalBook.ifPresent(book -> invoiceItemSearchDTO.setBookDTO(mapper.convertValue(book, BookDTO.class)));
+            invoiceItemDTOList.add(invoiceItemSearchDTO);
+        }
+        return invoiceItemDTOList;
     }
 
 

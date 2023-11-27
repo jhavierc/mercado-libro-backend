@@ -1,6 +1,9 @@
 package com.mercadolibro.controller;
 
 import com.mercadolibro.dto.*;
+import com.mercadolibro.dto.InvoiceRequestDTO;
+import com.mercadolibro.dto.InvoiceSearchDTO;
+import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.service.InvoiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +30,13 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceRequestService.findById(id));
     }
 
+    @GetMapping("")
+    public ResponseEntity<List<InvoiceSearchDTO>> findAll() {
+        return ResponseEntity.ok(invoiceRequestService.findAll());
+    }
+
     @GetMapping("/all")
-    public ResponseEntity<PageDTO<InvoiceRequestDTO>> findAll(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<PageDTO<InvoiceSearchDTO>> findAll(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.findAll(page, size));
     }
 

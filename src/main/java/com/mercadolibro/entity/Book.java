@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -57,10 +56,6 @@ public class Book {
     @JsonProperty("ratings_count")
     @Column(name = "ratings_count")
     private Short ratingsCount;
-
-    @JsonProperty("image_links")
-    @Column(name = "image_links", length = 1000)
-    private ArrayList<String> imageLinks;
 
     @Column
     private String language;

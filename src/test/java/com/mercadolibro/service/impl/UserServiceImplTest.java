@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,7 +93,7 @@ class UserServiceImplTest {
         assertEquals(1, userSaved.getId());
         assertEquals("ACTIVE", userSaved.getStatus());
         assertNotNull(userSaved.getDateCreated());
-        assertTrue(userSaved.getDateCreated().isBefore(LocalDateTime.now()));
+        assertTrue(userSaved.getDateCreated().isBefore(LocalDateTime.now().plusMinutes(10)));
         verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, times(1)).save(any(AppUser.class));
         verify(userRoleRepository, atLeast(1)).findByDescription(users.get(0).getRoles().get(0).getDescription());

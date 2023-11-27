@@ -4,7 +4,6 @@ import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
