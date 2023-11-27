@@ -12,11 +12,12 @@ import java.util.List;
 @Service
 public interface InvoiceRequestService {
 
-    InvoiceRequestDTO findById(Long id);
+    InvoiceSearchDTO findById(Long id);
 
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
-    PageDTO<InvoiceRequestDTO> findByUserId(Long userId, int page, int size);
-    List<BookRespDTO> findBestSellers();
+    PageDTO<InvoiceSearchDTO> findByUserId(Long userId, int page, int size);
+    List<BookRespDTO> findBestSellersList();
+    PageDTO<BookRespDTO> findBestSellersPage(int page, int size);
     PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size);
     PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size);
     List<InvoiceSearchDTO> findAll();

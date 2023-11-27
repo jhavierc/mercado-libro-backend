@@ -22,6 +22,11 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
     @Query(value = "SELECT * FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
             countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
             nativeQuery = true)
-    List<InvoiceItem> findBestSellers();
+    List<InvoiceItem> findBestSellersList();
+
+    @Query(value = "SELECT * FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            nativeQuery = true)
+    Page<InvoiceItem> findBestSellersPage(Pageable pageable);
 
 }

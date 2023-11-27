@@ -26,7 +26,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceRequestDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<InvoiceSearchDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceRequestService.findById(id));
     }
 
@@ -41,13 +41,18 @@ public class InvoiceController {
     }
 
     @GetMapping("/userid/{userId}")
-    public ResponseEntity<PageDTO<InvoiceRequestDTO>> findByUserId(@PathVariable Long userId , @RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<PageDTO<InvoiceSearchDTO>> findByUserId(@PathVariable Long userId , @RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.findByUserId(userId, page, size));
     }
 
-    @GetMapping("/bestsellers")
-    public ResponseEntity<List<BookRespDTO>> findBestSellers() {
-        return ResponseEntity.ok(invoiceRequestService.findBestSellers());
+    @GetMapping("/bestsellers/list")
+    public ResponseEntity<List<BookRespDTO>> findBestSellersList() {
+        return ResponseEntity.ok(invoiceRequestService.findBestSellersList());
+    }
+
+    @GetMapping("/bestsellers/page")
+    public ResponseEntity<PageDTO<BookRespDTO>> findBestSellersPage(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.findBestSellersPage(page, size));
     }
 
     @GetMapping("/monthlysales")
