@@ -110,4 +110,11 @@ public interface UserService extends UserDetailsService {
 
     void resetPassword(String code, String newPassword) throws ResourceNotFoundException;
 
+    /**
+     * Finds the addresses of the user with the specified email address
+     * @param email The email address of the user
+     * @return A list of addresses
+     */
+    List<String> findAddressesByEmail(String email);
+
 }
