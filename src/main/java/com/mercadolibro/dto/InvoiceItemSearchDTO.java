@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+
 @Getter
 @Setter
 public class InvoiceItemSearchDTO {
@@ -22,6 +24,9 @@ public class InvoiceItemSearchDTO {
 
     @JsonProperty("invoice_id")
     private int invoiceId;
+
+    @JsonProperty("book_id")
+    private Long bookId;
 
     @JsonProperty("book")
     private BookDTO bookDTO;
