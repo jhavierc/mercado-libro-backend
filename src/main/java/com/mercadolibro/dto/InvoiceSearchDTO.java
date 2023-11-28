@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -52,6 +53,9 @@ public class InvoiceSearchDTO {
 
     @JsonProperty("notes")
     private String notes;
+
+    @JsonProperty("user_id")
+    private Long userId;
 
     @JsonProperty("client")
     private ClientDTO clientDTO;
