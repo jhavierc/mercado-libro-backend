@@ -6,6 +6,7 @@ import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.service.UserService;
 import com.mercadolibro.util.JwtUtil;
+import com.mercadolibro.util.Util;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -63,6 +64,20 @@ public class UserController {
         String email = jwtUtil.extractUsername(jwt);
         UserDTO user = userService.findByEmail(email);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Get user addresses using token", notes = "Returns a list of strings",
+            authorizations = {@Authorization(value = "JWT Token")})
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = String.class, responseContainer = "List"),
+                    @ApiResponse(code = 401, message = "Unauthorized")
+            }
+    )
+    @GetMapping("/me/address")
+    public ResponseEntity<List<String>> getUserAddress() {
+        String email = Util.getUserEmail();
+        return new ResponseEntity<>(userService.findAddressesByEmail(email), HttpStatus.OK);
     }
 
     @GetMapping("/roles")
