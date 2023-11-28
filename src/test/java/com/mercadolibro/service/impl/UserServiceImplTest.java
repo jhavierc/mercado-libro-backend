@@ -10,6 +10,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ class UserServiceImplTest {
 
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private InvoiceRepository invoiceRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -427,8 +431,26 @@ class UserServiceImplTest {
 
         // Then
         verify(userRepository, times(1)).save(any(AppUser.class));
+    }
 
+    @Test
+    void shouldReturnUserAddresses() {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        List<String> addresses = Arrays.asList("address1", "address2");
 
+        // When
+        when(invoiceRepository.findInvoicesAddressByUserEmail(email)).thenReturn(addresses);
+
+        List<String> addressesFound = userService.findAddressesByEmail(email);
+
+        // Then
+        assertNotNull(addressesFound);
+        assertEquals(addresses.size(), addressesFound.size());
+        assertEquals(addresses.get(0), addressesFound.get(0));
+        assertEquals(addresses.get(1), addressesFound.get(1));
+        verify(invoiceRepository, times(1)).findInvoicesAddressByUserEmail(email);
     }
 
 
