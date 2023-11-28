@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
@@ -14,5 +16,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Long findLastInsertedId();
 
     Page<Invoice> findAll(Pageable pageable);
+
+    @Query(value = "SELECT address from invoice JOIN user ON invoice.user_id = user.id WHERE user.email = ?1", nativeQuery = true)
+    List<String> findInvoicesAddressByUserEmail(String email);
 
 }
