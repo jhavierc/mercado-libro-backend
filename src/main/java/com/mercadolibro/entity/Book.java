@@ -1,5 +1,6 @@
 package com.mercadolibro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,6 +82,10 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "book")
+    private List<BookImage> images;
 
     @Getter
     @Setter
