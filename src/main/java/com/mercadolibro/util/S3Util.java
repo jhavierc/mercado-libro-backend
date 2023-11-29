@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class S3Util {
     public static final String MULTIPART_FILE_TO_DTO_CONVERSION_ERROR_FORMAT = "Error converting MultipartFile to S3ObjectUploadDTO";

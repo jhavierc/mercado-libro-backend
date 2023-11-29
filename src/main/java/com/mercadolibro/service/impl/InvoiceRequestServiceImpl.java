@@ -319,17 +319,4 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
         return invoiceItemDTOList;
     }
-
-    private ClientDTO getUser(UUID invoiceId) {
-        ClientDTO clientDTO = null;
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-        try {
-            Long userId = optionalInvoice.get().getUserId();
-            UserDTO userDTO = userService.findById(Math.toIntExact(userId));
-            clientDTO = mapper.convertValue(userDTO, ClientDTO.class);
-        } catch (Exception e) {
-
-        }
-        return clientDTO;
-    }
 }
