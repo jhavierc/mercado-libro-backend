@@ -85,7 +85,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     public PageDTO<InvoiceSearchDTO> findAll(int page, int size) {
         // Invoice
-        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page,size));
         List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
@@ -170,8 +170,8 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
         // Invoice
+        invoiceRequest.getInvoice().setPaid(false);
         Invoice createdInvoice = invoiceRepository.save(invoiceRequest.getInvoice());
-        createdInvoice.setPaid(false);
         InvoiceDTO createdInvoiceDTO = mapper.convertValue(createdInvoice, InvoiceDTO.class);
         // InvoiceItem
         List<InvoiceItemDTO> createdInvoiceItemDTOList = new ArrayList<>();
@@ -222,7 +222,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Override
     public PageDTO<InvoiceSearchDTO> findByUserId(Long userId, int page, int size) {
-        Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page-1,size));
+        Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page,size));
         List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
@@ -260,7 +260,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Override
     public PageDTO<BookRespDTO> findBestSellersPage(int page, int size) {
-        Page<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersPage(PageRequest.of(page-1,size));
+        Page<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersPage(PageRequest.of(page,size));
         //List<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersList();
         List<Long> longList = new ArrayList<>();
         for (InvoiceItem invoiceItem: invoiceItemPage) {
@@ -285,7 +285,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     public PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size) {
-        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page-1,size));
+        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page,size));
         return new PageDTO<>(
                 invoicePage.getContent(),
                 invoicePage.getTotalPages(),
@@ -296,7 +296,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     public PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size) {
-        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page-1,size));
+        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page,size));
         return new PageDTO<>(
                 invoicePage.getContent(),
                 invoicePage.getTotalPages(),
@@ -306,7 +306,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         );
     }
 
-    private List<InvoiceItemSearchDTO> getListItems(Long invoiceID){
+    private List<InvoiceItemSearchDTO> getListItems(UUID invoiceID){
         // InvoiceItem
         List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);
         List<InvoiceItemSearchDTO> invoiceItemDTOList = new ArrayList<>();

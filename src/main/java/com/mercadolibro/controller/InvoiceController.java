@@ -18,9 +18,8 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/invoice")
+@RequestMapping("/api/invoice")
 public class InvoiceController {
-
     @Autowired
     InvoiceRequestService invoiceRequestService;
 

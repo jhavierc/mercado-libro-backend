@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class InvoiceSearchDTO {
 
     @JsonProperty("id")
-    private Long id;
+    private UUID id;
 
     @JsonProperty("date_created")
     private LocalDate dateCreated;

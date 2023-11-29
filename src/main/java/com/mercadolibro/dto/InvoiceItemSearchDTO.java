@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -23,7 +24,7 @@ public class InvoiceItemSearchDTO {
     private double total;
 
     @JsonProperty("invoice_id")
-    private int invoiceId;
+    private UUID invoiceId;
 
     @JsonProperty("book_id")
     private Long bookId;
