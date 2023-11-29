@@ -9,13 +9,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 import java.util.List;
 
 @Repository
-public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
-
+public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     @Query(value = "SELECT id FROM invoice ORDER BY id DESC LIMIT 1", nativeQuery = true)
-    Long findLastInsertedId();
+    UUID findLastInsertedId();
 
     Page<Invoice> findAll(Pageable pageable);
 
@@ -46,6 +47,4 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             "            ORDER BY count(*) desc",
             nativeQuery = true)
     Page<CategorySalesDTO> getSalesByCategory(Pageable pageable);
-
-
 }

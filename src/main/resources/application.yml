@@ -22,6 +22,8 @@ app:
         client-secret: ${OAUTH_FACEBOOK_CLIENT_SECRET}
         redirect-uri: ${OAUTH_FACEBOOK_REDIRECT_URI:http://localhost:5173/oauth}
         scope: ${OAUTH_SCOPE:openid}
+  mercadopago:
+    access-token: ${MERCADOPAGO_ACCESS_TOKEN}
 
 spring:
   jpa:

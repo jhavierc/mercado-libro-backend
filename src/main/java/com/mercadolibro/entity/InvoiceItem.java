@@ -3,7 +3,10 @@ package com.mercadolibro.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -12,7 +15,7 @@ import javax.persistence.*;
 public class InvoiceItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JsonProperty("book_id")
@@ -30,7 +33,8 @@ public class InvoiceItem {
     private double total;
 
     @JsonProperty("invoice_id")
-    @Column(name = "invoice_id")
-    private Long invoiceId;
+    @Column(name = "invoice_id", columnDefinition = "VARCHAR(36)")
+    @Type(type="uuid-char")
+    private UUID invoiceId;
 
 }

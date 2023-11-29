@@ -1,71 +1,71 @@
 package com.mercadolibro.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
+import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
+import com.mercadolibro.service.BookService;
 import com.mercadolibro.service.InvoiceRequestService;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.payment.*;
+import com.mercadopago.core.MPRequestOptions;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.net.MPResponse;
+import com.mercadopago.resources.payment.Payment;
 import com.mercadolibro.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
 public class InvoiceRequestServiceImpl implements InvoiceRequestService {
+    private final InvoiceRepository invoiceRepository;
+    private final InvoiceItemRepository invoiceItemRepository;
+    private final ObjectMapper mapper;
+    private final String mercadoPagoAccessToken;
+    private final BookRepository bookRepository;
+    private final BookService bookService;
+    private final UserService userService;
 
-    @Autowired
-    InvoiceRepository invoiceRepository;
 
-    @Autowired
-    InvoiceItemRepository invoiceItemRepository;
+    public static final String INSUFFICIENT_STOCK_FOR_BOOK = "Insufficient stock for book '%s'";
+    public static final String INVOICE_ALREADY_PAID = "Invoice with ID '%s' is already paid";
+    public static final String INVOICE_NOT_FOUND = "Invoice with ID '%s' not found";
 
-    @Autowired
-    BookRepository bookRepository;
 
-    @Autowired
-    ObjectMapper mapper;
-
-    @Autowired
-    BookServiceImpl bookService;
-
-    @Autowired
-    UserService userService;
-
-    @Override
-    public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
-        // Invoice
-        Invoice createdInvoice = invoiceRepository.save(invoiceRequest.getInvoice());
-        InvoiceDTO createdInvoiceDTO = mapper.convertValue(createdInvoice, InvoiceDTO.class);
-        // InvoiceItem
-        List<InvoiceItemDTO> createdInvoiceItemDTOList = new ArrayList<>();
-        for (InvoiceItem invoiceItem: invoiceRequest.getInvoiceItemList()) {
-            invoiceItem.setInvoiceId(createdInvoiceDTO.getId());
-            InvoiceItem createdInvoiceItem = invoiceItemRepository.save(invoiceItem);
-            createdInvoiceItemDTOList.add(mapper.convertValue(createdInvoiceItem, InvoiceItemDTO.class));
-        }
-        // InvoiceRequest
-        return new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
+    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, BookRepository bookRepository, BookService bookService, UserService userService) {
+        this.invoiceRepository = invoiceRepository;
+        this.invoiceItemRepository = invoiceItemRepository;
+        this.mapper = mapper;
+        this.mercadoPagoAccessToken = mercadoPagoAccessToken;
+        this.bookRepository = bookRepository;
+        this.bookService = bookService;
+        this.userService = userService;
     }
 
     @Override
-    public InvoiceSearchDTO findById(Long id) {
+    public InvoiceSearchDTO findById(UUID id) {
+        // Invoice
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(id);
-        InvoiceSearchDTO invoiceSearchDTO = null;
-        if (optionalInvoice.isPresent()) {
-            invoiceSearchDTO = mapper.convertValue(optionalInvoice, InvoiceSearchDTO.class);
-            invoiceSearchDTO.setListInvoiceItems(getListItems(invoiceSearchDTO.getId()));
+        if (optionalInvoice.isEmpty()) {
+            throw new InvoicePaymentException(String.format(INVOICE_NOT_FOUND, id), HttpStatus.NOT_FOUND.value());
         }
+
+        InvoiceSearchDTO invoiceSearchDTO = mapper.convertValue(optionalInvoice, InvoiceSearchDTO.class);
+        invoiceSearchDTO.setListInvoiceItems(getListItems(invoiceSearchDTO.getId()));
         return invoiceSearchDTO;
     }
-
 
     @Override
     public List<InvoiceSearchDTO> findAll() {
@@ -85,7 +85,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     public PageDTO<InvoiceSearchDTO> findAll(int page, int size) {
         // Invoice
-        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page,size));
         List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
@@ -109,8 +109,120 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     @Override
+    @Transactional
+    public PaymentRespDTO processPayment(UUID invoiceId, PaymentReqDTO paymentReqDTO) {
+        checkBookStocks(invoiceId);
+
+        try {
+            Map<String, String> customHeaders = new HashMap<>();
+            customHeaders.put("x-idempotency-key", invoiceId.toString());
+
+            MPRequestOptions requestOptions = MPRequestOptions.builder()
+                    .customHeaders(customHeaders)
+                    .accessToken(mercadoPagoAccessToken)
+                    .build();
+
+            PaymentClient client = new PaymentClient();
+
+            PaymentCreateRequest paymentCreateRequest =
+                    PaymentCreateRequest.builder()
+                            .transactionAmount(paymentReqDTO.getTransactionAmount())
+                            .token(paymentReqDTO.getToken())
+                            .description(paymentReqDTO.getDescription())
+                            .installments(paymentReqDTO.getInstallments())
+                            .payer(
+                                    PaymentPayerRequest.builder()
+                                            .email(paymentReqDTO.getPayer().getEmail())
+                                            .identification(
+                                                    IdentificationRequest.builder()
+                                                            .type(paymentReqDTO.getPayer().getIdentification().getType())
+                                                            .number(paymentReqDTO.getPayer().getIdentification().getNumber())
+                                                            .build())
+                                            .build())
+                            .build();
+
+            PaymentRespDTO paymentResponse;
+
+            Payment payment = client.create(paymentCreateRequest, requestOptions);
+            if (payment.getStatus().equals("approved") || payment.getStatus().equals("in_process")) {
+                updateBookStocksAndInvoiceStatus(invoiceId);
+                paymentResponse = mapper.convertValue(payment, PaymentRespDTO.class);
+            } else {
+                PaymentStatus paymentStatus = PaymentStatus.getById(payment.getCard().getCardholder().getName());
+                throw new InvoicePaymentException(paymentStatus.getStatus(), paymentStatus.getDetails(), HttpStatus.CONFLICT.value());
+            }
+
+            return paymentResponse;
+        } catch (MPException e) {
+            throw new InvoicePaymentException(e.getMessage());
+        } catch (MPApiException e) {
+            MPResponse response = e.getApiResponse();
+            try {
+                MercadoPagoErrorResponse mercadoPagoError = mapper.readValue(response.getContent(), MercadoPagoErrorResponse.class);
+                throw new InvoicePaymentException(mercadoPagoError.getMessage(), mercadoPagoError.getStatus());
+            } catch (JsonProcessingException jsonException) {
+                throw new InvoicePaymentException(jsonException.getMessage());
+            }
+        }
+    }
+
+
+    @Override
+    public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
+        // Invoice
+        invoiceRequest.getInvoice().setPaid(false);
+        Invoice createdInvoice = invoiceRepository.save(invoiceRequest.getInvoice());
+        InvoiceDTO createdInvoiceDTO = mapper.convertValue(createdInvoice, InvoiceDTO.class);
+        // InvoiceItem
+        List<InvoiceItemDTO> createdInvoiceItemDTOList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceRequest.getInvoiceItemList()) {
+            invoiceItem.setInvoiceId(createdInvoiceDTO.getId());
+            InvoiceItem createdInvoiceItem = invoiceItemRepository.save(invoiceItem);
+            createdInvoiceItemDTOList.add(mapper.convertValue(createdInvoiceItem, InvoiceItemDTO.class));
+        }
+        // InvoiceRequest
+        return new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
+    }
+
+    private void checkBookStocks(UUID invoiceId) {
+        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
+        if (invoiceSearchDTO.getPaid()) {
+            throw new InvoicePaymentException(String.format(INVOICE_ALREADY_PAID, invoiceId), HttpStatus.BAD_REQUEST.value());
+        }
+
+        List<String> insufficientStockBooks = new ArrayList<>();
+        for (InvoiceItemSearchDTO invoiceItem : invoiceSearchDTO.getListInvoiceItems()) {
+            BookRespDTO book = bookService.findByID(invoiceItem.getBookId());
+            if (book.getStock() < invoiceItem.getQuantity()) {
+                insufficientStockBooks.add(book.getTitle());
+            }
+        }
+
+        if (!insufficientStockBooks.isEmpty()) {
+            throw new InvoicePaymentException(String.format(INSUFFICIENT_STOCK_FOR_BOOK, String.join(", ", insufficientStockBooks)), HttpStatus.CONFLICT.value());
+        }
+    }
+
+    private void updateBookStocksAndInvoiceStatus(UUID invoiceId) {
+        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
+
+        List<Book> booksToSave = new ArrayList<>();
+        for (InvoiceItemSearchDTO invoiceItem : invoiceSearchDTO.getListInvoiceItems()) {
+            BookRespDTO book = bookService.findByID(invoiceItem.getBookId());
+            book.setStock(book.getStock() - invoiceItem.getQuantity());
+            booksToSave.add(mapper.convertValue(book, Book.class));
+        }
+
+        bookRepository.saveAll(booksToSave);
+
+        Invoice invoice = mapper.convertValue(invoiceSearchDTO, Invoice.class);
+        invoice.setPaid(true);
+        invoiceRepository.save(invoice);
+    }
+
+    @Override
     public PageDTO<InvoiceSearchDTO> findByUserId(Long userId, int page, int size) {
-        Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page-1,size));
+        Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page,size));
         List<Invoice> invoiceList = invoicePage.getContent();
         List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
@@ -148,7 +260,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Override
     public PageDTO<BookRespDTO> findBestSellersPage(int page, int size) {
-        Page<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersPage(PageRequest.of(page-1,size));
+        Page<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersPage(PageRequest.of(page,size));
         //List<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersList();
         List<Long> longList = new ArrayList<>();
         for (InvoiceItem invoiceItem: invoiceItemPage) {
@@ -173,7 +285,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     public PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size) {
-        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page-1,size));
+        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page,size));
         return new PageDTO<>(
                 invoicePage.getContent(),
                 invoicePage.getTotalPages(),
@@ -184,7 +296,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     public PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size) {
-        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page-1,size));
+        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page,size));
         return new PageDTO<>(
                 invoicePage.getContent(),
                 invoicePage.getTotalPages(),
@@ -194,7 +306,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         );
     }
 
-    private List<InvoiceItemSearchDTO> getListItems(Long invoiceID){
+    private List<InvoiceItemSearchDTO> getListItems(UUID invoiceID){
         // InvoiceItem
         List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);
         List<InvoiceItemSearchDTO> invoiceItemDTOList = new ArrayList<>();
@@ -207,19 +319,4 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
         return invoiceItemDTOList;
     }
-
-    private ClientDTO getUser(Long invoiceId) {
-        ClientDTO clientDTO = null;
-        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
-        try {
-            Long userId = optionalInvoice.get().getUserId();
-            UserDTO userDTO = userService.findById(Math.toIntExact(userId));
-            clientDTO = mapper.convertValue(userDTO, ClientDTO.class);
-        } catch (Exception e) {
-
-        }
-        return clientDTO;
-    }
-
-
 }
