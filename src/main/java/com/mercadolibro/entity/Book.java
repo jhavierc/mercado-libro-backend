@@ -82,9 +82,6 @@ public class Book {
     )
     private Set<Category> categories;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "book")
-    private Set<Image> images;
-
     @Getter
     @Setter
     @NoArgsConstructor

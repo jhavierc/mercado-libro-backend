@@ -20,6 +20,7 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.net.MPResponse;
 import com.mercadopago.resources.payment.Payment;
+import com.mercadolibro.service.UserService;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     private final String mercadoPagoAccessToken;
     private final BookRepository bookRepository;
     private final BookService bookService;
+    private final UserService userService;
 
 
     public static final String INSUFFICIENT_STOCK_FOR_BOOK = "Insufficient stock for book '%s'";
@@ -42,80 +44,63 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     public static final String INVOICE_NOT_FOUND = "Invoice with ID '%s' not found";
 
 
-    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, BookRepository bookRepository, BookService bookService) {
+    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, BookRepository bookRepository, BookService bookService, UserService userService) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceItemRepository = invoiceItemRepository;
         this.mapper = mapper;
         this.mercadoPagoAccessToken = mercadoPagoAccessToken;
         this.bookRepository = bookRepository;
         this.bookService = bookService;
+        this.userService = userService;
     }
 
     @Override
-    public InvoiceRequestDTO findById(UUID id) {
+    public InvoiceSearchDTO findById(UUID id) {
         // Invoice
         Optional<Invoice> optionalInvoice = invoiceRepository.findById(id);
         if (optionalInvoice.isEmpty()) {
             throw new InvoicePaymentException(String.format(INVOICE_NOT_FOUND, id), HttpStatus.NOT_FOUND.value());
         }
 
-        InvoiceDTO invoiceDTO = mapper.convertValue(optionalInvoice, InvoiceDTO.class);
-
-        // InvoiceItem
-        List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(id);
-        List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();;
-        for (InvoiceItem invoiceItem: invoiceItemList) {
-            invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
-        }
-        // InvoiceRequest
-        return new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList);
+        InvoiceSearchDTO invoiceSearchDTO = mapper.convertValue(optionalInvoice, InvoiceSearchDTO.class);
+        invoiceSearchDTO.setListInvoiceItems(getListItems(invoiceSearchDTO.getId()));
+        return invoiceSearchDTO;
     }
 
     @Override
-    public List<InvoiceRequestDTO> findAll() {
+    public List<InvoiceSearchDTO> findAll() {
         // Invoice
         List<Invoice> invoiceList = invoiceRepository.findAll();
-        List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
-            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
         }
-        // InvoiceRequest
-        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
-        for (InvoiceDTO invoiceDTO : invoiceDTOList) {
-            // InvoiceItem
-            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
-            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
-            for (InvoiceItem invoiceItem: invoiceItemList) {
-                invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
-            }
-            invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
+
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
         }
-        return invoiceRequestDTOList;
+        return invoiceDTOList;
     }
 
     @Override
-    public PageDTO<InvoiceRequestDTO> findAll(int page, int size) {
+    public PageDTO<InvoiceSearchDTO> findAll(int page, int size) {
         // Invoice
         Page<Invoice> invoicePage = invoiceRepository.findAll(PageRequest.of(page-1,size));
         List<Invoice> invoiceList = invoicePage.getContent();
-        List<InvoiceDTO> invoiceDTOList = new ArrayList<>();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
         for (Invoice invoice : invoiceList) {
-            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceDTO.class));
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
         }
-        // InvoiceRequest
-        List<InvoiceRequestDTO> invoiceRequestDTOList = new ArrayList<>();
-        for (InvoiceDTO invoiceDTO : invoiceDTOList) {
-            // InvoiceItem
-            List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceDTO.getId());
-            List<InvoiceItemDTO> invoiceItemDTOList = new ArrayList<>();
-            for (InvoiceItem invoiceItem: invoiceItemList) {
-                invoiceItemDTOList.add(mapper.convertValue(invoiceItem, InvoiceItemDTO.class));
-            }
-            invoiceRequestDTOList.add(new InvoiceRequestDTO(invoiceDTO, invoiceItemDTOList));
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
         }
+        //TODO: Ver si incluir o no la info de cada User, porque la consulta de invoices dura mas de 40 segundos.
+        /*for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setClientDTO(getUser(invoiceDTO.getId()));
+        }*/
         // PageDTO
         return new PageDTO<>(
-                invoiceRequestDTOList,
+                invoiceDTOList,
                 invoicePage.getTotalPages(),
                 invoicePage.getTotalElements(),
                 invoicePage.getNumber(),
@@ -200,13 +185,13 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     private void checkBookStocks(UUID invoiceId) {
-        InvoiceRequestDTO invoiceRequestDTO = findById(invoiceId);
-        if (invoiceRequestDTO.getInvoiceDTO().getPaid()) {
+        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
+        if (invoiceSearchDTO.getPaid()) {
             throw new InvoicePaymentException(String.format(INVOICE_ALREADY_PAID, invoiceId), HttpStatus.BAD_REQUEST.value());
         }
 
         List<String> insufficientStockBooks = new ArrayList<>();
-        for (InvoiceItemDTO invoiceItem : invoiceRequestDTO.getInvoiceItemDTOList()) {
+        for (InvoiceItemSearchDTO invoiceItem : invoiceSearchDTO.getListInvoiceItems()) {
             BookRespDTO book = bookService.findByID(invoiceItem.getBookId());
             if (book.getStock() < invoiceItem.getQuantity()) {
                 insufficientStockBooks.add(book.getTitle());
@@ -219,10 +204,10 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     private void updateBookStocksAndInvoiceStatus(UUID invoiceId) {
-        InvoiceRequestDTO invoiceRequestDTO = findById(invoiceId);
+        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
 
         List<Book> booksToSave = new ArrayList<>();
-        for (InvoiceItemDTO invoiceItem : invoiceRequestDTO.getInvoiceItemDTOList()) {
+        for (InvoiceItemSearchDTO invoiceItem : invoiceSearchDTO.getListInvoiceItems()) {
             BookRespDTO book = bookService.findByID(invoiceItem.getBookId());
             book.setStock(book.getStock() - invoiceItem.getQuantity());
             booksToSave.add(mapper.convertValue(book, Book.class));
@@ -230,8 +215,121 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
         bookRepository.saveAll(booksToSave);
 
-        Invoice invoice = mapper.convertValue(invoiceRequestDTO.getInvoiceDTO(), Invoice.class);
+        Invoice invoice = mapper.convertValue(invoiceSearchDTO, Invoice.class);
         invoice.setPaid(true);
         invoiceRepository.save(invoice);
+    }
+
+    @Override
+    public PageDTO<InvoiceSearchDTO> findByUserId(Long userId, int page, int size) {
+        Page<Invoice> invoicePage = invoiceRepository.findByUserId(userId, PageRequest.of(page-1,size));
+        List<Invoice> invoiceList = invoicePage.getContent();
+        List<InvoiceSearchDTO> invoiceDTOList = new ArrayList<>();
+        for (Invoice invoice : invoiceList) {
+            invoiceDTOList.add(mapper.convertValue(invoice, InvoiceSearchDTO.class));
+        }
+        for (InvoiceSearchDTO invoiceDTO : invoiceDTOList) {
+            invoiceDTO.setListInvoiceItems(getListItems(invoiceDTO.getId()));
+        }
+        return new PageDTO<>(
+                invoiceDTOList,
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
+    @Override
+    public List<BookRespDTO> findBestSellersList() {
+        List<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersList();
+        List<Long> longList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceItemPage) {
+            longList.add(invoiceItem.getBookId());
+        }
+        List<BookRespDTO> bookRespDTOPageDTO = new ArrayList<>();
+        for (Long bookId: longList) {
+            try {
+                bookRespDTOPageDTO.add(bookService.findByID(bookId));
+            }
+            catch(Exception ignored) {
+            }
+        }
+        return bookRespDTOPageDTO;
+    }
+
+    @Override
+    public PageDTO<BookRespDTO> findBestSellersPage(int page, int size) {
+        Page<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersPage(PageRequest.of(page-1,size));
+        //List<InvoiceItem> invoiceItemPage = invoiceItemRepository.findBestSellersList();
+        List<Long> longList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceItemPage) {
+            longList.add(invoiceItem.getBookId());
+        }
+        List<BookRespDTO> bookRespDTOPageDTO = new ArrayList<>();
+        for (Long bookId: longList) {
+            try {
+                bookRespDTOPageDTO.add(bookService.findByID(bookId));
+            }
+            catch(Exception ignored) {
+            }
+        }
+        //return bookRespDTOPageDTO;
+        return new PageDTO<>(
+                bookRespDTOPageDTO,
+                invoiceItemPage.getTotalPages(),
+                invoiceItemPage.getTotalElements(),
+                invoiceItemPage.getNumber(),
+                invoiceItemPage.getSize()
+        );
+    }
+
+    public PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size) {
+        Page<MonthlySaleDTO> invoicePage = invoiceRepository.getMonthlySales(PageRequest.of(page-1,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
+    public PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size) {
+        Page<CategorySalesDTO> invoicePage = invoiceRepository.getSalesByCategory(PageRequest.of(page-1,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
+    private List<InvoiceItemSearchDTO> getListItems(Long invoiceID){
+        // InvoiceItem
+        List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);
+        List<InvoiceItemSearchDTO> invoiceItemDTOList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: invoiceItemList) {
+            InvoiceItemSearchDTO invoiceItemSearchDTO = mapper.convertValue(invoiceItem, InvoiceItemSearchDTO.class);
+            //TODO: Ver si incluir o no la info de cada Book, porque la consulta de invoices dura mas de 10 segundos.
+            /*Optional<Book> optionalBook = bookRepository.findById(invoiceItem.getBookId());
+            optionalBook.ifPresent(book -> invoiceItemSearchDTO.setBookDTO(mapper.convertValue(book, BookDTO.class)));*/
+            invoiceItemDTOList.add(invoiceItemSearchDTO);
+        }
+        return invoiceItemDTOList;
+    }
+
+    private ClientDTO getUser(UUID invoiceId) {
+        ClientDTO clientDTO = null;
+        Optional<Invoice> optionalInvoice = invoiceRepository.findById(invoiceId);
+        try {
+            Long userId = optionalInvoice.get().getUserId();
+            UserDTO userDTO = userService.findById(Math.toIntExact(userId));
+            clientDTO = mapper.convertValue(userDTO, ClientDTO.class);
+        } catch (Exception e) {
+
+        }
+        return clientDTO;
     }
 }

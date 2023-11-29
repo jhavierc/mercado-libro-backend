@@ -3,7 +3,6 @@ package com.mercadolibro.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
-import com.mercadolibro.entity.Image;
 import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +12,6 @@ import org.hibernate.annotations.TypeDef;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +22,8 @@ import java.util.Set;
 @NoArgsConstructor
 @ApiModel(description = "Book Response DTO", value = "BookResp")
 @TypeDef(name = "json", typeClass = JsonStringType.class)
-public class BookRespDTO {
+public class BookDTO {
+
     @ApiModelProperty(value = "ID of the book", required = true, example = "1")
     private Long id;
 
@@ -81,7 +80,4 @@ public class BookRespDTO {
     @ApiModelProperty(value = "Categories of the book", example = "[{\"id\": 1}]")
     private Set<CategoryRespDTO> categories;
 
-    @JsonProperty("created_at")
-    @ApiModelProperty(value = "Date and time of creation", example = "2023-11-03T06:35:17")
-    private LocalDateTime createdAt = LocalDateTime.now();
 }

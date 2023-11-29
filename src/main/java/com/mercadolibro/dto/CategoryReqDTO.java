@@ -14,6 +14,9 @@ import javax.validation.constraints.Size;
 @RequiredArgsConstructor
 @ApiModel(description = "Category Request DTO", value = "CategoryReq")
 public class CategoryReqDTO {
+
+    private Long id;
+
     @NotBlank
     @Size(min = 1, max = 70)
     @ApiModelProperty(value = "Name of the category", required = true, example = "Novela")

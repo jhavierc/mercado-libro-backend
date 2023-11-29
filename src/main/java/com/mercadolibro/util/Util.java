@@ -3,6 +3,7 @@ package com.mercadolibro.util;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,5 +36,14 @@ public class Util {
      */
     public static void mergeObjects(Object src, Object target) {
         BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
+    }
+
+    /**
+     * Get user email from SecurityContextHolder
+     * @see org.springframework.security.core.context.SecurityContextHolder
+     * @return user email
+     */
+    public static String getUserEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

@@ -1,9 +1,6 @@
 package com.mercadolibro.controller;
 
-import com.mercadolibro.dto.InvoiceRequestDTO;
-import com.mercadolibro.dto.PageDTO;
-import com.mercadolibro.dto.PaymentReqDTO;
-import com.mercadolibro.dto.PaymentRespDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.service.InvoiceRequestService;
@@ -46,19 +43,43 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceRequestDTO> findById(@PathVariable UUID id) {
+    public ResponseEntity<InvoiceSearchDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(invoiceRequestService.findById(id));
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<InvoiceRequestDTO>> findAll() {
+    @GetMapping("")
+    public ResponseEntity<List<InvoiceSearchDTO>> findAll() {
         return ResponseEntity.ok(invoiceRequestService.findAll());
     }
 
-
-    @GetMapping
-    public ResponseEntity<PageDTO<InvoiceRequestDTO>> findAll(@RequestParam int page, @RequestParam int size) {
+    @GetMapping("/all")
+    public ResponseEntity<PageDTO<InvoiceSearchDTO>> findAll(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.findAll(page, size));
+    }
+
+    @GetMapping("/userid/{userId}")
+    public ResponseEntity<PageDTO<InvoiceSearchDTO>> findByUserId(@PathVariable Long userId , @RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.findByUserId(userId, page, size));
+    }
+
+    @GetMapping("/bestsellers/list")
+    public ResponseEntity<List<BookRespDTO>> findBestSellersList() {
+        return ResponseEntity.ok(invoiceRequestService.findBestSellersList());
+    }
+
+    @GetMapping("/bestsellers/page")
+    public ResponseEntity<PageDTO<BookRespDTO>> findBestSellersPage(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.findBestSellersPage(page, size));
+    }
+
+    @GetMapping("/monthlysales")
+    public ResponseEntity<PageDTO<MonthlySaleDTO>> getMonthlySales(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.getMonthlySales(page, size));
+    }
+
+    @GetMapping("/salesbycategory")
+    public ResponseEntity<PageDTO<CategorySalesDTO>> getSalesByCategory(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
 
 }

@@ -15,8 +15,7 @@ import java.util.UUID;
 public class InvoiceItem {
 
     @Id
-    @SequenceGenerator(name = "invoice_item_sequence", sequenceName = "invoice_item_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoice_item_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @JsonProperty("book_id")
