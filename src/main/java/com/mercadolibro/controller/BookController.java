@@ -26,8 +26,6 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/api/book")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,
-        RequestMethod.DELETE, RequestMethod.PUT})
 public class BookController {
     private final BookService bookService;
 

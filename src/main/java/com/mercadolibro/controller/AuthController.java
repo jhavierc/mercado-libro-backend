@@ -27,8 +27,6 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,
-        RequestMethod.DELETE, RequestMethod.PUT})
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
