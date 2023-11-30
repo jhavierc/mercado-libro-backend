@@ -167,5 +167,17 @@ class AddressServiceImplTest {
         assertEquals(address.getUserId(), addressFound.getUserId());
     }
 
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenAddressDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        String userEmail = "userEmail";
+
+        // WHEN
+        when(addressRepository.findByUserEmail(userEmail)).thenReturn(Optional.empty());
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> addressService.findByUserEmail(userEmail));
+    }
+
 
 }
