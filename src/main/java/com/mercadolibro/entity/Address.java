@@ -24,6 +24,8 @@ public class Address {
     @NotNull
     private String city;
     @NotNull
+    private String state;
+    @NotNull
     private String zipCode;
     private String district;
     private String department;
