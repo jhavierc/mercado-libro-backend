@@ -138,5 +138,34 @@ class AddressServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> addressService.create(addressCreateDTO, userEmail));
     }
 
+    @Test
+    void shouldGetAddressByUserEmail() throws ResourceNotFoundException {
+        // GIVEN
+        String userEmail = "userEmail";
+        Address address = Address.builder()
+                .id(1)
+                .street("street")
+                .city("city")
+                .number(1)
+                .zipCode("zipCode")
+                .state("state")
+                .userId(1)
+                .build();
+
+        // WHEN
+        when(addressRepository.findByUserEmail(userEmail)).thenReturn(Optional.of(address));
+
+        // THEN
+        Address addressFound = addressService.findByUserEmail(userEmail);
+        assertNotNull(addressFound);
+        assertEquals(address.getId(), addressFound.getId());
+        assertEquals(address.getStreet(), addressFound.getStreet());
+        assertEquals(address.getCity(), addressFound.getCity());
+        assertEquals(address.getNumber(), addressFound.getNumber());
+        assertEquals(address.getZipCode(), addressFound.getZipCode());
+        assertEquals(address.getState(), addressFound.getState());
+        assertEquals(address.getUserId(), addressFound.getUserId());
+    }
+
 
 }
