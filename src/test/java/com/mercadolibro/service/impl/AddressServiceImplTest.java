@@ -119,5 +119,24 @@ class AddressServiceImplTest {
         assertEquals(user.getId(), addressCreated.getUserId());
     }
 
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUserDoesNotExist() throws ResourceNotFoundException {
+        // GIVEN
+        AddressCreateDTO addressCreateDTO = AddressCreateDTO.builder()
+                .street("street")
+                .city("city")
+                .number(1)
+                .zipCode("zipCode")
+                .state("state")
+                .build();
+        String userEmail = "userEmail";
+
+        // WHEN
+        when(userService.findByEmail(userEmail)).thenThrow(new ResourceNotFoundException("User not found"));
+
+        // THEN
+        assertThrows(ResourceNotFoundException.class, () -> addressService.create(addressCreateDTO, userEmail));
+    }
+
 
 }
