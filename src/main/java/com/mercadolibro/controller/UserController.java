@@ -6,6 +6,7 @@ import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
 import com.mercadolibro.service.UserService;
 import com.mercadolibro.util.JwtUtil;
+import com.mercadolibro.util.Util;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -64,6 +66,20 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @ApiOperation(value = "Get user addresses using token", notes = "Returns a list of strings",
+            authorizations = {@Authorization(value = "JWT Token")})
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "User found", response = String.class, responseContainer = "List"),
+                    @ApiResponse(code = 401, message = "Unauthorized")
+            }
+    )
+    @GetMapping("/me/address")
+    public ResponseEntity<List<String>> getUserAddress() {
+        String email = Util.getUserEmail();
+        return new ResponseEntity<>(userService.findAddressesByEmail(email), HttpStatus.OK);
+    }
+
     @GetMapping("/roles")
     @ApiOperation(value = "Get all roles", notes = "Returns all roles")
     public ResponseEntity<List<AppUserRole>> getAllRoles() {
@@ -103,4 +119,32 @@ public class UserController {
     public ResponseEntity<UserDTO> updateUser(@RequestBody UserUpdateDTO userDTO, @PathVariable Integer id) throws ResourceNotFoundException {
         return new ResponseEntity<>(userService.update(userDTO, id), HttpStatus.OK);
     }
+
+    @GetMapping("/reset")
+    @ApiOperation(value = "Send reset code to user email")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Reset code sent"),
+                    @ApiResponse(code = 404, message = "User not found")
+            }
+    )
+    public ResponseEntity<Void> sendResetCode(@RequestParam @Email String email) throws ResourceNotFoundException {
+        userService.sendResetCode(email);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+    @PostMapping("/reset")
+    @ApiOperation(value = "Reset user password")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(code = 200, message = "Password reset"),
+                    @ApiResponse(code = 404, message = "Incorrect reset codea")
+            }
+    )
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) throws ResourceNotFoundException {
+        userService.resetPassword(resetPasswordDTO.getCode(), resetPasswordDTO.getPassword());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
+

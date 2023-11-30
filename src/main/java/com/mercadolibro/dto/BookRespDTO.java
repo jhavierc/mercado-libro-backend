@@ -13,7 +13,6 @@ import org.hibernate.annotations.TypeDef;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -63,7 +62,7 @@ public class BookRespDTO {
     @JsonProperty("image_links")
     @ApiModelProperty(value = "Image links of the book", example =
             "[\"https://link1.com/image.jpg\",\"https://link2.com/image.jpg\"]")
-    private ArrayList<String> imageLinks;
+    private List<ImageDTO> imageLinks;
 
     @ApiModelProperty(value = "Language of the book", example = "ES")
     private String language;

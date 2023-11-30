@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -13,7 +15,7 @@ public class InvoiceItemDTO {
     private Long id;
 
     @JsonProperty("book_id")
-    private int bookId;
+    private Long bookId;
 
     @JsonProperty("unit_price")
     private double unitPrice;
@@ -25,6 +27,6 @@ public class InvoiceItemDTO {
     private double total;
 
     @JsonProperty("invoice_id")
-    private int invoiceId;
+    private UUID invoiceId;
 
 }

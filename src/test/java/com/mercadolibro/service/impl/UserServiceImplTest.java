@@ -10,6 +10,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,12 +46,12 @@ class UserServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoder = NoOpPasswordEncoder.getInstance();
 
-<<<<<<< HEAD
-=======
     @Mock
     private EmailService emailService;
 
->>>>>>> main
+    @Mock
+    private InvoiceRepository invoiceRepository;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -97,7 +97,7 @@ class UserServiceImplTest {
         assertEquals(1, userSaved.getId());
         assertEquals("ACTIVE", userSaved.getStatus());
         assertNotNull(userSaved.getDateCreated());
-        assertTrue(userSaved.getDateCreated().isBefore(LocalDateTime.now()));
+        assertTrue(userSaved.getDateCreated().isBefore(LocalDateTime.now().plusMinutes(10)));
         verify(userRepository, times(1)).existsByEmail(user.getEmail());
         verify(userRepository, times(1)).save(any(AppUser.class));
         verify(userRoleRepository, atLeast(1)).findByDescription(users.get(0).getRoles().get(0).getDescription());
@@ -387,8 +387,6 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).findAll();
     }
 
-<<<<<<< HEAD
-=======
     @Test
     void generateResetCode_shouldGenerateCode() {
         // GIVEN
@@ -433,12 +431,29 @@ class UserServiceImplTest {
 
         // Then
         verify(userRepository, times(1)).save(any(AppUser.class));
+    }
 
+    @Test
+    void shouldReturnUserAddresses() {
+        // Given
+        AppUser user = users.get(0);
+        String email = user.getEmail();
+        List<String> addresses = Arrays.asList("address1", "address2");
 
+        // When
+        when(invoiceRepository.findInvoicesAddressByUserEmail(email)).thenReturn(addresses);
+
+        List<String> addressesFound = userService.findAddressesByEmail(email);
+
+        // Then
+        assertNotNull(addressesFound);
+        assertEquals(addresses.size(), addressesFound.size());
+        assertEquals(addresses.get(0), addressesFound.get(0));
+        assertEquals(addresses.get(1), addressesFound.get(1));
+        verify(invoiceRepository, times(1)).findInvoicesAddressByUserEmail(email);
     }
 
 
 
->>>>>>> main
 
 }

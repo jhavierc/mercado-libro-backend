@@ -5,8 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -15,11 +18,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Invoice {
-
     @Id
-    @SequenceGenerator(name = "invoice_sequence", sequenceName = "invoice_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoice_sequence")
-    private Long id;
+    @GeneratedValue
+    @Column(columnDefinition = "VARCHAR(36)")
+    @Type(type="uuid-char")
+    private UUID id;
 
     @JsonProperty("date_created")
     @Column(name = "date_created")
@@ -42,4 +45,29 @@ public class Invoice {
     @Column(name = "account_number")
     private String accountNumber;
 
+    private String address;
+
+    private String deadline;
+
+    @JsonProperty("cardholder")
+    @Column(name = "cardholder")
+    private String cardHolder;
+
+    @JsonProperty("expiration_date")
+    @Column(name = "expiration_date")
+    private String expirationDate;
+
+    private Long dni;
+
+    @JsonProperty("document_type")
+    @Column(name = "document_type")
+    private String documentType;
+
+    @JsonProperty("card_number")
+    @Column(name = "card_number")
+    private String cardNumber;
+
+    private String notes;
+
+    private Boolean paid;
 }

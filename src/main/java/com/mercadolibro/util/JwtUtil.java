@@ -1,5 +1,7 @@
 package com.mercadolibro.util;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mercadolibro.dto.UserDTO;
 import com.mercadolibro.entity.AppUser;
 import io.jsonwebtoken.Claims;
@@ -9,16 +11,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
     private final String secret;
     private final int expirationInSeconds;
+    private final Gson gson;
 
-    public JwtUtil(@Value("${app.jwt.secret}") String secret, @Value("${app.jwt.expiration}") int expirationInSeconds) {
+    public JwtUtil(@Value("${app.jwt.secret}") String secret, @Value("${app.jwt.expiration}") int expirationInSeconds, Gson gson) {
         this.secret = secret;
         this.expirationInSeconds = expirationInSeconds;
+        this.gson = gson;
     }
 
     public String generateToken(AppUser appUser) {
@@ -53,5 +59,13 @@ public class JwtUtil {
 
     private Claims getClaims(String token) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    }
+
+    public Map<String, String> getClaimsFromToken(String token) {
+        System.out.println("token: " + token);
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        String[] chunks = token.split("\\.");
+        String payload = new String(decoder.decode(chunks[1]));
+        return gson.fromJson(payload, new TypeToken<Map<String, String>>(){}.getType());
     }
 }

@@ -7,18 +7,18 @@ import com.mercadolibro.entity.Category;
 import com.mercadolibro.exception.*;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.CategoryRepository;
+import com.mercadolibro.service.BookImageService;
 import com.mercadolibro.service.BookService;
-import com.mercadolibro.service.S3Service;
-import com.mercadolibro.util.S3Util;
 import com.mercadolibro.service.specification.BookSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
@@ -31,7 +31,7 @@ public class BookServiceImpl implements BookService {
     private final CategoryRepository categoryRepository;
     private final ObjectMapper mapper;
     private final ModelMapper modelMapper;
-    private final S3Service s3Service;
+    private final BookImageService bookImageService;
 
     public static final String NOT_FOUND_ERROR_FORMAT = "Could not found %s with ID #%d.";
     public static final String BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT = "Book with ISBN #%s already exists.";
@@ -42,24 +42,29 @@ public class BookServiceImpl implements BookService {
 
     @Autowired
     public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository,
-                           ObjectMapper mapper, ModelMapper modelMapper, S3Service s3Service) {
+                           ObjectMapper mapper, ModelMapper modelMapper, BookImageService bookImageService) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.mapper = mapper;
         this.modelMapper = modelMapper;
-        this.s3Service = s3Service;
+        this.bookImageService = bookImageService;
     }
 
+    @Cacheable(value = "books")
     @Override
-    public PageDTO<BookRespDTO> findAll(String category, String publisher, boolean releases,
+    public PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                         String selection, String sort, short page) {
 
-        Specification<Book> spec = buildSpecification(category, publisher, releases);
+        Specification<Book> spec = buildSpecification(keyword, category, publisher, releases);
         Pageable pageable = buildPageable(sort, selection, page);
 
         Page<Book> res = bookRepository.findAll(spec, pageable);
         List<BookRespDTO> content = res.getContent().stream().map(book ->
-                        mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
+                mapper.convertValue(book, BookRespDTO.class)).collect(Collectors.toList());
+
+        content.forEach(bookRespDTO -> {
+            bookRespDTO.setImageLinks(getImagesByBookID(bookRespDTO.getId()));
+        });
 
         return new PageDTO<BookRespDTO>(
                 content,
@@ -72,23 +77,21 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookRespDTO save(BookReqDTO bookReqDTO) {
-        bookReqDTO.getCategories().forEach(category -> {
-            Long id = category.getId();
-            if (!categoryRepository.existsById(id)) {
-                throw new CategoryNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "category", id));
-            }
-        });
+        if(bookReqDTO.getCategories()!=null && !bookReqDTO.getCategories().isEmpty()){
+            bookReqDTO.getCategories().forEach(category -> {
+                Long id = category.getId();
+                if (!categoryRepository.existsById(id)) {
+                    throw new CategoryNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "category", id));
+                }
+            });
+        }
 
         if (!bookRepository.existsByIsbn(bookReqDTO.getIsbn())) {
-            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
             try {
                 Book mappedBook = mapper.convertValue(bookReqDTO, Book.class);
-                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
-
                 Book saved = bookRepository.save(mappedBook);
                 return mapper.convertValue(saved, BookRespDTO.class);
-            } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs); // TODO: check if a can do a fallback method instead of repeating rollback with try catch
+            } catch (Exception e) {
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
         }
@@ -96,37 +99,28 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookRespDTO update(Long id, BookReqDTO bookReqDTO){
+    public BookRespDTO update(Long id, BookReqDTO bookReqDTO) {
         if (bookRepository.existsById(id)) {
             if (bookRepository.existsByIsbnAndIdNot(bookReqDTO.getIsbn(), id)) {
                 throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT,
                         bookReqDTO.getIsbn()));
             }
-            List<S3ObjectDTO> imagesRespDTOs = s3Service.uploadFiles(bookReqDTO.getImages());
             Book mappedBook;
-
             try {
                 mappedBook = mapper.convertValue(bookReqDTO, Book.class);
-                mappedBook.setImageLinks(S3Util.getS3ObjectsUrls(imagesRespDTOs));
                 mappedBook.setId(id);
 
                 Book updated = bookRepository.save(mappedBook);
-
-                // TODO: At this point, we need to remove old images. However, due to the current backend architecture
-                //  and database structure, the logic for this task would be ugly. Creating an images entity
-                //  would be necessary to resolve these issues.
-
                 return mapper.convertValue(updated, BookRespDTO.class);
-            } catch (Exception e){
-                s3Service.deleteFiles(imagesRespDTOs);
+            } catch (Exception e) {
                 throw new S3Exception(SAVING_BOOK_ERROR_FORMAT);
             }
         }
-
         throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
 
     @Override
+    @Transactional
     public BookRespDTO patch(Long id, BookReqPatchDTO bookReqPatchDTO) {
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         modelMapper.getConfiguration().setCollectionsMergeEnabled(false);
@@ -137,23 +131,12 @@ public class BookServiceImpl implements BookService {
                 throw new BookAlreadyExistsException(String.format(BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT, bookReqPatchDTO.getIsbn()));
             }
 
-            List<MultipartFile> imagesToUpload = bookReqPatchDTO.getImages();
-            List<String> imageURLs = bookReqPatchDTO.getImagesToReplaceURLs();
-
-            String existingImageLinks = bookRepository.findImageLinksById(id);
-            List<String> splitLinks = List.of(existingImageLinks.split(","));
-            for (String URL : imageURLs) {
-                if (!splitLinks.contains(URL)) {
-                    throw new BookImageKeyDoesNotExistException(String.format(FILE_NOT_FOUND_MESSAGE, URL));
-                }
+            if (bookReqPatchDTO.getCategories() != null){
+                HashSet<Category> categoriesOnlyWithID = bookReqPatchDTO.getCategories().stream()
+                        .map(categoryDTO -> mapper.convertValue(categoryDTO, Category.class))
+                        .collect(Collectors.toCollection(HashSet::new));
+                optionalBook.get().setCategories(categoriesOnlyWithID);
             }
-
-            s3Service.replaceFilesByURLs(imagesToUpload, imageURLs); // I do not replace new image links in the database because them stays with the same key/url
-
-            HashSet<Category> categoriesOnlyWithID = bookReqPatchDTO.getCategories().stream()
-                    .map(categoryDTO -> mapper.convertValue(categoryDTO, Category.class))
-                    .collect(Collectors.toCollection(HashSet::new));
-            optionalBook.get().setCategories(categoriesOnlyWithID);
 
             modelMapper.map(bookReqPatchDTO, optionalBook.get());
 
@@ -169,7 +152,9 @@ public class BookServiceImpl implements BookService {
     public BookRespDTO findByID(Long id) {
         Optional<Book> searched = bookRepository.findById(id);
         if (searched.isPresent()) {
-            return mapper.convertValue(searched.get(), BookRespDTO.class);
+            BookRespDTO bookRespDTO = mapper.convertValue(searched.get(), BookRespDTO.class);
+            bookRespDTO.setImageLinks(getImagesByBookID(bookRespDTO.getId()));
+            return bookRespDTO;
         }
         throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
     }
@@ -177,15 +162,12 @@ public class BookServiceImpl implements BookService {
     @Override
     public void delete(Long id) {
         if (bookRepository.existsById(id)) {
-            String imageLinks = bookRepository.findImageLinksById(id);
-            String[] splitLinks = imageLinks.split(",");
-
-            List<S3ObjectDTO> s3ObjectDTOS = new ArrayList<>();
-            for (String link : splitLinks) {
-                s3ObjectDTOS.add(S3Util.parseS3Url(link));
+            List<ImageDTO> listImages = bookImageService.findByBookID(id);
+            if(!listImages.isEmpty()){
+                listImages.forEach(imageDTO -> {
+                    bookImageService.delete(imageDTO.getId());
+                });
             }
-
-            s3Service.deleteFiles(s3ObjectDTOS);
             bookRepository.deleteById(id);
         } else {
             throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", id));
@@ -212,11 +194,15 @@ public class BookServiceImpl implements BookService {
         }
 
         Sort sorted = Sort.by(orders);
-        return PageRequest.of(page, 9, sorted);
+        return PageRequest.of(page, 8, sorted);
     }
 
-    private Specification<Book> buildSpecification(String category, String publisher, boolean releases) {
+    private Specification<Book> buildSpecification(String keyword, String category, String publisher, boolean releases) {
         Specification<Book> spec = Specification.where(null);
+
+        if (keyword != null) {
+            spec= spec.and(BookSpecification.titleOrAuthorOrPublisherContainingSpec(keyword));
+        }
 
         if (category != null) {
             spec = spec.and(BookSpecification.categorySpec(category));
@@ -231,5 +217,9 @@ public class BookServiceImpl implements BookService {
         }
 
         return spec;
+    }
+
+    private List<ImageDTO> getImagesByBookID(Long bookID) {
+        return bookImageService.findByBookID(bookID);
     }
 }
