@@ -8,6 +8,7 @@ import com.mercadolibro.entity.AppUser;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.AppUserRoleRepository;
+import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.service.EmailService;
 import com.mercadolibro.service.UserService;
 import com.mercadolibro.util.Util;
@@ -44,15 +45,17 @@ public class UserServiceImpl implements UserService {
     /* Dependencies */
     private final AppUserRepository appUserRepository;
     private final AppUserRoleRepository appUserRoleRepository;
+    private final InvoiceRepository invoiceRepository;
     private final EmailService emailService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(AppUserRepository appUserRepository, AppUserRoleRepository appUserRoleRepository, @Value("${app.user.default-roles}") List<String> defaultRoles, EmailService emailService, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(AppUserRepository appUserRepository, AppUserRoleRepository appUserRoleRepository, @Value("${app.user.default-roles}") List<String> defaultRoles, InvoiceRepository invoiceRepository, EmailService emailService, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.appUserRoleRepository = appUserRoleRepository;
         this.defaultRoles = defaultRoles;
+        this.invoiceRepository = invoiceRepository;
         this.emailService = emailService;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
@@ -123,11 +126,11 @@ public class UserServiceImpl implements UserService {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<AppUser> example = Example.of(
                 AppUser.builder().
-                        name(userQuery.getName()).
-                        lastName(userQuery.getLastName()).
-                        email(userQuery.getEmail()).
-                        status(userQuery.getStatus()).
-                        build(),
+                    name(userQuery.getName()).
+                    lastName(userQuery.getLastName()).
+                    email(userQuery.getEmail()).
+                    status(userQuery.getStatus()).
+                    build(),
                 matcher);
 
         Page<UserDTO> userPage = appUserRepository.findAll(example, PageRequest.of(page, size, userQuery.getOrderDirection(), userQuery.getOrderBy().getValue())).map(userMapper::toUserDTO);
@@ -202,5 +205,10 @@ public class UserServiceImpl implements UserService {
         appUserRepository.save(appUser);
         activeCodes.remove(code);
 
+    }
+
+    @Override
+    public List<String> findAddressesByEmail(String email) {
+        return invoiceRepository.findInvoicesAddressByUserEmail(email);
     }
 }

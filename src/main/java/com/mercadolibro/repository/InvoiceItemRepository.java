@@ -1,8 +1,5 @@
 package com.mercadolibro.repository;
 
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.entity.Book;
-import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,11 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> {
 
-    List<InvoiceItem> findByInvoiceId(Long invoiceId);
+    List<InvoiceItem> findByInvoiceId(UUID invoiceId);
 
     @Query(value = "SELECT id FROM invoice_item ORDER BY id DESC LIMIT 1", nativeQuery = true)
     Long findLastInsertedId();
@@ -25,30 +23,18 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
     @Query(value = "SELECT * FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
             countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
             nativeQuery = true)
-    List<InvoiceItem> findBestSellers();
+    List<InvoiceItem> findBestSellersList();
 
-     @GetMapping("/totalpriceofsell")
-    public ResponseEntity<Double> findTotalBooksPriceSell() {
-        Double result = invoiceRequestService.findTotalBooksPriceSell();
-        return ResponseEntity.ok(result);
-    }
+    @Query(value = "SELECT * FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
+            nativeQuery = true)
+    Page<InvoiceItem> findBestSellersPage(Pageable pageable);
 
-    @GetMapping("/averageprice")
-    public ResponseEntity<Double> calculateAverageTotalPrice() {
-        Double result = invoiceRequestService.calculateAverageTotalPriceByTotalInvoices();
-        return ResponseEntity.ok(result);
-    }
+    InvoiceItem findTotalBooksPriceSell();
 
-    @GetMapping("/totalquantity")
-    public ResponseEntity<Integer> calculateTotalQuantity() {
-        Integer result = invoiceRequestService.calculateTotalQuantityOfBooksSell();
-        return ResponseEntity.ok(result);
-    }
+    InvoiceItem calculateAverageTotalPrice();
 
-    @GetMapping("/averagequantity")
-    public ResponseEntity<Double> calculateAverageQuantity() {
-        Double result = invoiceRequestService.calculateAverageQuantityOfBooksSellByTotalInvoices();
-        return ResponseEntity.ok(result);
-    }
+    InvoiceItem calculateTotalQuantity();
 
+    InvoiceItem calculateAverageQuantity();
 }

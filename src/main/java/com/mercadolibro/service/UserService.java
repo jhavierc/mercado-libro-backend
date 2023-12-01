@@ -4,7 +4,6 @@ import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.AppUserRole;
 import com.mercadolibro.exception.ResourceAlreadyExistsException;
 import com.mercadolibro.exception.ResourceNotFoundException;
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
@@ -110,5 +109,12 @@ public interface UserService extends UserDetailsService {
      */
 
     void resetPassword(String code, String newPassword) throws ResourceNotFoundException;
+
+    /**
+     * Finds the addresses of the user with the specified email address
+     * @param email The email address of the user
+     * @return A list of addresses
+     */
+    List<String> findAddressesByEmail(String email);
 
 }

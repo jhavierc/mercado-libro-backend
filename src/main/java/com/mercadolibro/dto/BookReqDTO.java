@@ -1,6 +1,5 @@
 package com.mercadolibro.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.mercadolibro.dto.deserializer.DateDeserializer;
@@ -11,16 +10,13 @@ import lombok.*;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.validator.constraints.ISBN;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -32,7 +28,7 @@ import java.util.Set;
 public class BookReqDTO {
     @Size(min = 1, max = 70)
     @NotBlank
-    @ApiModelProperty(value = "Title of the book", required = true, example = "El inmortal")
+    @ApiModelProperty(value = "Title of the book", example = "El inmortal")
     private String title;
 
     @Size(min = 1, max = 255)
@@ -61,7 +57,7 @@ public class BookReqDTO {
     private String description;
 
     @NotBlank
-    @ISBN(type = ISBN.Type.ANY)
+    //@ISBN(type = ISBN.Type.ANY)
     @ApiModelProperty(value = "ISBN of the book", required = true, example = "978-2-0116-5274-4")
     private String isbn;
 
@@ -76,12 +72,6 @@ public class BookReqDTO {
     @JsonProperty("ratings_count")
     @ApiModelProperty(value = "Ratings count of the book", required = true, example = "4")
     private Short ratingsCount;
-
-    @Size(min = 1, max = 5)
-    @NotNull
-    @JsonIgnore
-    @ApiModelProperty(value = "Select at least 1 and at most 5 images for the book. You can upload multiple images.")
-    private List<MultipartFile> images;
 
     @NotBlank
     @ApiModelProperty(value = "Language of the book", required = true, example = "ES")
@@ -108,5 +98,5 @@ public class BookReqDTO {
     @NotNull
     @ApiModelProperty(value = "JSON with the IDs of categories of the book", required = true,
             example = "[{\"id\": 1}]")
-    private Set<BookCategoryReqDTO> categories;
+    private List<BookCategoryReqDTO> categories;
 }
