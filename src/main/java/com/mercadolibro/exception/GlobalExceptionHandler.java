@@ -164,4 +164,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
+
+    @ExceptionHandler(InvoicePaymentException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvoicePaymentException(InvoicePaymentException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(e.getMessage(), e.getCode());
+
+        return ResponseEntity.status(e.getCode()).body(errorResponse);
+    }
 }

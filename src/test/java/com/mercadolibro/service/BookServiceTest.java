@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Category;
-import com.mercadolibro.entity.Image;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.exception.CategoryNotFoundException;
@@ -15,7 +14,6 @@ import com.mercadolibro.service.impl.CategoryServiceImpl;
 
 import static org.mockito.Mockito.*;
 
-import com.mercadolibro.service.impl.ImageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +28,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.mercadolibro.service.impl.BookServiceImpl.BOOK_ISBN_ALREADY_EXISTS_ERROR_FORMAT;
 import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
@@ -43,8 +40,6 @@ public class BookServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
-    @Mock
-    private ImageServiceImpl imageService;
 
     @Spy
     private ObjectMapper objectMapper;
@@ -69,14 +64,6 @@ public class BookServiceTest {
         // GIVEN
         String firstImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-1.jpg";
         String secondImageLink = "https://my-bucket-name.s3.amazonaws.com/images/example-file-2.jpg";
-
-        Set<Image> images = new HashSet<>();
-
-        Image image1 = new Image(firstImageLink);
-        Image image2 = new Image(secondImageLink);
-
-        images.add(image1);
-        images.add(image2);
 
         MockMultipartFile file1 = new MockMultipartFile("example-file-1", "example-file-1.jpg", "image/png", new byte[0]);
         MockMultipartFile file2 = new MockMultipartFile("example-file-2", "example-file-2.jpg", "image/png", new byte[0]);
@@ -105,7 +92,6 @@ public class BookServiceTest {
         // WHEN
         when(categoryRepository.existsById(1L)).thenReturn(true);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockResponse);
-        when(imageService.save(Mockito.any(MultipartFile.class))).thenReturn(image1);
 
         // THEN
         BookRespDTO result = bookService.save(book);
@@ -471,19 +457,10 @@ public class BookServiceTest {
         mockRepositoryResponse.setId(bookId);
         mockRepositoryResponse.setLanguage("english");
 
-        Set<Image> images = new HashSet<>();
-        Image image1 = new Image();
-        image1.setId(1L);
-
-        images.add(image1);
-
         Book oldBook = new Book();
-
-        List<Image> imageList = new ArrayList<>(images);
 
         when(bookRepository.existsById(bookId)).thenReturn(true);
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(oldBook));
-        when(imageService.updateAll(anyList(), anyList())).thenReturn(imageList);
         when(bookRepository.save(Mockito.any(Book.class))).thenReturn(mockRepositoryResponse);
 
         // Act
@@ -602,7 +579,6 @@ public class BookServiceTest {
     void testDeleteExistingBook() {
         // Arrange
         Long bookId = 1L;
-        Set<Image> images = new HashSet<>();
 
         doReturn(true).when(bookRepository).existsById(bookId);
         doNothing().when(bookRepository).deleteById(1L);

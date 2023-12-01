@@ -1,6 +1,5 @@
 package com.mercadolibro.repository;
 
-import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.BookImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

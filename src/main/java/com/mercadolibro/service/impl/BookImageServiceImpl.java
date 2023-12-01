@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -35,7 +34,6 @@ public class BookImageServiceImpl implements BookImageService {
     private final BookImageRepository bookImageRepository;
 
     private final BookRepository bookRepository;
-    private final ObjectMapper mapper;
 
     private final AmazonS3 amazonS3Client;
 
@@ -50,7 +48,6 @@ public class BookImageServiceImpl implements BookImageService {
                                 AmazonS3 amazonS3){
         this.bookImageRepository = bookImageRepository;
         this.bookRepository = bookRepository;
-        this.mapper= mapper;
         this.amazonS3Client=amazonS3;
     }
 
