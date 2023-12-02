@@ -191,7 +191,7 @@ public class BookController {
             @ApiResponse(code = 200, message = "Author book count retrieved successfully", response = PageDTO.class),
             @ApiResponse(code = 400, message = "Bad request")
     })
-    public ResponseEntity<PageDTO<AuthorBookCountDTO>> getAuthorBookCount(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "5") @Positive int size) {
+    public ResponseEntity<PageDTO<AuthorBookCountDTO>> getAuthorBookCount(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "10") @Positive int size) {
         return ResponseEntity.ok(bookService.getAllAuthorsBookCount(page, size));
     }
 }
