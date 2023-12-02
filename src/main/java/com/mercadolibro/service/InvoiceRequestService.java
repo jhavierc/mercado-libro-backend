@@ -19,6 +19,7 @@ public interface InvoiceRequestService {
     PageDTO<BookRespDTO> findBestSellersPage(int page, int size);
     PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size);
     PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size);
+    List<PaymentTypeSaleDTO> findSalesByPaymentType();
 
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
 

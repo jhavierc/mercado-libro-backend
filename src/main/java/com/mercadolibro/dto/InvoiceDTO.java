@@ -1,9 +1,11 @@
 package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mercadolibro.entity.Invoice;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -57,4 +59,7 @@ public class InvoiceDTO {
 
     @JsonProperty("paid")
     private Boolean paid;
+
+    @JsonProperty("payment_method")
+    private PaymentMethod paymentMethod;
 }

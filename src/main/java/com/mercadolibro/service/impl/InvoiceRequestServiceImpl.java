@@ -306,6 +306,11 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         );
     }
 
+    @Override
+    public List<PaymentTypeSaleDTO> findSalesByPaymentType() {
+        return invoiceRepository.findSalesByPaymentType();
+    }
+
     private List<InvoiceItemSearchDTO> getListItems(UUID invoiceID){
         // InvoiceItem
         List<InvoiceItem> invoiceItemList = invoiceItemRepository.findByInvoiceId(invoiceID);

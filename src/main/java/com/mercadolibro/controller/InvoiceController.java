@@ -80,4 +80,14 @@ public class InvoiceController {
     public ResponseEntity<PageDTO<CategorySalesDTO>> getSalesByCategory(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
+
+    @GetMapping("/salesbypaymenttype")
+    @ApiOperation(value = "Get sales count by payment type", notes = "Returns a list of sales count for each payment type.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sales count by payment type retrieved successfully", response = List.class),
+            @ApiResponse(code = 400, message = "Bad request")
+    })
+    public ResponseEntity<List<PaymentTypeSaleDTO>> getSalesByPaymentType() {
+        return ResponseEntity.ok(invoiceRequestService.findSalesByPaymentType());
+    }
 }
