@@ -1,19 +1,32 @@
 package com.mercadolibro.service.impl;
 
+import com.mercadolibro.entity.AppUser;
+import com.mercadolibro.entity.Book;
+import com.mercadolibro.events.InvoiceCreated;
+import com.mercadolibro.repository.AppUserRepository;
+import com.mercadolibro.repository.BookRepository;
+import com.mercadolibro.repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.MimeMessage;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class EmailServiceImpl implements com.mercadolibro.service.EmailService {
     private final JavaMailSender javaMailSender;
+    private final InvoiceRepository invoiceRepository;
+    private final AppUserRepository appUserRepository;
+    private final BookRepository bookRepository;
 
     @Autowired
-    public EmailServiceImpl(JavaMailSender javaMailSender) {
+    public EmailServiceImpl(JavaMailSender javaMailSender, InvoiceRepository invoiceRepository, AppUserRepository appUserRepository, BookRepository bookRepository) {
         this.javaMailSender = javaMailSender;
+        this.invoiceRepository = invoiceRepository;
+        this.appUserRepository = appUserRepository;
+        this.bookRepository = bookRepository;
     }
 
     public void sendEmail(String to, String subject, String userName, List<String> messages) {
@@ -54,5 +67,25 @@ public class EmailServiceImpl implements com.mercadolibro.service.EmailService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void handleInvoiceCreatedEvent(InvoiceCreated invoiceCreated) {
+        AppUser user = appUserRepository.findById(invoiceCreated.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        List<String> messages = new ArrayList<>();
+        List<Book> books = bookRepository.findAllById(invoiceCreated.getBookIds());
+        messages.add("¡Tu pedido se ha realizado con éxito! A continuación encontrarás los detalles de tu compra:");
+        StringBuilder products = new StringBuilder();
+        products.append("<ul>");
+        for (Book book: books) {
+            products.append("<li>").append(book.getTitle()).append("</li>");
+        }
+        products.append("</ul>");
+        messages.add(products.toString());
+        messages.add("Si elegiste pagar con transferencia bancaria, a continuación encontrarás los datos de la cuenta:");
+        messages.add("<ul><li>Nombre: MercadoLibro S.A.</li><li>CBU: 123456789123456789</li><li>Alias: mercadolibro</li></ul>");
+        messages.add("Si elegiste pagar con tarjeta, no es necesario que hagas nada más. ¡Gracias por tu compra!");
+
+        sendEmail(user.getEmail(), "¡Tu pedido se ha realizado con éxito!", user.getName() , messages);
     }
 }
