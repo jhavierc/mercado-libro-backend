@@ -5,28 +5,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibro.dto.*;
 import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Invoice;
-import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.entity.InvoiceRequest;
+import com.mercadolibro.events.InvoiceCreated;
 import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.repository.BookRepository;
-import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.repository.InvoiceItemRepository;
+import com.mercadolibro.repository.InvoiceRepository;
 import com.mercadolibro.service.BookService;
 import com.mercadolibro.service.InvoiceRequestService;
+import com.mercadolibro.service.UserService;
 import com.mercadopago.client.common.IdentificationRequest;
-import com.mercadopago.client.payment.*;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
 import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.net.MPResponse;
 import com.mercadopago.resources.payment.Payment;
-import com.mercadolibro.service.UserService;
-import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class InvoiceRequestServiceImpl implements InvoiceRequestService {
@@ -37,6 +43,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     private final BookRepository bookRepository;
     private final BookService bookService;
     private final UserService userService;
+    private final ApplicationContext applicationContext;
 
 
     public static final String INSUFFICIENT_STOCK_FOR_BOOK = "Insufficient stock for book '%s'";
@@ -44,7 +51,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     public static final String INVOICE_NOT_FOUND = "Invoice with ID '%s' not found";
 
 
-    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, BookRepository bookRepository, BookService bookService, UserService userService) {
+    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, BookRepository bookRepository, BookService bookService, UserService userService, ApplicationContext applicationContext) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceItemRepository = invoiceItemRepository;
         this.mapper = mapper;
@@ -52,6 +59,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         this.bookRepository = bookRepository;
         this.bookService = bookService;
         this.userService = userService;
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -180,6 +188,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
             InvoiceItem createdInvoiceItem = invoiceItemRepository.save(invoiceItem);
             createdInvoiceItemDTOList.add(mapper.convertValue(createdInvoiceItem, InvoiceItemDTO.class));
         }
+
+        // InvoiceCreated Event
+        applicationContext.publishEvent(new InvoiceCreated(Math.toIntExact(createdInvoice.getUserId()), createdInvoiceItemDTOList.stream().map(InvoiceItemDTO::getBookId).collect(Collectors.toList())));
         // InvoiceRequest
         return new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
     }
