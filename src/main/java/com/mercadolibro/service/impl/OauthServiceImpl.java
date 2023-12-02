@@ -82,6 +82,7 @@ public class OauthServiceImpl implements OauthService {
         String familyName = claims.get("family_name");
         Optional<AppUser> optionalAppUser = appUserRepository.findByEmail(email);
         if (optionalAppUser.isPresent()) {
+            AuthResp resp = new AuthResp(jwtUtil.generateToken(optionalAppUser.get()), userMapper.toUserDTO(optionalAppUser.get()));
             return new AuthResp(jwtUtil.generateToken(optionalAppUser.get()), userMapper.toUserDTO(optionalAppUser.get()));
         }
         String randomPassword = UUID.randomUUID().toString();
