@@ -225,7 +225,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public PageDTO<AuthorBookCountDTO> getAllAuthorsBookCount(int page, int size) {
-        Page<AuthorBookCountDTO> authorBookPage = bookRepository.countBooksByAuthor(PageRequest.of(page,size));
+        Page<AuthorBookCountDTO> authorBookPage = bookRepository.findAllAuthors(PageRequest.of(page,size));
         return new PageDTO<>(
                 authorBookPage.getContent(),
                 authorBookPage.getTotalPages(),
