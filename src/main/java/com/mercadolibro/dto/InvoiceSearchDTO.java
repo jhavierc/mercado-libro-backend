@@ -65,4 +65,7 @@ public class InvoiceSearchDTO {
 
     @JsonProperty("paid")
     private Boolean paid;
+
+    @JsonProperty("payment_method")
+    private PaymentMethod paymentMethod;
 }

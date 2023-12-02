@@ -1,6 +1,7 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mercadolibro.dto.PaymentMethod;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,6 +67,10 @@ public class Invoice {
     @JsonProperty("card_number")
     @Column(name = "card_number")
     private String cardNumber;
+
+    @JsonProperty("payment_method")
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     private String notes;
 

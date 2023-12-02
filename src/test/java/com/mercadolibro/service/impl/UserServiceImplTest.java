@@ -452,8 +452,4 @@ class UserServiceImplTest {
         assertEquals(addresses.get(1), addressesFound.get(1));
         verify(invoiceRepository, times(1)).findInvoicesAddressByUserEmail(email);
     }
-
-
-
-
 }

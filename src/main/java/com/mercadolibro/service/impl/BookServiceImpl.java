@@ -222,4 +222,16 @@ public class BookServiceImpl implements BookService {
     private List<ImageDTO> getImagesByBookID(Long bookID) {
         return bookImageService.findByBookID(bookID);
     }
+
+    @Override
+    public PageDTO<AuthorBookCountDTO> getAllAuthorsBookCount(int page, int size) {
+        Page<AuthorBookCountDTO> authorBookPage = bookRepository.findAllAuthors(PageRequest.of(page,size));
+        return new PageDTO<>(
+                authorBookPage.getContent(),
+                authorBookPage.getTotalPages(),
+                authorBookPage.getTotalElements(),
+                authorBookPage.getNumber(),
+                authorBookPage.getSize()
+        );
+    }
 }
