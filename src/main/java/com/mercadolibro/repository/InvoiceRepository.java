@@ -49,6 +49,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
             nativeQuery = true)
     Page<CategorySalesDTO> getSalesByCategory(Pageable pageable);
 
-    @Query("SELECT i.paymentMethod as payment_type, COUNT(i) as sales FROM Invoice i GROUP BY i.paymentMethod")
-    List<PaymentTypeSaleDTO> findSalesByPaymentType();
+    @Query("SELECT i.paymentMethod as payment_type, COUNT(i) as sales FROM Invoice i WHERE i.paymentMethod IS NOT NULL GROUP BY i.paymentMethod")
+    Page<PaymentTypeSaleDTO> findSalesByPaymentType(Pageable pageable);
 }

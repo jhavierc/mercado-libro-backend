@@ -307,8 +307,15 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     }
 
     @Override
-    public List<PaymentTypeSaleDTO> findSalesByPaymentType() {
-        return invoiceRepository.findSalesByPaymentType();
+    public PageDTO<PaymentTypeSaleDTO> findSalesByPaymentType(int page, int size) {
+        Page<PaymentTypeSaleDTO> invoicePage = invoiceRepository.findSalesByPaymentType(PageRequest.of(page,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
     }
 
     private List<InvoiceItemSearchDTO> getListItems(UUID invoiceID){

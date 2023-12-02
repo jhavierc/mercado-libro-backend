@@ -85,13 +85,13 @@ public class InvoiceController {
     }
 
     @GetMapping("/salesbypaymenttype")
-    @ApiOperation(value = "Get sales count by payment type", notes = "Returns a list of sales count for each payment type.")
+    @ApiOperation(value = "Get sales count by payment type", notes = "Returns a paginated list of sales count for each payment type.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sales count by payment type retrieved successfully", response = List.class),
+            @ApiResponse(code = 200, message = "Sales count by payment type retrieved successfully", response = PageDTO.class),
             @ApiResponse(code = 400, message = "Bad request")
     })
-    public ResponseEntity<List<PaymentTypeSaleDTO>> getSalesByPaymentType() {
-        return ResponseEntity.ok(invoiceRequestService.findSalesByPaymentType());
+    public ResponseEntity<PageDTO<PaymentTypeSaleDTO>> getSalesByPaymentType(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "10") @Positive int size) {
+        return ResponseEntity.ok(invoiceRequestService.findSalesByPaymentType(page, size));
     }
 
     @GetMapping("/monthlystock")
