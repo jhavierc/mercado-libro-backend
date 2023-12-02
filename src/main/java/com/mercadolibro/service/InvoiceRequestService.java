@@ -20,12 +20,6 @@ public interface InvoiceRequestService {
     PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size);
     PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size);
 
-    Double calculateAverageTotalPriceByTotalInvoices();
-
-    Double findTotalBooksPriceSell();
-    Integer calculateTotalQuantityOfBooksSell();
-    Double calculateAverageQuantityOfBooksSellByTotalInvoices();
-
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
 
     PaymentRespDTO processPayment(UUID invoiceId, PaymentReqDTO paymentReqDTO);

@@ -319,24 +319,4 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
         return invoiceItemDTOList;
     }
-
-    @Override
-    public Double findTotalBooksPriceSell() {
-        return invoiceItemRepository.findTotalBooksPriceSell();
-    }
-
-    @Override
-    public Double calculateAverageTotalPriceByTotalInvoices() {
-        return invoiceItemRepository.calculateAverageTotalPriceByTotalInvoices();
-    }
-
-    @Override
-    public Integer calculateTotalQuantityOfBooksSell() {
-        return invoiceItemRepository.calculateTotalQuantityOfBooksSell();
-    }
-
-    @Override
-    public Double calculateAverageQuantityOfBooksSellByTotalInvoices() {
-        return invoiceItemRepository.calculateAverageQuantityOfBooksSellByTotalInvoices();
-    }
 }

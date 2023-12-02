@@ -29,12 +29,4 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
             countQuery = "SELECT count(*) FROM invoice_item GROUP BY book_id ORDER BY COUNT(*) DESC",
             nativeQuery = true)
     Page<InvoiceItem> findBestSellersPage(Pageable pageable);
-
-    InvoiceItem findTotalBooksPriceSell();
-
-    InvoiceItem calculateAverageTotalPrice();
-
-    InvoiceItem calculateTotalQuantity();
-
-    InvoiceItem calculateAverageQuantity();
 }

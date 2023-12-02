@@ -80,28 +80,4 @@ public class InvoiceController {
     public ResponseEntity<PageDTO<CategorySalesDTO>> getSalesByCategory(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
-
-    @GetMapping("/totalpriceofsell")
-    public ResponseEntity<Double> findTotalBooksPriceSell() {
-        Double result = invoiceRequestService.findTotalBooksPriceSell();
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/averageprice")
-    public ResponseEntity<Double> calculateAverageTotalPrice() {
-        Double result = invoiceRequestService.calculateAverageTotalPriceByTotalInvoices();
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/totalquantity")
-    public ResponseEntity<Integer> calculateTotalQuantity() {
-        Integer result = invoiceRequestService.calculateTotalQuantityOfBooksSell();
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/averagequantity")
-    public ResponseEntity<Double> calculateAverageQuantity() {
-        Double result = invoiceRequestService.calculateAverageQuantityOfBooksSellByTotalInvoices();
-        return ResponseEntity.ok(result);
-    }
 }
