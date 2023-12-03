@@ -7,6 +7,7 @@ import com.mercadolibro.entity.Book;
 import com.mercadolibro.entity.Invoice;
 import com.mercadolibro.entity.InvoiceRequest;
 import com.mercadolibro.entity.InvoiceItem;
+import com.mercadolibro.exception.BookNotFoundException;
 import com.mercadolibro.exception.InvoicePaymentException;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.InvoiceRepository;
@@ -15,18 +16,26 @@ import com.mercadolibro.service.BookService;
 import com.mercadolibro.service.InvoiceRequestService;
 import com.mercadopago.client.common.IdentificationRequest;
 import com.mercadopago.client.payment.*;
+import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
+import com.mercadopago.client.preference.PreferenceClient;
+import com.mercadopago.client.preference.PreferenceItemRequest;
+import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.net.MPResponse;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadolibro.service.UserService;
+import com.mercadopago.resources.preference.Preference;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.*;
+
+import static com.mercadolibro.service.impl.BookServiceImpl.NOT_FOUND_ERROR_FORMAT;
 
 @Service
 public class InvoiceRequestServiceImpl implements InvoiceRequestService {
@@ -111,7 +120,8 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     @Override
     @Transactional
     public PaymentRespDTO processPayment(UUID invoiceId, PaymentReqDTO paymentReqDTO) {
-        checkBookStocks(invoiceId);
+        InvoiceSearchDTO invoice = findById(invoiceId);
+        checkBookStocks(invoice);
 
         try {
             Map<String, String> customHeaders = new HashMap<>();
@@ -122,7 +132,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
                     .accessToken(mercadoPagoAccessToken)
                     .build();
 
-            PaymentClient client = new PaymentClient();
+            PaymentClient paymentClient = new PaymentClient();
 
             PaymentCreateRequest paymentCreateRequest =
                     PaymentCreateRequest.builder()
@@ -143,9 +153,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
             PaymentRespDTO paymentResponse;
 
-            Payment payment = client.create(paymentCreateRequest, requestOptions);
+            Payment payment = paymentClient.create(paymentCreateRequest, requestOptions);
             if (payment.getStatus().equals("approved") || payment.getStatus().equals("in_process")) {
-                updateBookStocksAndInvoiceStatus(invoiceId);
+                updateBookStocksAndInvoiceStatus(invoice);
                 paymentResponse = mapper.convertValue(payment, PaymentRespDTO.class);
             } else {
                 PaymentStatus paymentStatus = PaymentStatus.getById(payment.getCard().getCardholder().getName());
@@ -169,6 +179,13 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
     @Override
     public InvoiceRequestDTO save(InvoiceRequest invoiceRequest) {
+        // This could be done through database constraints but I dont wanna do it
+        for (InvoiceItem invoiceItem : invoiceRequest.getInvoiceItemList()) {
+            if (!bookRepository.existsById(invoiceItem.getBookId())){
+                throw new BookNotFoundException(String.format(NOT_FOUND_ERROR_FORMAT, "book", invoiceItem.getBookId()));
+            }
+        }
+
         // Invoice
         invoiceRequest.getInvoice().setPaid(false);
         Invoice createdInvoice = invoiceRepository.save(invoiceRequest.getInvoice());
@@ -180,14 +197,20 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
             InvoiceItem createdInvoiceItem = invoiceItemRepository.save(invoiceItem);
             createdInvoiceItemDTOList.add(mapper.convertValue(createdInvoiceItem, InvoiceItemDTO.class));
         }
+
+        InvoiceRequestDTO invoiceRequestDTO = new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
+
+        // Generate MercadoPago preference
+        Preference preference = generatePreference(invoiceRequestDTO);
+        invoiceRequestDTO.getInvoiceDTO().setPreferenceId(preference.getId());
+
         // InvoiceRequest
-        return new InvoiceRequestDTO(createdInvoiceDTO, createdInvoiceItemDTOList);
+        return invoiceRequestDTO;
     }
 
-    private void checkBookStocks(UUID invoiceId) {
-        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
+    private void checkBookStocks(InvoiceSearchDTO invoiceSearchDTO) {
         if (invoiceSearchDTO.getPaid()) {
-            throw new InvoicePaymentException(String.format(INVOICE_ALREADY_PAID, invoiceId), HttpStatus.BAD_REQUEST.value());
+            throw new InvoicePaymentException(String.format(INVOICE_ALREADY_PAID, invoiceSearchDTO.getId()), HttpStatus.BAD_REQUEST.value());
         }
 
         List<String> insufficientStockBooks = new ArrayList<>();
@@ -203,9 +226,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         }
     }
 
-    private void updateBookStocksAndInvoiceStatus(UUID invoiceId) {
-        InvoiceSearchDTO invoiceSearchDTO = findById(invoiceId);
-
+    private void updateBookStocksAndInvoiceStatus(InvoiceSearchDTO invoiceSearchDTO) {
         List<Book> booksToSave = new ArrayList<>();
         for (InvoiceItemSearchDTO invoiceItem : invoiceSearchDTO.getListInvoiceItems()) {
             BookRespDTO book = bookService.findByID(invoiceItem.getBookId());
@@ -218,6 +239,61 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         Invoice invoice = mapper.convertValue(invoiceSearchDTO, Invoice.class);
         invoice.setPaid(true);
         invoiceRepository.save(invoice);
+    }
+
+    private Preference generatePreference(InvoiceRequestDTO invoiceRequestDTO) {
+        try {
+            MPRequestOptions requestOptions = MPRequestOptions.builder()
+                    .accessToken(mercadoPagoAccessToken)
+                    .build();
+
+            PreferenceClient preferenceClient = new PreferenceClient();
+
+            List<PreferenceItemRequest> items = new ArrayList<>();
+
+            for (InvoiceItemDTO itemDTO : invoiceRequestDTO.getInvoiceItemDTOList()) {
+                BookRespDTO book = bookService.findByID(itemDTO.getBookId());
+
+                String imageUrl = (book.getImageLinks() != null && !book.getImageLinks().isEmpty())
+                        ? book.getImageLinks().get(0).getUrl()
+                        : null;
+
+                PreferenceItemRequest item = PreferenceItemRequest.builder()
+                        .title(book.getTitle())
+                        .description(book.getDescription())
+                        .quantity(itemDTO.getQuantity())
+                        .unitPrice(BigDecimal.valueOf(itemDTO.getUnitPrice()))
+                        .pictureUrl(imageUrl)
+                        .build();
+                items.add(item);
+            }
+
+            PreferenceBackUrlsRequest backUrls =
+                    PreferenceBackUrlsRequest.builder()
+                            .success("http://localhost:5173/success")
+                            .pending("http://localhost:5173/pending")
+                            .failure("http://localhost:5173/failure")
+                            .build();
+
+
+            PreferenceRequest request = PreferenceRequest.builder()
+                    .items(items)
+                    .backUrls(backUrls)
+                    .autoReturn("approved")
+                    .build();
+
+            return preferenceClient.create(request, requestOptions);
+        } catch (MPException e) {
+            throw new InvoicePaymentException(e.getMessage());
+        } catch (MPApiException e) {
+            MPResponse response = e.getApiResponse();
+            try {
+                MercadoPagoErrorResponse mercadoPagoError = mapper.readValue(response.getContent(), MercadoPagoErrorResponse.class);
+                throw new InvoicePaymentException(mercadoPagoError.getMessage(), mercadoPagoError.getStatus());
+            } catch (JsonProcessingException jsonException) {
+                throw new InvoicePaymentException(jsonException.getMessage());
+            }
+        }
     }
 
     @Override
