@@ -62,4 +62,7 @@ public class InvoiceDTO {
 
     @JsonProperty("payment_method")
     private PaymentMethod paymentMethod;
+
+    @JsonProperty("preference_id")
+    private String preferenceId;
 }

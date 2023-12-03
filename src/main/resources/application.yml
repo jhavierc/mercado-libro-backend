@@ -24,6 +24,11 @@ app:
         scope: ${OAUTH_SCOPE:openid}
   mercadopago:
     access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+    preference:
+      back-urls:
+        success: ${MERCADOPAGO_PREFERENCE_BACK_URLS_SUCCESS:http://localhost:5173/successful}
+        pending: ${MERCADOPAGO_PREFERENCE_BACK_URLS_PENDING:http://localhost:5173/pending}
+        failure: ${MERCADOPAGO_PREFERENCE_BACK_URLS_FAILURE:http://localhost:5173/failure}
 
 spring:
   jpa:
