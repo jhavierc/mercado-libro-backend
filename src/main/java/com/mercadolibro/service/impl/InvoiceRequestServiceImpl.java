@@ -270,7 +270,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
             PreferenceBackUrlsRequest backUrls =
                     PreferenceBackUrlsRequest.builder()
-                            .success("http://localhost:5173/success")
+                            .success("http://localhost:5173/successful")
                             .pending("http://localhost:5173/pending")
                             .failure("http://localhost:5173/failure")
                             .build();
