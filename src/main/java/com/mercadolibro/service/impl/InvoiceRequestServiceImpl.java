@@ -157,15 +157,14 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
                                             .build())
                             .build();
 
-            PaymentRespDTO paymentResponse;
-
             Payment payment = paymentClient.create(paymentCreateRequest, requestOptions);
-            if (payment.getStatus().equals("approved") || payment.getStatus().equals("in_process")) {
+            PaymentStatus paymentStatus = PaymentStatus.getById(payment.getCard().getCardholder().getName());
+
+            PaymentRespDTO paymentResponse = mapper.convertValue(payment, PaymentRespDTO.class);
+            paymentResponse.setDetail(paymentStatus.getDetails());
+
+            if (payment.getStatus().equals("approved")) {
                 updateBookStocksAndInvoiceStatus(invoice);
-                paymentResponse = mapper.convertValue(payment, PaymentRespDTO.class);
-            } else {
-                PaymentStatus paymentStatus = PaymentStatus.getById(payment.getCard().getCardholder().getName());
-                throw new InvoicePaymentException(paymentStatus.getStatus(), paymentStatus.getDetails(), HttpStatus.CONFLICT.value());
             }
 
             return paymentResponse;
