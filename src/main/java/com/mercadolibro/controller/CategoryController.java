@@ -19,7 +19,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/category")
 @Validated
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT } )
 public class CategoryController {
     private final CategoryService categoryService;
 

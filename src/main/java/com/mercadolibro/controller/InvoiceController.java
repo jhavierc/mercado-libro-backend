@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/invoice")
 public class InvoiceController {
     @Autowired

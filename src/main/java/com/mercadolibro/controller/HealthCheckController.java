@@ -17,7 +17,6 @@ import com.mercadolibro.service.TestService;
 
 @RestController
 @RequestMapping("/api/health")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET })
 public class HealthCheckController {
 	
 	@Autowired

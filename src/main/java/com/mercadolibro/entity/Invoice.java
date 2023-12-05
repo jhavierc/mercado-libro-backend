@@ -1,14 +1,16 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mercadolibro.dto.PaymentMethod;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ import java.util.UUID;
 @Table(name = "invoice")
 @AllArgsConstructor
 @NoArgsConstructor
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class Invoice {
     @Id
     @GeneratedValue
@@ -46,8 +49,6 @@ public class Invoice {
     @Column(name = "account_number")
     private String accountNumber;
 
-    private String address;
-
     private String deadline;
 
     @JsonProperty("cardholder")
@@ -72,7 +73,46 @@ public class Invoice {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @JsonProperty("address")
+    @Column(name = "address", columnDefinition = "json")
+    @Type(type = "json")
+    private Address address;
+
+    @JsonProperty("shipping")
+    private Double shipping;
+
+    @JsonProperty("subTotal")
+    private Double subTotal;
+
+    @JsonProperty("shipping_method")
+    @Column(name = "shipping_method")
+    private ShippingMethod shippingMethod;
+
     private String notes;
 
     private Boolean paid;
+
+    @Getter
+    private enum PaymentMethod {
+        MERCADO_PAGO, TRANSFER
+    }
+
+    @Getter
+    private enum ShippingMethod {
+        PICK_UP, CORREO_ARGENTINO
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Address implements Serializable {
+        private String city;
+        private String street;
+        private String zipCode;
+        private Short number;
+        private String district;
+        private String state;
+        private String department;
+    }
 }

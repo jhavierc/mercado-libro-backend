@@ -20,8 +20,6 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("/api/book-image")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST,
-        RequestMethod.DELETE})
 public class BookImageController {
 
     private final BookImageService bookImageService;

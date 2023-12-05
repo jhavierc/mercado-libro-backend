@@ -2,15 +2,22 @@ package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mercadolibro.entity.Invoice;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
 @Setter
+@TypeDef(name = "json", typeClass = JsonStringType.class)
 public class InvoiceDTO {
     @JsonProperty("id")
     private UUID id;
@@ -32,9 +39,6 @@ public class InvoiceDTO {
 
     @JsonProperty("account_number")
     private String accountNumber;
-
-    @JsonProperty("address")
-    private String  address;
 
     @JsonProperty("deadline")
     private String deadline;
@@ -60,9 +64,47 @@ public class InvoiceDTO {
     @JsonProperty("paid")
     private Boolean paid;
 
+    @JsonProperty("address")
+    @Type(type = "json")
+    private Address address;
+
     @JsonProperty("payment_method")
     private PaymentMethod paymentMethod;
 
+    @JsonProperty("shipping")
+    private Double shipping;
+
+    @JsonProperty("subTotal")
+    private Double subTotal;
+
+    @JsonProperty("shipping_method")
+    @Column(name = "shipping_method")
+    private ShippingMethod shippingMethod;
+
     @JsonProperty("preference_id")
     private String preferenceId;
+
+    @Getter
+    private enum PaymentMethod {
+        MERCADO_PAGO, TRANSFER
+    }
+
+    @Getter
+    private enum ShippingMethod {
+        PICK_UP, CORREO_ARGENTINO
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Address implements Serializable {
+        private String city;
+        private String street;
+        private String zipCode;
+        private Short number;
+        private String district;
+        private String state;
+        private String department;
+    }
 }
