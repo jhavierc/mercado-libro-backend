@@ -56,7 +56,7 @@ public class BookImageServiceImpl implements BookImageService {
         Optional<List<BookImage>> listOptional = bookImageRepository.getByBookId(bookID);
         if(listOptional.isPresent()){
             List<ImageDTO> list = new ArrayList<>();
-            listOptional.get().stream().forEach(bookImages -> {
+            listOptional.get().forEach(bookImages -> {
                 ImageDTO imageDTO = new ImageDTO();
                 imageDTO.setId(bookImages.getId());
                 imageDTO.setName(bookImages.getName());

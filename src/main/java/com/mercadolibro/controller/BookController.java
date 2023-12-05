@@ -1,10 +1,7 @@
 package com.mercadolibro.controller;
 
+import com.mercadolibro.dto.*;
 import com.mercadolibro.dto.annotation.BookRequest;
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookReqPatchDTO;
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.dto.PageDTO;
 import com.mercadolibro.service.BookService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -124,9 +121,18 @@ public class BookController {
                     value = "page number (starts at zero)",
                     example = "0",
                     required = true)
-                    short page
+                    short page,
+            @RequestParam
+            @PositiveOrZero
+            @ApiParam(
+                    name = "size",
+                    type = "short",
+                    value = "size for page",
+                    example = "0",
+                    required = true)
+            short size
     ) {
-        return ResponseEntity.ok(bookService.findAll(keyword, category, publisher, releases, selection, sort, page));
+        return ResponseEntity.ok(bookService.findAll(keyword, category, publisher, releases, selection, sort, page, size));
     }
 
     @GetMapping("/{id}")
@@ -184,5 +190,15 @@ public class BookController {
     )
     public ResponseEntity<BookRespDTO> patch(@PathVariable @Positive Long id, @BookRequest @Valid BookReqPatchDTO bookReqPatchDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(bookService.patch(id, bookReqPatchDTO));
+    }
+
+    @GetMapping("/author/book-count")
+    @ApiOperation(value = "Get total book count by author", notes = "Returns a paginated list of total book count for each author.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Author book count retrieved successfully", response = PageDTO.class),
+            @ApiResponse(code = 400, message = "Bad request")
+    })
+    public ResponseEntity<PageDTO<AuthorBookCountDTO>> getAuthorBookCount(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "10") @Positive int size) {
+        return ResponseEntity.ok(bookService.getAllAuthorsBookCount(page, size));
     }
 }

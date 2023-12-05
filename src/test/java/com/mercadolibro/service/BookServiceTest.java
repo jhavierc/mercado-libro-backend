@@ -174,7 +174,7 @@ public class BookServiceTest {
                 false,
                 null,
                 null,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -210,7 +210,7 @@ public class BookServiceTest {
                 false,
                 null,
                 null,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -237,7 +237,7 @@ public class BookServiceTest {
                 false,
                 null,
                 null,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -273,7 +273,7 @@ public class BookServiceTest {
                 false,
                 null,
                 null,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -312,7 +312,7 @@ public class BookServiceTest {
                 false,
                 null,
                 null,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -355,7 +355,7 @@ public class BookServiceTest {
                 false,
                 null,
                 sort,
-                (short) 1);
+                (short) 1,(short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -397,7 +397,7 @@ public class BookServiceTest {
                 false,
                 null,
                 sort,
-                (short) 1);
+                (short) 1, (short)1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -433,7 +433,7 @@ public class BookServiceTest {
                 releases,
                 null,
                 null,
-                (short) 1);
+                (short) 1, (short) 1);
 
         List<BookRespDTO> books = result.getContent();
 
@@ -607,6 +607,7 @@ public class BookServiceTest {
         // GIVEN
         String keyword = "test";
         short page = 0;
+        short size = 1;
         Pageable pageable = PageRequest.of(page, 9);
 
         List<Book> mockBooks = Arrays.asList(new Book(), new Book());
@@ -619,7 +620,7 @@ public class BookServiceTest {
 
         // WHEN
         PageDTO<BookRespDTO> result = bookService.findAll(keyword, null, null, false,
-                null, null, page);
+                null, null, page, size);
 
         // THEN
         assertNotNull(result);

@@ -1,9 +1,6 @@
 package com.mercadolibro.service;
 
-import com.mercadolibro.dto.BookReqDTO;
-import com.mercadolibro.dto.BookReqPatchDTO;
-import com.mercadolibro.dto.BookRespDTO;
-import com.mercadolibro.dto.PageDTO;
+import com.mercadolibro.dto.*;
 import com.mercadolibro.exception.BookAlreadyExistsException;
 import com.mercadolibro.exception.BookImageKeyDoesNotExistException;
 import com.mercadolibro.exception.BookNotFoundException;
@@ -48,7 +45,7 @@ public interface BookService {
      * @throws NoBooksToShowException If no books are found.
      */
     PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
-                                 String sort, String selection, short page);
+                                 String sort, String selection, short page, short size);
 
     /**
      * Saves a new book.
@@ -75,4 +72,13 @@ public interface BookService {
      * @throws BookNotFoundException If the book with the specified ID is not found.
      */
     void delete(Long id);
+
+    /**
+     * Retrieves a paginated list of AuthorBookCountDTO objects representing the total count of books for each author.
+     *
+     * @param page The page number being requested.
+     * @param size The number of elements per page.
+     * @return A PageDTO containing AuthorBookCountDTO objects representing the total count of books for each author.
+     */
+    PageDTO<AuthorBookCountDTO> getAllAuthorsBookCount(int page, int size);
 }

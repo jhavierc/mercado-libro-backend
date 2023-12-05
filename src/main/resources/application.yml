@@ -24,6 +24,8 @@ app:
         scope: ${OAUTH_SCOPE:openid}
   mercadopago:
     access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  frontend:
+    base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
 
 spring:
   jpa:

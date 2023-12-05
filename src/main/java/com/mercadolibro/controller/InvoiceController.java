@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,4 +83,45 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
 
+    @GetMapping("/salesbypaymenttype")
+    @ApiOperation(value = "Get sales count by payment type", notes = "Returns a paginated list of sales count for each payment type.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Sales count by payment type retrieved successfully", response = PageDTO.class),
+            @ApiResponse(code = 400, message = "Bad request")
+    })
+    public ResponseEntity<PageDTO<PaymentTypeSaleDTO>> getSalesByPaymentType(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "10") @Positive int size) {
+        return ResponseEntity.ok(invoiceRequestService.findSalesByPaymentType(page, size));
+    }
+
+    @GetMapping("/monthlystock")
+    @ApiOperation(value = "Get monthly stock", notes = "Returns a paginated list of monthly stock data.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Monthly stock retrieved successfully", response = PageDTO.class),
+            @ApiResponse(code = 400, message = "Bad request")
+    })
+    public ResponseEntity<PageDTO<MonthlyStockDTO>> getMonthlyStock(@RequestParam(defaultValue = "0") @PositiveOrZero int page, @RequestParam(defaultValue = "10") @Positive int size) {
+        List<MonthlyStockDTO> monthlyStockList = Arrays.asList(
+                new MonthlyStockDTO("2023", "Enero", 100L),
+                new MonthlyStockDTO("2023", "Febrero", 120L),
+                new MonthlyStockDTO("2023", "Marzo", 90L),
+                new MonthlyStockDTO("2023", "Abril", 110L),
+                new MonthlyStockDTO("2023", "Mayo", 80L),
+                new MonthlyStockDTO("2023", "Junio", 130L),
+                new MonthlyStockDTO("2023", "Julio", 95L),
+                new MonthlyStockDTO("2023", "Agosto", 115L),
+                new MonthlyStockDTO("2023", "Septiembre", 75L),
+                new MonthlyStockDTO("2023", "Octubre", 105L),
+                new MonthlyStockDTO("2023", "Noviembre", 88L),
+                new MonthlyStockDTO("2023", "Diciembre", 125L)
+        );
+
+        int start = page * size;
+        int end = Math.min((start + size), monthlyStockList.size());
+
+        List<MonthlyStockDTO> content = monthlyStockList.subList(start, end);
+
+        PageDTO<MonthlyStockDTO> pageDTO = new PageDTO<>(content, content.size(), (long) monthlyStockList.size(), page, size);
+
+        return ResponseEntity.ok(pageDTO);
+    }
 }

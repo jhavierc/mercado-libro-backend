@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @Service
 public interface InvoiceRequestService {
-
     List<InvoiceSearchDTO> findAll();
     PageDTO<InvoiceSearchDTO> findAll(int page, int size);
 
@@ -20,6 +19,7 @@ public interface InvoiceRequestService {
     PageDTO<BookRespDTO> findBestSellersPage(int page, int size);
     PageDTO<MonthlySaleDTO> getMonthlySales(int page, int size);
     PageDTO<CategorySalesDTO> getSalesByCategory(int page, int size);
+    PageDTO<PaymentTypeSaleDTO> findSalesByPaymentType(int page, int size);
 
     InvoiceRequestDTO save(InvoiceRequest invoiceRequest);
 

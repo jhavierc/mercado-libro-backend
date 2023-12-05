@@ -81,6 +81,9 @@ public class InvoiceDTO {
     @Column(name = "shipping_method")
     private ShippingMethod shippingMethod;
 
+    @JsonProperty("preference_id")
+    private String preferenceId;
+
     @Getter
     private enum PaymentMethod {
         MERCADO_PAGO, TRANSFER
