@@ -2,6 +2,7 @@ package com.mercadolibro.config;
 
 import com.google.gson.Gson;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.mercadolibro.service.TestService;
@@ -12,6 +13,9 @@ import org.springframework.web.util.UriBuilderFactory;
 
 @Configuration
 public class ApplicationConfig {
+	@Value("${app.frontend.base-url}")
+	private String frontendBaseUrl;
+
 	@Bean
 	public TestService initTestServiceImpl() {
 		return new TestServiceImpl();
@@ -39,5 +43,10 @@ public class ApplicationConfig {
 	@Bean
 	public Gson gson() {
 		return new Gson();
+	}
+
+	@Bean
+	public String frontendBaseUrl() {
+		return frontendBaseUrl;
 	}
 }
