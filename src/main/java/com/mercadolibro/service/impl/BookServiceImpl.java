@@ -53,10 +53,10 @@ public class BookServiceImpl implements BookService {
     @Cacheable(value = "books")
     @Override
     public PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
-                                        String selection, String sort, short page) {
+                                        String selection, String sort, short page, short size) {
 
         Specification<Book> spec = buildSpecification(keyword, category, publisher, releases);
-        Pageable pageable = buildPageable(sort, selection, page);
+        Pageable pageable = buildPageable(sort, selection, page, size);
 
         Page<Book> res = bookRepository.findAll(spec, pageable);
         List<BookRespDTO> content = res.getContent().stream().map(book ->
@@ -174,7 +174,7 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    private Pageable buildPageable(String sort, String selection, short page) {
+    private Pageable buildPageable(String sort, String selection, short page, short size) {
         List<Sort.Order> orders = new ArrayList<>();
 
         if (sort != null) {
@@ -194,7 +194,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Sort sorted = Sort.by(orders);
-        return PageRequest.of(page, 8, sorted);
+        return PageRequest.of(page, size, sorted);
     }
 
     private Specification<Book> buildSpecification(String keyword, String category, String publisher, boolean releases) {

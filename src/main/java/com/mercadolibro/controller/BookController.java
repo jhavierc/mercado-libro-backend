@@ -123,9 +123,18 @@ public class BookController {
                     value = "page number (starts at zero)",
                     example = "0",
                     required = true)
-                    short page
+                    short page,
+            @RequestParam
+            @PositiveOrZero
+            @ApiParam(
+                    name = "size",
+                    type = "short",
+                    value = "size for page",
+                    example = "0",
+                    required = true)
+            short size
     ) {
-        return ResponseEntity.ok(bookService.findAll(keyword, category, publisher, releases, selection, sort, page));
+        return ResponseEntity.ok(bookService.findAll(keyword, category, publisher, releases, selection, sort, page, size));
     }
 
     @GetMapping("/{id}")
