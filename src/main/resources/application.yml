@@ -13,14 +13,14 @@ app:
         token-endpoint: ${OAUTH_GOOGLE_TOKEN_ENDPOINT:https://oauth2.googleapis.com/token}
         client-id: ${OAUTH_GOOGLE_CLIENT_ID}
         client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
-        redirect-uri: ${OAUTH_GOOGLE_REDIRECT_URI:http://localhost:5173/oauth}
+        redirect-uri: ${FRONTEND_BASE_URL:http://localhost:5173}/oauth
         scope: ${OAUTH_SCOPE:openid profile email}
       facebook:
         authorization-endpoint: ${OAUTH_FACEBOOK_AUTHORIZATION_ENDPOINT:https://www.facebook.com/v18.0/dialog/oauth}
         token-endpoint: ${OAUTH_FACEBOOK_TOKEN_ENDPOINT:https://graph.facebook.com/v11.0/oauth/access_token}
         client-id: ${OAUTH_FACEBOOK_CLIENT_ID}
         client-secret: ${OAUTH_FACEBOOK_CLIENT_SECRET}
-        redirect-uri: ${OAUTH_FACEBOOK_REDIRECT_URI:http://localhost:5173/oauth}
+        redirect-uri: ${FRONTEND_BASE_URL:http://localhost:5173}/oauth
         scope: ${OAUTH_SCOPE:openid}
   mercadopago:
     access-token: ${MERCADOPAGO_ACCESS_TOKEN}
