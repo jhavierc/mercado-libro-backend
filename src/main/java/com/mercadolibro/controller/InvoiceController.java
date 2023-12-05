@@ -84,6 +84,11 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceRequestService.getSalesByCategory(page, size));
     }
 
+    @GetMapping("/salesbypublisher")
+    public ResponseEntity<PageDTO<PublisherSalesDTO>> getSalesByPublisher(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(invoiceRequestService.getSalesByPublisher(page, size));
+    }
+
     @GetMapping("/salesbypaymenttype")
     @ApiOperation(value = "Get sales count by payment type", notes = "Returns a paginated list of sales count for each payment type.")
     @ApiResponses(value = {

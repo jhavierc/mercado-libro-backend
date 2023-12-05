@@ -387,6 +387,17 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
         );
     }
 
+    public PageDTO<PublisherSalesDTO> getSalesByPublisher(int page, int size) {
+        Page<PublisherSalesDTO> invoicePage = invoiceRepository.getSalesByPublisher(PageRequest.of(page,size));
+        return new PageDTO<>(
+                invoicePage.getContent(),
+                invoicePage.getTotalPages(),
+                invoicePage.getTotalElements(),
+                invoicePage.getNumber(),
+                invoicePage.getSize()
+        );
+    }
+
     @Override
     public PageDTO<PaymentTypeSaleDTO> findSalesByPaymentType(int page, int size) {
         Page<PaymentTypeSaleDTO> invoicePage = invoiceRepository.findSalesByPaymentType(PageRequest.of(page,size));

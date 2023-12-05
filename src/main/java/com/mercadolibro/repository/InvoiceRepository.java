@@ -3,6 +3,7 @@ package com.mercadolibro.repository;
 import com.mercadolibro.dto.CategorySalesDTO;
 import com.mercadolibro.dto.MonthlySaleDTO;
 import com.mercadolibro.dto.PaymentTypeSaleDTO;
+import com.mercadolibro.dto.PublisherSalesDTO;
 import com.mercadolibro.entity.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
             "            ORDER BY count(*) desc",
             nativeQuery = true)
     Page<CategorySalesDTO> getSalesByCategory(Pageable pageable);
+
+    @Query(value = "SELECT book.publisher as publisher, count(*) as sales" +
+            "            FROM invoice" +
+            "            INNER JOIN invoice_item ON invoice_item.invoice_id = invoice.id" +
+            "            INNER JOIN book ON book.id = invoice_item.book_id" +
+            "            GROUP BY book.publisher" +
+            "            ORDER BY count(*) desc",
+            nativeQuery = true)
+    Page<PublisherSalesDTO> getSalesByPublisher(Pageable pageable);
 
     @Query("SELECT i.paymentMethod as payment_type, COUNT(i) as sales FROM Invoice i WHERE i.paymentMethod IS NOT NULL GROUP BY i.paymentMethod")
     Page<PaymentTypeSaleDTO> findSalesByPaymentType(Pageable pageable);
