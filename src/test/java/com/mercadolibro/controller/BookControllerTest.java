@@ -164,6 +164,7 @@ public class BookControllerTest {
         // GIVEN
         String keyword = "Harry Potter";
         short page = 0;
+        short size = 1;
 
         PageDTO<BookRespDTO> mockPageDTO = new PageDTO<>(List.of(new BookRespDTO()), 1, 1L, 0, 1);
         when(bookService.findAll(eq(keyword),
@@ -172,11 +173,11 @@ public class BookControllerTest {
                 ArgumentMatchers.any(Boolean.class),
                 ArgumentMatchers.any(String.class),
                 ArgumentMatchers.any(String.class),
-                eq(page))).thenReturn(mockPageDTO);
+                eq(page), eq(size))).thenReturn(mockPageDTO);
 
         // WHEN
         ResponseEntity<PageDTO<BookRespDTO>> response = bookController.findAll(keyword, null, null,
-                false, null, null, page);
+                false, null, null, page, size);
 
         // THEN
         assertEquals(200, response.getStatusCodeValue()); // Verificar que la respuesta sea OK
