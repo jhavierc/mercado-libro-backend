@@ -43,9 +43,7 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final ObjectMapper mapper;
     private final String mercadoPagoAccessToken;
-    private final String mercadoPagoPreferenceBackUrlSuccess;
-    private final String mercadoPagoPreferenceBackUrlPending;
-    private final String mercadoPagoPreferenceBackUrlFailure;
+    private final String frontendBaseUrl;
     private final BookRepository bookRepository;
     private final BookService bookService;
     private final UserService userService;
@@ -56,14 +54,12 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
     public static final String INVOICE_NOT_FOUND = "Invoice with ID '%s' not found";
 
 
-    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, String mercadoPagoPreferenceBackUrlSuccess, String mercadoPagoPreferenceBackUrlPending, String mercadoPagoPreferenceBackUrlFailure, BookRepository bookRepository, BookService bookService, UserService userService) {
+    public InvoiceRequestServiceImpl(InvoiceRepository invoiceRepository, InvoiceItemRepository invoiceItemRepository, ObjectMapper mapper, String mercadoPagoAccessToken, String frontendBaseUrl, BookRepository bookRepository, BookService bookService, UserService userService) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceItemRepository = invoiceItemRepository;
         this.mapper = mapper;
         this.mercadoPagoAccessToken = mercadoPagoAccessToken;
-        this.mercadoPagoPreferenceBackUrlSuccess = mercadoPagoPreferenceBackUrlSuccess;
-        this.mercadoPagoPreferenceBackUrlPending = mercadoPagoPreferenceBackUrlPending;
-        this.mercadoPagoPreferenceBackUrlFailure = mercadoPagoPreferenceBackUrlFailure;
+        this.frontendBaseUrl = frontendBaseUrl;
         this.bookRepository = bookRepository;
         this.bookService = bookService;
         this.userService = userService;
@@ -277,9 +273,9 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
             PreferenceBackUrlsRequest backUrls =
                     PreferenceBackUrlsRequest.builder()
-                            .success(mercadoPagoPreferenceBackUrlSuccess)
-                            .pending(mercadoPagoPreferenceBackUrlPending)
-                            .failure(mercadoPagoPreferenceBackUrlFailure)
+                            .success(frontendBaseUrl + "/successful")
+                            .pending(frontendBaseUrl + "/pending")
+                            .failure(frontendBaseUrl + "/failure")
                             .build();
 
 
