@@ -165,6 +165,8 @@ public class InvoiceRequestServiceImpl implements InvoiceRequestService {
 
             if (payment.getStatus().equals("approved")) {
                 updateBookStocksAndInvoiceStatus(invoice);
+            } else if (payment.getStatus().equals("rejected")) {
+                invoiceRepository.deleteById(invoiceId);
             }
 
             return paymentResponse;
