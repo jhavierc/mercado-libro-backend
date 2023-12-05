@@ -45,7 +45,7 @@ public interface BookService {
      * @throws NoBooksToShowException If no books are found.
      */
     PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
-                                 String sort, String selection, short page);
+                                 String sort, String selection, short page, short size);
 
     /**
      * Saves a new book.
