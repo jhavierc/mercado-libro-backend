@@ -1,7 +1,6 @@
 package com.mercadolibro.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mercadolibro.entity.Invoice;
 import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -90,11 +89,6 @@ public class InvoiceSearchDTO {
     @JsonProperty("shipping_method")
     @Column(name = "shipping_method")
     private ShippingMethod shippingMethod;
-
-    @Getter
-    private enum PaymentMethod {
-        MERCADO_PAGO, TRANSFER
-    }
 
     @Getter
     private enum ShippingMethod {
