@@ -65,6 +65,10 @@ jobs:
           export MERCADOPAGO_ACCESS_TOKEN=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }} &&
           export FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }} &&
           export APP_NAME=${{ secrets.APP_NAME }} &&
+          export OAUTH_FACEBOOK_CLIENT_ID=${{ secrets.OAUTH_FACEBOOK_CLIENT_ID }} &&
+          export OAUTH_FACEBOOK_CLIENT_SECRET=${{ secrets.OAUTH_FACEBOOK_CLIENT_SECRET }} &&
+          export OAUTH_GOOGLE_CLIENT_ID=${{ secrets.OAUTH_GOOGLE_CLIENT_ID }} &&
+          export OAUTH_GOOGLE_CLIENT_SECRET=${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }} &&
           echo "DB_PASSWORD=$DB_PASSWORD" >> ~/.bashrc &&
           echo "DB_USERNAME=$DB_USERNAME" >> ~/.bashrc &&
           echo "DB_HOST=$DB_HOST" >> ~/.bashrc &&
