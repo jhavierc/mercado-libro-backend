@@ -6,6 +6,7 @@ import com.mercadolibro.events.InvoiceCreated;
 import com.mercadolibro.repository.AppUserRepository;
 import com.mercadolibro.repository.BookRepository;
 import com.mercadolibro.repository.InvoiceRepository;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class EmailServiceImpl implements com.mercadolibro.service.EmailService {
     private final InvoiceRepository invoiceRepository;
     private final AppUserRepository appUserRepository;
     private final BookRepository bookRepository;
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger(EmailServiceImpl.class);
 
     @Autowired
     public EmailServiceImpl(JavaMailSender javaMailSender, InvoiceRepository invoiceRepository, AppUserRepository appUserRepository, BookRepository bookRepository) {
@@ -64,7 +66,9 @@ public class EmailServiceImpl implements com.mercadolibro.service.EmailService {
             message.setSubject(subject);
             message.setRecipients(MimeMessage.RecipientType.TO, to);
             javaMailSender.send(message);
+            logger.info("Email sent to " + to);
         } catch (Exception e) {
+            logger.error("Error sending email to " + to);
             e.printStackTrace();
         }
     }
