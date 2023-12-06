@@ -1,6 +1,7 @@
 package com.mercadolibro.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mercadolibro.dto.PaymentMethod;
 import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -91,11 +92,6 @@ public class Invoice {
     private String notes;
 
     private Boolean paid;
-
-    @Getter
-    private enum PaymentMethod {
-        MERCADO_PAGO, TRANSFER
-    }
 
     @Getter
     private enum ShippingMethod {
