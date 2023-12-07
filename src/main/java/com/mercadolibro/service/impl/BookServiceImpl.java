@@ -50,7 +50,7 @@ public class BookServiceImpl implements BookService {
         this.bookImageService = bookImageService;
     }
 
-    @Cacheable(value = "books")
+    @Cacheable(value = "books", condition = "#selection != null")
     @Override
     public PageDTO<BookRespDTO> findAll(String keyword, String category, String publisher, boolean releases,
                                         String selection, String sort, short page, short size) {
