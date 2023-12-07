@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Cacheable;
 import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@Cacheable(false)
 public class InvoiceRequest {
 
     @JsonProperty("invoice")

@@ -15,6 +15,7 @@ import java.util.Set;
 @Table(name = "category")
 @AllArgsConstructor
 @NoArgsConstructor
+@Cacheable(false)
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

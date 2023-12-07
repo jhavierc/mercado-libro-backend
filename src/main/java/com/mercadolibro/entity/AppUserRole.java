@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Cacheable(false)
 @ApiModel(description = "Role DTO", value = "Role")
 public class AppUserRole {
 

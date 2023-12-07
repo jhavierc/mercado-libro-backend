@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "invoice_item")
+@Cacheable(false)
 public class InvoiceItem {
 
     @Id

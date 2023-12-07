@@ -22,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeDef(name = "json", typeClass = JsonStringType.class)
+@Cacheable(false)
 public class Invoice {
     @Id
     @GeneratedValue

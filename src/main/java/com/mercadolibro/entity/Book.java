@@ -25,6 +25,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @TypeDef(name = "json", typeClass = JsonStringType.class)
+@Cacheable(false)
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -19,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Cacheable(false)
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

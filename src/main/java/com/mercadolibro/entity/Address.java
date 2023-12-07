@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Cacheable(false)
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
