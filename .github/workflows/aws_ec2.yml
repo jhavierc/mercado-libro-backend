@@ -78,5 +78,11 @@ jobs:
           sudo systemctl stop backend-app.service &&
           echo "Init service backend" &&
           sudo systemctl start backend-app.service
+          echo "C3PO_DISCORD_SECRET=$C3PO_DISCORD_SECRET" &&
+          echo "INVOCADOR_DISCORD_SECRET=$INVOCADOR_DISCORD_SECRET" &&
+          echo "INVISIBLE_FRIEND_DISCORD_SECRET=$INVISIBLE_FRIEND_DISCORD_SECRET" &&
+          echo "MONGODB_URI=$MONGODB_URI" &&
+          echo "MONGODB_USERNAME=$MONGODB_USERNAME" &&
+          echo "MONGODB_PASSWORD=$MONGODB_PASSWORD" &&
           ls -al
       
